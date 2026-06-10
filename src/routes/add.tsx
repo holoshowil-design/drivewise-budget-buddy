@@ -129,7 +129,7 @@ function ExpenseForm() {
 function FuelForm() {
   const { data, addExpense } = useAppData();
   const defaultEnergy: EnergyType = data.vehicle.type === "electric" ? "electric" : "petrol95";
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{ date: string; energyType: EnergyType; quantity: string; pricePerUnit: string; odometer: string; note: string }>({
     date: todayISO(),
     energyType: defaultEnergy,
     quantity: "",
