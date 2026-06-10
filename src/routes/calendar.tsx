@@ -1,0 +1,143 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useState, useMemo } from "react";
+import { useAppData, filterByDate, sumIncomes, sumExpenses, fmt, monthRange, netFromIncome, categoryLabel } from "@/lib/store";
+import { PageHeader } from "@/components/PageHeader";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronRight, ChevronLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/calendar")({
+  head: () => ({ meta: [{ title: "לוח שנה - דרייבר" }, { name: "description", content: "תצוגה חודשית של הרווח היומי." }] }),
+  component: CalendarPage,
+});
+
+const weekDays = ["א", "ב", "ג", "ד", "ה", "ו", "ש"];
+
+function CalendarPage() {
+  const { data, ready } = useAppData();
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth());
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const days = useMemo(() => {
+    const first = new Date(year, month, 1);
+    const last = new Date(year, month + 1, 0);
+    const startWeekday = first.getDay();
+    const total = last.getDate();
+    const arr: { iso: string | null; day: number | null }[] = [];
+    for (let i = 0; i < startWeekday; i++) arr.push({ iso: null, day: null });
+    for (let d = 1; d <= total; d++) {
+      const dt = new Date(year, month, d);
+      const iso = new Date(dt.getTime() - dt.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      arr.push({ iso, day: d });
+    }
+    return arr;
+  }, [year, month]);
+
+  if (!ready) return null;
+  const c = data.settings.currency;
+  const goal = data.settings.dailyGoal;
+
+  const prev = () => { if (month === 0) { setMonth(11); setYear(year - 1); } else setMonth(month - 1); };
+  const next = () => { if (month === 11) { setMonth(0); setYear(year + 1); } else setMonth(month + 1); };
+
+  const monthLabel = new Date(year, month, 1).toLocaleDateString("he-IL", { month: "long", year: "numeric" });
+
+  const { from, to } = monthRange(year, month);
+  const mIncomes = data.incomes.filter((i) => i.date >= from && i.date <= to);
+  const mExpenses = data.expenses.filter((e) => e.date >= from && e.date <= to);
+  const monthNet = sumIncomes(mIncomes) - sumExpenses(mExpenses);
+
+  const selectedIncomes = selected ? filterByDate(data.incomes, selected) : [];
+  const selectedExpenses = selected ? filterByDate(data.expenses, selected) : [];
+  const selectedNet = sumIncomes(selectedIncomes) - sumExpenses(selectedExpenses);
+
+  return (
+    <div className="mx-auto max-w-xl">
+      <PageHeader title="לוח שנה" subtitle={`רווח חודשי: ${fmt(monthNet, c)}`} />
+
+      <div className="px-4 space-y-4">
+        <Card>
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between mb-3">
+              <Button variant="ghost" size="icon" onClick={next}><ChevronLeft className="h-4 w-4" /></Button>
+              <div className="font-semibold">{monthLabel}</div>
+              <Button variant="ghost" size="icon" onClick={prev}><ChevronRight className="h-4 w-4" /></Button>
+            </div>
+            <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted-foreground mb-1">
+              {weekDays.map((w) => <div key={w}>{w}</div>)}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {days.map((cell, idx) => {
+                if (!cell.iso) return <div key={idx} />;
+                const inc = sumIncomes(filterByDate(data.incomes, cell.iso));
+                const exp = sumExpenses(filterByDate(data.expenses, cell.iso));
+                const net = Math.round(inc - exp);
+                const hasData = inc > 0 || exp > 0;
+                let tone = "bg-muted/30 text-muted-foreground";
+                if (hasData) {
+                  if (net < 0) tone = "bg-destructive/20 text-destructive border border-destructive/40";
+                  else if (net >= goal) tone = "bg-success/20 text-success border border-success/40";
+                  else tone = "bg-warning/15 text-warning border border-warning/40";
+                }
+                const isSelected = selected === cell.iso;
+                return (
+                  <button
+                    key={cell.iso}
+                    onClick={() => setSelected(cell.iso!)}
+                    className={cn(
+                      "aspect-square rounded-md flex flex-col items-center justify-center text-[10px] font-medium transition-all",
+                      tone,
+                      isSelected && "ring-2 ring-primary",
+                    )}
+                  >
+                    <span className="text-[11px]">{cell.day}</span>
+                    {hasData && <span className="text-[9px] font-bold leading-none mt-0.5">{net}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {selected && (
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold">{new Date(selected).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}</h3>
+                <div className={cn("font-bold", selectedNet >= 0 ? "text-success" : "text-destructive")}>{fmt(selectedNet, c)}</div>
+              </div>
+              {selectedIncomes.length === 0 && selectedExpenses.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">אין רשומות ביום זה</p>
+              )}
+              {selectedIncomes.length > 0 && (
+                <div className="space-y-2 mb-3">
+                  <div className="text-xs font-semibold text-muted-foreground">הכנסות</div>
+                  {selectedIncomes.map((i) => (
+                    <div key={i.id} className="flex justify-between text-sm bg-muted/40 rounded-md px-3 py-2">
+                      <span>{i.platform} <span className="text-xs text-muted-foreground">· עמלה {i.commissionPct}%</span></span>
+                      <span className="text-success font-semibold">{fmt(netFromIncome(i), c)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {selectedExpenses.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-muted-foreground">הוצאות</div>
+                  {selectedExpenses.map((e) => (
+                    <div key={e.id} className="flex justify-between text-sm bg-muted/40 rounded-md px-3 py-2">
+                      <span>{categoryLabel(e.category)} {e.note && <span className="text-xs text-muted-foreground">· {e.note}</span>}</span>
+                      <span className="text-destructive font-semibold">-{fmt(e.amount, c)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
