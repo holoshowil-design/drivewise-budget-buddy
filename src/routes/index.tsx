@@ -67,11 +67,11 @@ function Dashboard() {
         {/* Hero net card */}
         <Card className="overflow-hidden border-0" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}>
           <CardContent className="p-6 text-primary-foreground">
-            <div className="flex items-center gap-2 text-xs font-semibold opacity-80">
+            <div className="flex items-center gap-2 text-xs font-semibold opacity-90">
               <Wallet className="h-4 w-4" /> רווח נקי היום
             </div>
-            <div className="mt-2 text-4xl font-bold tracking-tight">{fmt(netToday, c)}</div>
-            <div className="mt-1 text-sm opacity-90">רווחיות {profitabilityPct}% · {todayIncomes.length} נסיעות</div>
+            <div className="mt-2 text-5xl font-extrabold tracking-tight">{fmt(netToday, c)}</div>
+            <div className="mt-1.5 text-sm opacity-95">רווחיות {profitabilityPct}% · {todayIncomes.length} נסיעות</div>
             <div className="mt-4">
               <div className="flex justify-between text-xs opacity-90 mb-1.5">
                 <span>יעד יומי {fmt(settings.dailyGoal, c)}</span>
@@ -163,7 +163,7 @@ function StatCard({ icon, label, value, tone }: { icon: React.ReactNode; label: 
     <Card>
       <CardContent className="p-3">
         <div className={`flex items-center gap-1.5 text-xs ${color}`}>{icon}<span className="text-muted-foreground">{label}</span></div>
-        <div className="mt-1 text-xl font-bold">{value}</div>
+        <div className="mt-1 text-xl font-bold tracking-tight">{value}</div>
       </CardContent>
     </Card>
   );

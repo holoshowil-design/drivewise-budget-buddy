@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useAppData, todayISO, type ExpenseCategory, type EnergyType, categoryLabel, energyLabel } from "@/lib/store";
+import { useAppData, todayISO, type ExpenseCategory, categoryLabel } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { z } from "zod";
+import { ChevronDown } from "lucide-react";
 
 const searchSchema = z.object({ tab: z.enum(["income", "expense", "fuel"]).optional() });
 
@@ -26,13 +27,13 @@ function AddPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <PageHeader title="הוספת רשומה" subtitle="הכנס הכנסה, הוצאה או תדלוק" />
+      <PageHeader title="הוספת רשומה" subtitle="מהיר וקל — שלוש שניות וזה נשמר" />
       <div className="px-4">
         <Tabs value={active} onValueChange={setActive}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="income">הכנסה</TabsTrigger>
-            <TabsTrigger value="expense">הוצאה</TabsTrigger>
-            <TabsTrigger value="fuel">תדלוק/טעינה</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 h-11">
+            <TabsTrigger value="income" className="text-sm font-semibold">הכנסה</TabsTrigger>
+            <TabsTrigger value="expense" className="text-sm font-semibold">הוצאה</TabsTrigger>
+            <TabsTrigger value="fuel" className="text-sm font-semibold">תדלוק</TabsTrigger>
           </TabsList>
           <TabsContent value="income"><IncomeForm /></TabsContent>
           <TabsContent value="expense"><ExpenseForm /></TabsContent>
@@ -45,10 +46,10 @@ function AddPage() {
 
 function IncomeForm() {
   const { data, addIncome } = useAppData();
+  const [showMore, setShowMore] = useState(false);
   const [form, setForm] = useState({
     date: todayISO(),
     amount: "",
-    platform: "",
     commissionPct: String(data.settings.defaultCommissionPct),
     tip: "",
     hours: "",
@@ -62,7 +63,7 @@ function IncomeForm() {
     addIncome({
       date: form.date,
       amount,
-      platform: form.platform.trim() || "כללי",
+      platform: "פרטי",
       commissionPct: parseFloat(form.commissionPct) || 0,
       tip: parseFloat(form.tip) || 0,
       hours: parseFloat(form.hours) || 0,
@@ -76,23 +77,30 @@ function IncomeForm() {
   return (
     <Card className="mt-4"><CardContent className="p-4 space-y-3">
       <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
-      <Field label="סכום ברוטו (₪)"><Input inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" /></Field>
-      <Field label="פלטפורמה / מקור"><Input value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })} placeholder="לדוגמה: גט, יאנגו, פרטי" /></Field>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="עמלת חברה (%)"><Input inputMode="decimal" value={form.commissionPct} onChange={(e) => setForm({ ...form, commissionPct: e.target.value })} /></Field>
-        <Field label="תשר (₪)"><Input inputMode="decimal" value={form.tip} onChange={(e) => setForm({ ...form, tip: e.target.value })} placeholder="0" /></Field>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
+      <Field label="סכום ברוטו (₪)"><Input className="h-12 text-lg font-semibold" inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" /></Field>
+      <div className="grid grid-cols-3 gap-3">
+        <Field label="עמלה %"><Input inputMode="decimal" value={form.commissionPct} onChange={(e) => setForm({ ...form, commissionPct: e.target.value })} /></Field>
         <Field label="שעות"><Input inputMode="decimal" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} placeholder="0" /></Field>
         <Field label="ק״מ"><Input inputMode="decimal" value={form.km} onChange={(e) => setForm({ ...form, km: e.target.value })} placeholder="0" /></Field>
       </div>
-      <Field label="הערה"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
-      <Button onClick={submit} className="w-full" size="lg">הוסף הכנסה</Button>
+
+      <button type="button" onClick={() => setShowMore((v) => !v)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showMore ? "rotate-180" : ""}`} />
+        פרטים נוספים
+      </button>
+      {showMore && (
+        <div className="space-y-3 pt-1">
+          <Field label="תשר (₪)"><Input inputMode="decimal" value={form.tip} onChange={(e) => setForm({ ...form, tip: e.target.value })} placeholder="0" /></Field>
+          <Field label="הערה"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
+        </div>
+      )}
+
+      <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">שמירת הכנסה</Button>
     </CardContent></Card>
   );
 }
 
-const expenseCats: ExpenseCategory[] = ["fuel", "insurance", "license", "maintenance", "parking", "food", "wash", "other"];
+const expenseCats: ExpenseCategory[] = ["insurance", "license", "maintenance", "parking", "food", "wash", "other"];
 
 function ExpenseForm() {
   const { addExpense } = useAppData();
@@ -113,74 +121,48 @@ function ExpenseForm() {
         <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v as ExpenseCategory })}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
-            {expenseCats.filter((c) => c !== "fuel").map((c) => (
+            {expenseCats.map((c) => (
               <SelectItem key={c} value={c}>{categoryLabel(c)}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </Field>
-      <Field label="סכום (₪)"><Input inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" /></Field>
-      <Field label="הערה"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
-      <Button onClick={submit} className="w-full" size="lg">הוסף הוצאה</Button>
+      <Field label="סכום (₪)"><Input className="h-12 text-lg font-semibold" inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" /></Field>
+      <Field label="הערה (אופציונלי)"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
+      <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">שמירת הוצאה</Button>
     </CardContent></Card>
   );
 }
 
 function FuelForm() {
   const { data, addExpense } = useAppData();
-  const defaultEnergy: EnergyType = data.vehicle.type === "electric" ? "electric" : "petrol95";
-  const [form, setForm] = useState<{ date: string; energyType: EnergyType; quantity: string; pricePerUnit: string; odometer: string; note: string }>({
-    date: todayISO(),
-    energyType: defaultEnergy,
-    quantity: "",
-    pricePerUnit: "",
-    odometer: "",
-    note: "",
-  });
-
-  const qty = parseFloat(form.quantity) || 0;
-  const price = parseFloat(form.pricePerUnit) || 0;
-  const total = Math.round(qty * price * 100) / 100;
+  const [form, setForm] = useState({ date: todayISO(), amount: "", note: "" });
 
   const submit = () => {
-    if (!qty || !price) return toast.error("הכנס כמות ומחיר");
+    const amount = parseFloat(form.amount);
+    if (!amount || amount <= 0) return toast.error("הכנס סכום תקין");
+    const isElectric = data.vehicle.type === "electric";
     addExpense({
       date: form.date,
       category: "fuel",
-      amount: total,
-      energyType: form.energyType,
-      quantity: qty,
-      pricePerUnit: price,
-      odometer: parseFloat(form.odometer) || undefined,
+      amount,
+      energyType: isElectric ? "electric" : "petrol95",
       note: form.note.trim() || undefined,
     });
-    toast.success("תדלוק נרשם");
-    setForm({ ...form, quantity: "", pricePerUnit: "", odometer: "", note: "" });
+    toast.success(isElectric ? "טעינה נרשמה" : "תדלוק נרשם");
+    setForm({ ...form, amount: "", note: "" });
   };
 
-  const energies: EnergyType[] = ["petrol95", "petrol98", "diesel", "electric"];
+  const label = data.vehicle.type === "electric" ? "כמה עלתה הטעינה?" : "כמה עלה התדלוק?";
 
   return (
     <Card className="mt-4"><CardContent className="p-4 space-y-3">
       <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
-      <Field label="סוג אנרגיה">
-        <Select value={form.energyType} onValueChange={(v) => setForm({ ...form, energyType: v as EnergyType })}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {energies.map((e) => <SelectItem key={e} value={e}>{energyLabel(e)}</SelectItem>)}
-          </SelectContent>
-        </Select>
+      <Field label={label}>
+        <Input className="h-14 text-2xl font-bold text-center" inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="₪ 0" />
       </Field>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label={form.energyType === "electric" ? "kWh" : "ליטרים"}>
-          <Input inputMode="decimal" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} placeholder="0" />
-        </Field>
-        <Field label="מחיר ליחידה"><Input inputMode="decimal" value={form.pricePerUnit} onChange={(e) => setForm({ ...form, pricePerUnit: e.target.value })} placeholder="0" /></Field>
-      </div>
-      <div className="text-sm text-muted-foreground">סה״כ: <span className="font-semibold text-foreground">{total ? `₪${total}` : "—"}</span></div>
-      <Field label="ק״מ במד-מרחק (אופציונלי)"><Input inputMode="decimal" value={form.odometer} onChange={(e) => setForm({ ...form, odometer: e.target.value })} placeholder="0" /></Field>
-      <Field label="הערה"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
-      <Button onClick={submit} className="w-full" size="lg">הוסף תדלוק</Button>
+      <Field label="הערה (אופציונלי)"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
+      <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">שמירה</Button>
     </CardContent></Card>
   );
 }
@@ -188,7 +170,7 @@ function FuelForm() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
       {children}
     </div>
   );
