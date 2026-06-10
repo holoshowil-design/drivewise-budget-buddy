@@ -57,9 +57,6 @@ function Reports() {
   const pieData = Array.from(byCategory.entries()).map(([k, v]) => ({ name: categoryLabel(k), value: Math.round(v) }));
   const colors = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--primary)", "var(--warning)", "var(--destructive)"];
 
-  // by platform
-  const byPlatform = new Map<string, number>();
-  for (const i of incomes) byPlatform.set(i.platform, (byPlatform.get(i.platform) || 0) + netFromIncome(i));
 
   const exportCSV = () => {
     const rows: string[] = ["סוג,תאריך,קטגוריה/פלטפורמה,סכום ברוטו,עמלה%,תשר,נטו,ק״מ,שעות,הערה"];
@@ -139,24 +136,6 @@ function Reports() {
           </Card>
         )}
 
-        {byPlatform.size > 0 && (
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="text-sm font-semibold mb-3">הכנסות לפי פלטפורמה</h3>
-              <div className="space-y-1.5">
-                {Array.from(byPlatform.entries()).sort((a, b) => b[1] - a[1]).map(([name, val]) => {
-                  const pct = incomeTotal > 0 ? Math.round((val / incomeTotal) * 100) : 0;
-                  return (
-                    <div key={name} className="flex justify-between text-sm">
-                      <span>{name}</span>
-                      <span className="text-muted-foreground">{fmt(val, c)} · {pct}%</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );

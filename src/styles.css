@@ -37,43 +37,45 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --font-sans: "Heebo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 :root {
-  --radius: 0.75rem;
-  /* Dark sporty theme - always dark */
-  --background: oklch(0.16 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.21 0 0);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.21 0 0);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.78 0.19 152);
-  --primary-foreground: oklch(0.16 0 0);
-  --primary-glow: oklch(0.85 0.22 152);
-  --secondary: oklch(0.27 0 0);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.25 0 0);
-  --muted-foreground: oklch(0.68 0 0);
-  --accent: oklch(0.78 0.19 152);
-  --accent-foreground: oklch(0.16 0 0);
-  --destructive: oklch(0.65 0.23 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --success: oklch(0.78 0.19 152);
-  --success-foreground: oklch(0.16 0 0);
-  --warning: oklch(0.82 0.17 85);
-  --warning-foreground: oklch(0.16 0 0);
-  --border: oklch(0.3 0 0);
-  --input: oklch(0.27 0 0);
-  --ring: oklch(0.78 0.19 152);
-  --chart-1: oklch(0.78 0.19 152);
-  --chart-2: oklch(0.7 0.18 230);
-  --chart-3: oklch(0.82 0.17 85);
-  --chart-4: oklch(0.65 0.23 25);
-  --chart-5: oklch(0.7 0.2 310);
+  --radius: 1rem;
+  /* Clean light theme */
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.18 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0 0);
+  --primary: oklch(0.62 0.18 152);
+  --primary-foreground: oklch(1 0 0);
+  --primary-glow: oklch(0.72 0.2 152);
+  --secondary: oklch(0.96 0 0);
+  --secondary-foreground: oklch(0.2 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.48 0 0);
+  --accent: oklch(0.62 0.18 152);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(1 0 0);
+  --success: oklch(0.62 0.18 152);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.72 0.17 75);
+  --warning-foreground: oklch(0.2 0 0);
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.94 0 0);
+  --ring: oklch(0.62 0.18 152);
+  --chart-1: oklch(0.62 0.18 152);
+  --chart-2: oklch(0.6 0.18 230);
+  --chart-3: oklch(0.72 0.17 75);
+  --chart-4: oklch(0.6 0.22 25);
+  --chart-5: oklch(0.6 0.2 310);
 
   --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-glow));
-  --shadow-glow: 0 0 24px -4px color-mix(in oklab, var(--primary) 50%, transparent);
+  --shadow-glow: 0 10px 30px -10px color-mix(in oklab, var(--primary) 40%, transparent);
+  --shadow-card: 0 1px 2px color-mix(in oklab, black 4%, transparent), 0 4px 12px color-mix(in oklab, black 4%, transparent);
 }
 
 @layer base {
@@ -81,11 +83,17 @@
     border-color: var(--color-border);
   }
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Heebo", "Assistant", sans-serif;
+    font-family: "Heebo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
   }
 }
