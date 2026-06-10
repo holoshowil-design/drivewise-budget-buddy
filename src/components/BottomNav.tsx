@@ -2,13 +2,14 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, PlusCircle, Calendar, BarChart3, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const items = [
+type NavItem = { to: string; label: string; icon: typeof Home; highlight?: boolean };
+const items: NavItem[] = [
   { to: "/", label: "דשבורד", icon: Home },
   { to: "/calendar", label: "לוח שנה", icon: Calendar },
   { to: "/add", label: "הוסף", icon: PlusCircle, highlight: true },
   { to: "/reports", label: "דוחות", icon: BarChart3 },
   { to: "/settings", label: "הגדרות", icon: Settings },
-] as const;
+];
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
