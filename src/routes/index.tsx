@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAppData, todayISO, filterByDate, filterByRange, sumIncomes, sumExpenses, fmt, monthRange } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
+import { InsightsCard } from "@/components/InsightsCard";
 
 import { TrendingUp, TrendingDown, Wallet, Target, Zap, Clock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -90,6 +91,10 @@ function Dashboard() {
           <StatCard icon={<Target className="h-4 w-4" />} label="נקודת איזון יומית" value={fmt(breakeven, c)} />
           <StatCard icon={<Zap className="h-4 w-4" />} label="תחזית חודשית" value={fmt(forecast, c)} />
         </div>
+
+        <InsightsCard data={data} />
+
+
 
         {/* Quick actions */}
         <div className="grid grid-cols-3 gap-2">
