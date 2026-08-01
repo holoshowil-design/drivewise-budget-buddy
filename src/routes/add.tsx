@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useAppData, todayISO, type ExpenseCategory, categoryLabel } from "@/lib/store";
+import { useAppData, todayISO, sumIncomes, fmt, type ExpenseCategory, categoryLabel } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
