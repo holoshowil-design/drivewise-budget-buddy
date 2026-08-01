@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { useAppData, filterByDate, sumIncomes, sumExpenses, fmt, monthRange, netFromIncome, categoryLabel } from "@/lib/store";
+import { useAppData, filterByDate, sumIncomes, sumExpenses, fmt, monthRange } from "@/lib/store";
+import { RecordsList } from "@/components/RecordsList";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
