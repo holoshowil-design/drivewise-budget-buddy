@@ -57,6 +57,13 @@ function IncomeForm() {
     note: "",
   });
 
+  const c = data.settings.currency;
+  const dayIncomes = data.incomes.filter((i) => i.date === form.date);
+  const dayNet = sumIncomes(dayIncomes);
+  const dayGross = dayIncomes.reduce((s, i) => s + i.amount, 0);
+  const dayHours = dayIncomes.reduce((s, i) => s + (i.hours || 0), 0);
+  const dayKm = dayIncomes.reduce((s, i) => s + (i.km || 0), 0);
+
   const submit = () => {
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) return toast.error("הכנס סכום תקין");
@@ -95,10 +102,25 @@ function IncomeForm() {
         </div>
       )}
 
-      <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">שמירת הכנסה</Button>
+      <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">
+        {dayIncomes.length > 0 ? "הוסף לסכום היום" : "שמירת הכנסה"}
+      </Button>
+
+      {dayIncomes.length > 0 && (
+        <div className="rounded-lg bg-muted/50 p-3 text-center">
+          <div className="text-xs text-muted-foreground">סה״כ מצטבר לתאריך זה ({dayIncomes.length} רשומות)</div>
+          <div className="mt-0.5 text-2xl font-extrabold text-primary">{fmt(dayNet, c)}</div>
+          <div className="text-xs text-muted-foreground">
+            ברוטו {fmt(dayGross, c)}
+            {dayHours > 0 && ` · ${dayHours} שעות · ${fmt(Math.round(dayNet / dayHours), c)} לשעה`}
+            {dayKm > 0 && ` · ${dayKm} ק״מ`}
+          </div>
+        </div>
+      )}
     </CardContent></Card>
   );
 }
+
 
 const expenseCats: ExpenseCategory[] = ["insurance", "license", "maintenance", "parking", "food", "wash", "other"];
 
