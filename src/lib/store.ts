@@ -140,6 +140,14 @@ export function useAppData() {
     update((d) => ({ ...d, expenses: d.expenses.filter((x) => x.id !== id) }));
   }, [update]);
 
+  const updateIncome = useCallback((id: string, patch: Partial<Omit<Income, "id">>) => {
+    update((d) => ({ ...d, incomes: d.incomes.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+  }, [update]);
+
+  const updateExpense = useCallback((id: string, patch: Partial<Omit<Expense, "id">>) => {
+    update((d) => ({ ...d, expenses: d.expenses.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+  }, [update]);
+
   const updateSettings = useCallback((s: Partial<Settings>) => {
     update((d) => ({ ...d, settings: { ...d.settings, ...s } }));
   }, [update]);
@@ -148,7 +156,7 @@ export function useAppData() {
     update((d) => ({ ...d, vehicle: { ...d.vehicle, ...v } }));
   }, [update]);
 
-  return { data, ready, addIncome, addExpense, removeIncome, removeExpense, updateSettings, updateVehicle, update };
+  return { data, ready, addIncome, addExpense, removeIncome, removeExpense, updateIncome, updateExpense, updateSettings, updateVehicle, update };
 }
 
 // ---------- computations ----------

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { useAppData, filterByDate, sumIncomes, sumExpenses, fmt, monthRange, netFromIncome, categoryLabel } from "@/lib/store";
+import { useAppData, filterByDate, sumIncomes, sumExpenses, fmt, monthRange } from "@/lib/store";
+import { RecordsList } from "@/components/RecordsList";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -103,39 +104,13 @@ function CalendarPage() {
         </Card>
 
         {selected && (
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold">{new Date(selected).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}</h3>
-                <div className={cn("font-bold", selectedNet >= 0 ? "text-success" : "text-destructive")}>{fmt(selectedNet, c)}</div>
-              </div>
-              {selectedIncomes.length === 0 && selectedExpenses.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">אין רשומות ביום זה</p>
-              )}
-              {selectedIncomes.length > 0 && (
-                <div className="space-y-2 mb-3">
-                  <div className="text-xs font-semibold text-muted-foreground">הכנסות</div>
-                  {selectedIncomes.map((i) => (
-                    <div key={i.id} className="flex justify-between text-sm bg-muted/40 rounded-md px-3 py-2">
-                      <span>{i.platform} <span className="text-xs text-muted-foreground">· עמלה {i.commissionPct}%</span></span>
-                      <span className="text-success font-semibold">{fmt(netFromIncome(i), c)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {selectedExpenses.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-xs font-semibold text-muted-foreground">הוצאות</div>
-                  {selectedExpenses.map((e) => (
-                    <div key={e.id} className="flex justify-between text-sm bg-muted/40 rounded-md px-3 py-2">
-                      <span>{categoryLabel(e.category)} {e.note && <span className="text-xs text-muted-foreground">· {e.note}</span>}</span>
-                      <span className="text-destructive font-semibold">-{fmt(e.amount, c)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="font-semibold">{new Date(selected).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}</h3>
+              <div className={cn("font-bold", selectedNet >= 0 ? "text-success" : "text-destructive")}>{fmt(selectedNet, c)}</div>
+            </div>
+            <RecordsList incomes={selectedIncomes} expenses={selectedExpenses} />
+          </div>
         )}
       </div>
     </div>

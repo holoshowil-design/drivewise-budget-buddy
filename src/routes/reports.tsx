@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { RecordsList } from "@/components/RecordsList";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
 type Range = "today" | "week" | "month" | "all";
@@ -135,8 +136,12 @@ function Reports() {
             </CardContent>
           </Card>
         )}
-
+        <div>
+          <h3 className="mb-2 px-1 text-sm font-semibold">רשומות בטווח ({incomes.length + expenses.length})</h3>
+          <RecordsList incomes={incomes} expenses={expenses} />
+        </div>
       </div>
+
     </div>
   );
 }
