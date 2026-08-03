@@ -53,6 +53,7 @@ export type Settings = {
   workDaysPerMonth: number;
   defaultCommissionPct: number;
   currency: string;
+  fuelPrice: number; // ₪ per liter (or per kWh for electric)
 };
 
 export type AppData = {
@@ -81,6 +82,7 @@ const defaultData: AppData = {
     workDaysPerMonth: 22,
     defaultCommissionPct: 25,
     currency: "₪",
+    fuelPrice: 7.4,
   },
 };
 
@@ -223,4 +225,21 @@ export function monthRange(year: number, month: number) {
     return new Date(d.getTime() - tz * 60000).toISOString().slice(0, 10);
   };
   return { from: iso(from), to: iso(to) };
+}
+
+// ---------- km & energy estimation ----------
+export function sumKm(list: Income[]) {
+  return list.reduce((s, i) => s + (i.km || 0), 0);
+}
+
+/** Estimated energy cost for a given distance, based on vehicle consumption and fuel price. */
+export function estimateEnergyCost(km: number, vehicle: Vehicle, settings: Settings) {
+  const cons = vehicle.consumption > 0 ? vehicle.consumption : 1;
+  const units = km / cons; // liters or kWh
+  const price = settings.fuelPrice || 0;
+  return { units, cost: units * price, costPerKm: price / cons };
+}
+
+export function energyUnitLabel(v: Vehicle) {
+  return v.type === "electric" ? "kWh" : "ליטר";
 }

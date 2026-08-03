@@ -28,6 +28,7 @@ function SettingsPage() {
       fixedMonthlyExpenses: Number(s.fixedMonthlyExpenses) || 0,
       workDaysPerMonth: Number(s.workDaysPerMonth) || 1,
       defaultCommissionPct: Number(s.defaultCommissionPct) || 0,
+      fuelPrice: Number(s.fuelPrice) || 0,
       currency: s.currency || "₪",
     });
     toast.success("הגדרות נשמרו");
@@ -91,9 +92,15 @@ function SettingsPage() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field label={v.type === "electric" ? "צריכה (ק״מ ל-kWh)" : "צריכה (ק״מ לליטר)"}>
-              <Input inputMode="decimal" value={v.consumption} onChange={(e) => setV({ ...v, consumption: Number(e.target.value) })} />
-            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={v.type === "electric" ? "צריכה (ק״מ ל-kWh)" : "צריכה (ק״מ לליטר)"}>
+                <Input inputMode="decimal" value={v.consumption} onChange={(e) => setV({ ...v, consumption: Number(e.target.value) })} />
+              </Field>
+              <Field label={v.type === "electric" ? "מחיר kWh (₪)" : "מחיר ליטר (₪)"}>
+                <Input inputMode="decimal" value={s.fuelPrice} onChange={(e) => setS({ ...s, fuelPrice: Number(e.target.value) })} onBlur={saveSettings} />
+              </Field>
+            </div>
+            <p className="text-xs text-muted-foreground">לפי הצריכה והמחיר מחושבת עלות דלק משוערת לכל ק״מ שנסעת.</p>
             <Button onClick={saveVehicle} className="w-full">שמור רכב</Button>
           </CardContent>
         </Card>
