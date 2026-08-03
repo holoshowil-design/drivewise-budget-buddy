@@ -28,6 +28,7 @@ function SettingsPage() {
       fixedMonthlyExpenses: Number(s.fixedMonthlyExpenses) || 0,
       workDaysPerMonth: Number(s.workDaysPerMonth) || 1,
       defaultCommissionPct: Number(s.defaultCommissionPct) || 0,
+      fuelPrice: Number(s.fuelPrice) || 0,
       currency: s.currency || "₪",
     });
     toast.success("הגדרות נשמרו");

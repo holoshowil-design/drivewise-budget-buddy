@@ -3,6 +3,7 @@ import { useAppData, todayISO, filterByDate, filterByRange, sumIncomes, sumExpen
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { InsightsCard } from "@/components/InsightsCard";
+import { KmCostCard } from "@/components/KmCostCard";
 
 import { TrendingUp, TrendingDown, Wallet, Target, Zap, Clock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -91,6 +92,8 @@ function Dashboard() {
           <StatCard icon={<Target className="h-4 w-4" />} label="נקודת איזון יומית" value={fmt(breakeven, c)} />
           <StatCard icon={<Zap className="h-4 w-4" />} label="תחזית חודשית" value={fmt(forecast, c)} />
         </div>
+
+        <KmCostCard data={data} />
 
         <InsightsCard data={data} />
 
