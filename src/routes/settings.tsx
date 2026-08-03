@@ -22,8 +22,29 @@ function SettingsPage() {
   const { data, ready, updateSettings, updateVehicle, update } = useAppData();
   const [s, setS] = useState(data.settings);
   const [v, setV] = useState(data.vehicle);
+  const [loadingPrice, setLoadingPrice] = useState(false);
+  const fetchPrice = useServerFn(getOnlineFuelPrice);
 
   useEffect(() => { if (ready) { setS(data.settings); setV(data.vehicle); } }, [ready, data.settings, data.vehicle]);
+
+  const syncFuelPrice = async () => {
+    setLoadingPrice(true);
+    try {
+      const res = await fetchPrice();
+      if (res.ok) {
+        setS((prev) => ({ ...prev, fuelPrice: res.price }));
+        updateSettings({ fuelPrice: res.price });
+        toast.success(`מחיר עודכן: ₪${res.price} לליטר`);
+      } else {
+        toast.error(res.error || "לא הצלחתי לעדכן מחיר");
+      }
+    } catch {
+      toast.error("לא הצלחתי לעדכן מחיר");
+    } finally {
+      setLoadingPrice(false);
+    }
+  };
+
 
   const saveSettings = () => {
     updateSettings({
