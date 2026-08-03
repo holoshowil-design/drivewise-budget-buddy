@@ -42,7 +42,10 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
           {rows.map((r) => {
             const isIncome = r.type === "income";
             const amount = isIncome ? netFromIncome(r.item as Income) : (r.item as Expense).amount;
+            const km = isIncome ? (r.item as Income).km || 0 : 0;
+            const energy = km > 0 ? estimateEnergyCost(km, data.vehicle, data.settings).cost : 0;
             const title = isIncome ? "הכנסה" : categoryLabel((r.item as Expense).category);
+
             return (
               <div key={r.item.id} className="flex items-center gap-3 p-3">
                 <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isIncome ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
