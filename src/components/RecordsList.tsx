@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAppData, categoryLabel, netFromIncome, fmt, type Income, type Expense, type ExpenseCategory } from "@/lib/store";
+import { useAppData, categoryLabel, netFromIncome, fmt, estimateEnergyCost, type Income, type Expense, type ExpenseCategory } from "@/lib/store";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
