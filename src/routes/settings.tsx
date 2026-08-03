@@ -100,7 +100,14 @@ function SettingsPage() {
                 <Input inputMode="decimal" value={s.fuelPrice} onChange={(e) => setS({ ...s, fuelPrice: Number(e.target.value) })} onBlur={saveSettings} />
               </Field>
             </div>
-            <p className="text-xs text-muted-foreground">לפי הצריכה והמחיר מחושבת עלות דלק משוערת לכל ק״מ שנסעת.</p>
+            {v.type !== "electric" && (
+              <Button variant="outline" className="w-full" disabled={loadingPrice} onClick={syncFuelPrice}>
+                <RefreshCw className={`h-4 w-4 ml-1 ${loadingPrice ? "animate-spin" : ""}`} />
+                {loadingPrice ? "מעדכן..." : "עדכן מחיר דלק אונליין (95)"}
+              </Button>
+            )}
+            <p className="text-xs text-muted-foreground">לפי הצריכה והמחיר מחושבת עלות דלק משוערת לכל ק״מ שנסעת. המחיר האונליין הוא המחיר המרבי לצרכן בשירות עצמי, מתעדכן אחת לחודש.</p>
+
             <Button onClick={saveVehicle} className="w-full">שמור רכב</Button>
           </CardContent>
         </Card>
