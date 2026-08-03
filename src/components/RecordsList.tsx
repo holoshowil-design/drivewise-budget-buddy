@@ -49,12 +49,21 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
                   {isIncome ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium">{title}</div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium">{title}</span>
+                    {km > 0 && (
+                      <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        {km.toLocaleString("he-IL")} ק״מ
+                      </span>
+                    )}
+                  </div>
                   <div className="truncate text-xs text-muted-foreground">
                     {new Date(r.item.date).toLocaleDateString("he-IL", { day: "numeric", month: "short" })}
+                    {km > 0 ? ` · עלות אנרגיה משוערת ${fmt(energy, c)}` : ""}
                     {r.item.note ? ` · ${r.item.note}` : ""}
                   </div>
                 </div>
+
                 <div className={`text-sm font-bold ${isIncome ? "text-success" : "text-destructive"}`}>
                   {isIncome ? "+" : "−"}{fmt(amount, c)}
                 </div>
