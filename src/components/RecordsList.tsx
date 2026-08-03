@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAppData, categoryLabel, netFromIncome, fmt, type Income, type Expense, type ExpenseCategory } from "@/lib/store";
+import { useAppData, categoryLabel, netFromIncome, fmt, estimateEnergyCost, type Income, type Expense, type ExpenseCategory } from "@/lib/store";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,19 +42,31 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
           {rows.map((r) => {
             const isIncome = r.type === "income";
             const amount = isIncome ? netFromIncome(r.item as Income) : (r.item as Expense).amount;
+            const km = isIncome ? (r.item as Income).km || 0 : 0;
+            const energy = km > 0 ? estimateEnergyCost(km, data.vehicle, data.settings).cost : 0;
             const title = isIncome ? "הכנסה" : categoryLabel((r.item as Expense).category);
+
             return (
               <div key={r.item.id} className="flex items-center gap-3 p-3">
                 <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isIncome ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                   {isIncome ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium">{title}</div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium">{title}</span>
+                    {km > 0 && (
+                      <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        {km.toLocaleString("he-IL")} ק״מ
+                      </span>
+                    )}
+                  </div>
                   <div className="truncate text-xs text-muted-foreground">
                     {new Date(r.item.date).toLocaleDateString("he-IL", { day: "numeric", month: "short" })}
+                    {km > 0 ? ` · עלות אנרגיה משוערת ${fmt(energy, c)}` : ""}
                     {r.item.note ? ` · ${r.item.note}` : ""}
                   </div>
                 </div>
+
                 <div className={`text-sm font-bold ${isIncome ? "text-success" : "text-destructive"}`}>
                   {isIncome ? "+" : "−"}{fmt(amount, c)}
                 </div>

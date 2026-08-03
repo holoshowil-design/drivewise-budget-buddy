@@ -8,7 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Trash2, RefreshCw } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { getOnlineFuelPrice } from "@/lib/fuel-price.functions";
+
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "הגדרות - דרייבר" }, { name: "description", content: "הגדרות, יעדים ופרטי רכב." }] }),
@@ -19,8 +22,29 @@ function SettingsPage() {
   const { data, ready, updateSettings, updateVehicle, update } = useAppData();
   const [s, setS] = useState(data.settings);
   const [v, setV] = useState(data.vehicle);
+  const [loadingPrice, setLoadingPrice] = useState(false);
+  const fetchPrice = useServerFn(getOnlineFuelPrice);
 
   useEffect(() => { if (ready) { setS(data.settings); setV(data.vehicle); } }, [ready, data.settings, data.vehicle]);
+
+  const syncFuelPrice = async () => {
+    setLoadingPrice(true);
+    try {
+      const res = await fetchPrice();
+      if (res.ok) {
+        setS((prev) => ({ ...prev, fuelPrice: res.price }));
+        updateSettings({ fuelPrice: res.price });
+        toast.success(`מחיר עודכן: ₪${res.price} לליטר`);
+      } else {
+        toast.error(res.error || "לא הצלחתי לעדכן מחיר");
+      }
+    } catch {
+      toast.error("לא הצלחתי לעדכן מחיר");
+    } finally {
+      setLoadingPrice(false);
+    }
+  };
+
 
   const saveSettings = () => {
     updateSettings({
@@ -100,7 +124,14 @@ function SettingsPage() {
                 <Input inputMode="decimal" value={s.fuelPrice} onChange={(e) => setS({ ...s, fuelPrice: Number(e.target.value) })} onBlur={saveSettings} />
               </Field>
             </div>
-            <p className="text-xs text-muted-foreground">לפי הצריכה והמחיר מחושבת עלות דלק משוערת לכל ק״מ שנסעת.</p>
+            {v.type !== "electric" && (
+              <Button variant="outline" className="w-full" disabled={loadingPrice} onClick={syncFuelPrice}>
+                <RefreshCw className={`h-4 w-4 ml-1 ${loadingPrice ? "animate-spin" : ""}`} />
+                {loadingPrice ? "מעדכן..." : "עדכן מחיר דלק אונליין (95)"}
+              </Button>
+            )}
+            <p className="text-xs text-muted-foreground">לפי הצריכה והמחיר מחושבת עלות דלק משוערת לכל ק״מ שנסעת. המחיר האונליין הוא המחיר המרבי לצרכן בשירות עצמי, מתעדכן אחת לחודש.</p>
+
             <Button onClick={saveVehicle} className="w-full">שמור רכב</Button>
           </CardContent>
         </Card>
