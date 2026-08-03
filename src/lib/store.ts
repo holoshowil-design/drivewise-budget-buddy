@@ -53,6 +53,7 @@ export type Settings = {
   workDaysPerMonth: number;
   defaultCommissionPct: number;
   currency: string;
+  fuelPrice: number; // ₪ per liter (or per kWh for electric)
 };
 
 export type AppData = {
@@ -81,6 +82,7 @@ const defaultData: AppData = {
     workDaysPerMonth: 22,
     defaultCommissionPct: 25,
     currency: "₪",
+    fuelPrice: 7.4,
   },
 };
 
