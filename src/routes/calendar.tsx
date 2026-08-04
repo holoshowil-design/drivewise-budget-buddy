@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { useAppData, filterByDate, sumIncomes, sumExpenses, fmt, monthRange } from "@/lib/store";
+import { useAppData, filterByDate, sumIncomes, totalCosts, netProfit, fmt, monthRange } from "@/lib/store";
 import { RecordsList } from "@/components/RecordsList";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,11 +49,11 @@ function CalendarPage() {
   const { from, to } = monthRange(year, month);
   const mIncomes = data.incomes.filter((i) => i.date >= from && i.date <= to);
   const mExpenses = data.expenses.filter((e) => e.date >= from && e.date <= to);
-  const monthNet = sumIncomes(mIncomes) - sumExpenses(mExpenses);
+  const monthNet = netProfit(mIncomes, mExpenses, data.vehicle, data.settings);
 
   const selectedIncomes = selected ? filterByDate(data.incomes, selected) : [];
   const selectedExpenses = selected ? filterByDate(data.expenses, selected) : [];
-  const selectedNet = sumIncomes(selectedIncomes) - sumExpenses(selectedExpenses);
+  const selectedNet = netProfit(selectedIncomes, selectedExpenses, data.vehicle, data.settings);
 
   return (
     <div className="mx-auto max-w-xl">
@@ -73,8 +73,10 @@ function CalendarPage() {
             <div className="grid grid-cols-7 gap-1">
               {days.map((cell, idx) => {
                 if (!cell.iso) return <div key={idx} />;
-                const inc = sumIncomes(filterByDate(data.incomes, cell.iso));
-                const exp = sumExpenses(filterByDate(data.expenses, cell.iso));
+                const dayIncomes = filterByDate(data.incomes, cell.iso);
+                const dayExpenses = filterByDate(data.expenses, cell.iso);
+                const inc = sumIncomes(dayIncomes);
+                const exp = totalCosts(dayIncomes, dayExpenses, data.vehicle, data.settings);
                 const net = Math.round(inc - exp);
                 const hasData = inc > 0 || exp > 0;
                 let tone = "bg-muted/30 text-muted-foreground";
