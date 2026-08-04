@@ -1,4 +1,4 @@
-import { filterByRange, sumIncomes, netProfit, fmt, type AppData } from "./store";
+import { filterByRange, netProfit, fmt, type AppData } from "./store";
 
 export type Insight = {
   id: string;
