@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { useAppData, filterByRange, sumIncomes, sumExpenses, fmt, categoryLabel, netFromIncome, monthRange, type ExpenseCategory } from "@/lib/store";
+import { useAppData, filterByRange, sumIncomes, totalCosts, fuelCostFor, fmt, categoryLabel, netFromIncome, monthRange, type ExpenseCategory } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -43,7 +43,7 @@ function Reports() {
   const incomes = filterByRange(data.incomes, from, to);
   const expenses = filterByRange(data.expenses, from, to);
   const incomeTotal = sumIncomes(incomes);
-  const expenseTotal = sumExpenses(expenses);
+  const expenseTotal = totalCosts(incomes, expenses, data.vehicle, data.settings);
   const net = incomeTotal - expenseTotal;
   const daysWorked = new Set(incomes.map((i) => i.date)).size;
   const totalHours = incomes.reduce((s, i) => s + (i.hours || 0), 0);
@@ -54,7 +54,12 @@ function Reports() {
 
   // category breakdown
   const byCategory = new Map<ExpenseCategory, number>();
-  for (const e of expenses) byCategory.set(e.category, (byCategory.get(e.category) || 0) + e.amount);
+  for (const e of expenses) {
+    if (e.category === "fuel") continue;
+    byCategory.set(e.category, (byCategory.get(e.category) || 0) + e.amount);
+  }
+  const fuelCharged = fuelCostFor(incomes, expenses, data.vehicle, data.settings).charged;
+  if (fuelCharged > 0) byCategory.set("fuel", fuelCharged);
   const pieData = Array.from(byCategory.entries()).map(([k, v]) => ({ name: categoryLabel(k), value: Math.round(v) }));
   const colors = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--primary)", "var(--warning)", "var(--destructive)"];
 

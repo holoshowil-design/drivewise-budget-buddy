@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useAppData, todayISO, filterByDate, filterByRange, sumIncomes, sumExpenses, fmt, monthRange } from "@/lib/store";
+import { useAppData, todayISO, filterByDate, filterByRange, sumIncomes, fmt, monthRange, totalCosts, netProfit } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { InsightsCard } from "@/components/InsightsCard";
@@ -30,7 +30,7 @@ function Dashboard() {
   const todayIncomes = filterByDate(data.incomes, today);
   const todayExpenses = filterByDate(data.expenses, today);
   const incomeToday = sumIncomes(todayIncomes);
-  const expenseToday = sumExpenses(todayExpenses);
+  const expenseToday = totalCosts(todayIncomes, todayExpenses, data.vehicle, settings);
   const netToday = incomeToday - expenseToday;
   const profitabilityPct = incomeToday > 0 ? Math.round((netToday / incomeToday) * 100) : 0;
   const goalPct = settings.dailyGoal > 0 ? Math.min(100, Math.round((netToday / settings.dailyGoal) * 100)) : 0;
@@ -44,7 +44,7 @@ function Dashboard() {
   const monthIncomes = filterByRange(data.incomes, from, to);
   const monthExpenses = filterByRange(data.expenses, from, to);
   const monthIncome = sumIncomes(monthIncomes);
-  const monthExpense = sumExpenses(monthExpenses);
+  const monthExpense = totalCosts(monthIncomes, monthExpenses, data.vehicle, settings);
   const monthNet = monthIncome - monthExpense;
   const daysWorked = new Set(monthIncomes.map((i) => i.date)).size;
   const dayOfMonth = now.getDate();
@@ -56,9 +56,8 @@ function Dashboard() {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-    const inc = sumIncomes(filterByDate(data.incomes, iso));
-    const exp = sumExpenses(filterByDate(data.expenses, iso));
-    weekData.push({ day: d.toLocaleDateString("he-IL", { weekday: "short" }), net: Math.round(inc - exp) });
+    const net = netProfit(filterByDate(data.incomes, iso), filterByDate(data.expenses, iso), data.vehicle, settings);
+    weekData.push({ day: d.toLocaleDateString("he-IL", { weekday: "short" }), net: Math.round(net) });
   }
 
   return (
@@ -88,7 +87,7 @@ function Dashboard() {
 
         <div className="grid grid-cols-2 gap-3">
           <StatCard icon={<TrendingUp className="h-4 w-4" />} label="הכנסות היום" value={fmt(incomeToday, c)} tone="success" />
-          <StatCard icon={<TrendingDown className="h-4 w-4" />} label="הוצאות היום" value={fmt(expenseToday, c)} tone="destructive" />
+          <StatCard icon={<TrendingDown className="h-4 w-4" />} label="הוצאות היום (כולל דלק)" value={fmt(expenseToday, c)} tone="destructive" />
           <StatCard icon={<Target className="h-4 w-4" />} label="נקודת איזון יומית" value={fmt(breakeven, c)} />
           <StatCard icon={<Zap className="h-4 w-4" />} label="תחזית חודשית" value={fmt(forecast, c)} />
         </div>
