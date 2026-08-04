@@ -243,3 +243,27 @@ export function estimateEnergyCost(km: number, vehicle: Vehicle, settings: Setti
 export function energyUnitLabel(v: Vehicle) {
   return v.type === "electric" ? "kWh" : "ליטר";
 }
+
+/**
+ * Fuel cost that should be charged for a period.
+ * Fuel is treated as a certain cost: we take the higher of the actual refuels
+ * logged and the estimated energy cost derived from the km driven,
+ * so it is never counted twice and never ignored.
+ */
+export function fuelCostFor(incomes: Income[], expenses: Expense[], vehicle: Vehicle, settings: Settings) {
+  const estimated = estimateEnergyCost(sumKm(incomes), vehicle, settings).cost;
+  const actual = expenses.filter((e) => e.category === "fuel").reduce((s, e) => s + e.amount, 0);
+  return { estimated, actual, charged: Math.max(estimated, actual) };
+}
+
+/** Total costs for a period: non-fuel expenses + certain fuel cost. */
+export function totalCosts(incomes: Income[], expenses: Expense[], vehicle: Vehicle, settings: Settings) {
+  const nonFuel = expenses.filter((e) => e.category !== "fuel").reduce((s, e) => s + e.amount, 0);
+  return nonFuel + fuelCostFor(incomes, expenses, vehicle, settings).charged;
+}
+
+/** Net profit: income after commission/tips, minus expenses including certain fuel cost. */
+export function netProfit(incomes: Income[], expenses: Expense[], vehicle: Vehicle, settings: Settings) {
+  return sumIncomes(incomes) - totalCosts(incomes, expenses, vehicle, settings);
+}
+
