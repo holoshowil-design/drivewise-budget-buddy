@@ -30,7 +30,7 @@ export async function pushCloudData(userId: string, data: AppData) {
   const { error } = await supabase
     .from("app_state")
     .upsert(
-      { user_id: userId, data: data as unknown as Record<string, unknown>, updated_at: new Date().toISOString() },
+      { user_id: userId, data: data as never, updated_at: new Date().toISOString() },
       { onConflict: "user_id" },
     );
   if (error) throw error;
