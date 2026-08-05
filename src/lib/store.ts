@@ -86,7 +86,7 @@ const defaultData: AppData = {
   },
 };
 
-function load(): AppData {
+export function load(): AppData {
   if (typeof window === "undefined") return defaultData;
   try {
     const raw = localStorage.getItem(KEY);
@@ -98,10 +98,32 @@ function load(): AppData {
   }
 }
 
-function save(data: AppData) {
+// ---------- cloud sync ----------
+let currentUserId: string | null = null;
+let pushTimer: ReturnType<typeof setTimeout> | undefined;
+
+export function setSyncUser(id: string | null) {
+  currentUserId = id;
+}
+
+export function getSyncUser() {
+  return currentUserId;
+}
+
+function scheduleCloudPush(data: AppData) {
+  if (!currentUserId) return;
+  const uid = currentUserId;
+  if (pushTimer) clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => {
+    import("./cloud").then(({ pushCloudData }) => pushCloudData(uid, data).catch(() => {}));
+  }, 600);
+}
+
+export function save(data: AppData) {
   if (typeof window === "undefined") return;
   localStorage.setItem(KEY, JSON.stringify(data));
   window.dispatchEvent(new Event("driver-data-changed"));
+  scheduleCloudPush(data);
 }
 
 export function useAppData() {
