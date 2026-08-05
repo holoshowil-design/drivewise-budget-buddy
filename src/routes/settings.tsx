@@ -8,7 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Trash2, RefreshCw } from "lucide-react";
+import { Trash2, RefreshCw, CloudCheck, LogOut, LogIn } from "lucide-react";
+import { useAuthUser } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { getOnlineFuelPrice } from "@/lib/fuel-price.functions";
 
