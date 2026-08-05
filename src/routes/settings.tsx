@@ -8,7 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Trash2, RefreshCw } from "lucide-react";
+import { Trash2, RefreshCw, CloudCheck, LogOut, LogIn } from "lucide-react";
+import { useAuthUser } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { getOnlineFuelPrice } from "@/lib/fuel-price.functions";
 
@@ -76,6 +78,8 @@ function SettingsPage() {
       <PageHeader title="הגדרות" subtitle="יעדים, רכב, ונתונים" />
 
       <div className="px-4 space-y-4">
+        <AccountCard />
+
         <Card>
           <CardContent className="p-4 space-y-3">
             <h3 className="font-semibold">יעדים ותקציב</h3>
@@ -149,6 +153,53 @@ function SettingsPage() {
       </div>
     </div>
   );
+}
+
+function AccountCard() {
+  const { user, loading } = useAuthUser();
+  if (loading) return null;
+  return (
+    <Card>
+      <CardContent className="p-4 space-y-3">
+        <h3 className="font-semibold">חשבון וגיבוי בענן</h3>
+        {user ? (
+          <>
+            <div className="flex items-center gap-2 text-sm">
+              <CloudCheck className="h-4 w-4 text-primary" />
+              <span className="text-muted-foreground">מחובר כ־</span>
+              <span dir="ltr" className="font-medium">{user.email}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">כל שינוי נשמר אוטומטית בענן וזמין בכל מכשיר שתתחבר בו.</p>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                toast.success("התנתקת");
+              }}
+            >
+              <LogOut className="h-4 w-4 ml-1" />
+              התנתק
+            </Button>
+          </>
+        ) : (
+          <>
+            <p className="text-xs text-muted-foreground">
+              כרגע הנתונים שמורים רק בטלפון הזה. התחבר כדי לגבות אותם בענן ולראות אותם בכל מכשיר.
+            </p>
+            <Button className="w-full" onClick={() => navigateToAuth()}>
+              <LogIn className="h-4 w-4 ml-1" />
+              התחבר / הרשמה
+            </Button>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function navigateToAuth() {
+  window.location.href = "/auth";
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
