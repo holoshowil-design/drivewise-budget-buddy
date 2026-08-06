@@ -60,9 +60,13 @@ function Dashboard() {
     weekData.push({ day: d.toLocaleDateString("he-IL", { weekday: "short" }), net: Math.round(net) });
   }
 
+  const hour = now.getHours();
+  const greeting = hour < 5 ? "לילה טוב" : hour < 12 ? "בוקר טוב" : hour < 17 ? "צהריים טובים" : hour < 21 ? "ערב טוב" : "לילה טוב";
+  const hasWeekData = weekData.some((d) => d.net !== 0);
+
   return (
     <div className="mx-auto max-w-xl">
-      <PageHeader title="היי, בוקר טוב" subtitle={new Date().toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })} />
+      <PageHeader title={`היי, ${greeting}`} subtitle={new Date().toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })} />
 
       <div className="px-4 space-y-4">
         {/* Hero net card */}
@@ -71,15 +75,15 @@ function Dashboard() {
             <div className="flex items-center gap-2 text-xs font-semibold opacity-90">
               <Wallet className="h-4 w-4" /> רווח נקי היום
             </div>
-            <div className="mt-2 text-5xl font-extrabold tracking-tight">{fmt(netToday, c)}</div>
-            <div className="mt-1.5 text-sm opacity-95">רווחיות {profitabilityPct}% · {todayIncomes.length} נסיעות</div>
+            <div className="num mt-2 text-[2.75rem] font-extrabold leading-none tracking-tight">{fmt(netToday, c)}</div>
+            <div className="mt-2 text-sm opacity-95">רווחיות {profitabilityPct}% · {todayIncomes.length} רשומות</div>
             <div className="mt-4">
               <div className="flex justify-between text-xs opacity-90 mb-1.5">
                 <span>יעד יומי {fmt(settings.dailyGoal, c)}</span>
-                <span>{goalPct}%</span>
+                <span className="num font-semibold">{goalPct}%</span>
               </div>
               <div className="h-2 rounded-full bg-black/20 overflow-hidden">
-                <div className="h-full bg-white rounded-full transition-all" style={{ width: `${goalPct}%` }} />
+                <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${goalPct}%` }} />
               </div>
             </div>
           </CardContent>
@@ -95,6 +99,8 @@ function Dashboard() {
         <KmCostCard data={data} />
 
         <InsightsCard data={data} />
+
+
 
 
 
