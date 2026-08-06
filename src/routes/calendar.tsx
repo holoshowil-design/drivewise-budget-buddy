@@ -18,9 +18,10 @@ const weekDays = ["א", "ב", "ג", "ד", "ה", "ו", "ש"];
 function CalendarPage() {
   const { data, ready } = useAppData();
   const now = new Date();
+  const todayIso = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(todayIso);
 
   const days = useMemo(() => {
     const first = new Date(year, month, 1);
