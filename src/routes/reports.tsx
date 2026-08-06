@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { useAppData, filterByRange, sumIncomes, totalCosts, fuelCostFor, fmt, categoryLabel, netFromIncome, monthRange, type ExpenseCategory } from "@/lib/store";
+import { useAppData, filterByRange, sumIncomes, totalCosts, fuelCostFor, fmt, fmtDateShort, categoryLabel, netFromIncome, monthRange, type ExpenseCategory } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -85,7 +85,7 @@ function Reports() {
     <div className="mx-auto max-w-xl">
       <PageHeader
         title="דוחות"
-        subtitle={`${from} → ${to}`}
+        subtitle={range === "all" ? "כל הרשומות" : `${fmtDateShort(from)} – ${fmtDateShort(to)}`}
         action={<Button size="sm" variant="outline" onClick={exportCSV}><Download className="h-4 w-4 ml-1" />ייצוא</Button>}
       />
 
@@ -155,9 +155,9 @@ function Stat({ label, value, tone, accent }: { label: string; value: string; to
   const color = accent ? "text-primary" : tone === "success" ? "text-success" : tone === "destructive" ? "text-destructive" : "text-foreground";
   return (
     <Card>
-      <CardContent className="p-3">
+      <CardContent className="p-3.5">
         <div className="text-[11px] text-muted-foreground">{label}</div>
-        <div className={`text-lg font-bold ${color}`}>{value}</div>
+        <div className={`num mt-0.5 text-lg font-bold tracking-tight ${color}`}>{value}</div>
       </CardContent>
     </Card>
   );
