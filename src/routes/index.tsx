@@ -103,25 +103,24 @@ function Dashboard() {
 
 
 
-
         {/* Quick actions */}
         <div className="grid grid-cols-3 gap-2">
           <Link to={"/add" as never} search={{ tab: "income" } as never}>
-            <Button variant="secondary" className="w-full h-auto py-3 flex-col gap-1">
-              <Plus className="h-4 w-4" />
-              <span className="text-xs">הכנסה</span>
+            <Button variant="secondary" className="w-full h-auto py-3 flex-col gap-1 rounded-xl">
+              <Plus className="h-4 w-4 text-success" />
+              <span className="text-xs font-medium">הכנסה</span>
             </Button>
           </Link>
           <Link to={"/add" as never} search={{ tab: "expense" } as never}>
-            <Button variant="secondary" className="w-full h-auto py-3 flex-col gap-1">
-              <Plus className="h-4 w-4" />
-              <span className="text-xs">הוצאה</span>
+            <Button variant="secondary" className="w-full h-auto py-3 flex-col gap-1 rounded-xl">
+              <Plus className="h-4 w-4 text-destructive" />
+              <span className="text-xs font-medium">הוצאה</span>
             </Button>
           </Link>
           <Link to={"/add" as never} search={{ tab: "fuel" } as never}>
-            <Button variant="secondary" className="w-full h-auto py-3 flex-col gap-1">
-              <Zap className="h-4 w-4" />
-              <span className="text-xs">תדלוק</span>
+            <Button variant="secondary" className="w-full h-auto py-3 flex-col gap-1 rounded-xl">
+              <Zap className="h-4 w-4 text-warning" />
+              <span className="text-xs font-medium">תדלוק</span>
             </Button>
           </Link>
         </div>
@@ -133,22 +132,30 @@ function Dashboard() {
               <h3 className="text-sm font-semibold">7 ימים אחרונים</h3>
               <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />רווח נקי יומי</span>
             </div>
-            <div className="h-40">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weekData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                  <Tooltip
-                    cursor={{ fill: "var(--muted)" }}
-                    contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
-                    formatter={(v: number) => [fmt(v, c), "נטו"]}
-                  />
-                  <Bar dataKey="net" fill="var(--primary)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {hasWeekData ? (
+              <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={weekData} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                    <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      cursor={{ fill: "var(--muted)" }}
+                      contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 12, boxShadow: "var(--shadow-card)" }}
+                      formatter={(v: number) => [fmt(v, c), "נטו"]}
+                    />
+                    <Bar dataKey="net" fill="var(--primary)" radius={[6, 6, 0, 0]} maxBarSize={34} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex h-28 flex-col items-center justify-center gap-1 rounded-xl bg-muted/40 text-center">
+                <p className="text-sm font-medium">עוד אין נתונים לשבוע הזה</p>
+                <p className="text-xs text-muted-foreground">הוסף הכנסה ראשונה והגרף יתמלא</p>
+              </div>
+            )}
           </CardContent>
         </Card>
+
 
         {/* Month summary */}
         <Card>
@@ -171,12 +178,12 @@ function Dashboard() {
 }
 
 function StatCard({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string; tone?: "success" | "destructive" }) {
-  const color = tone === "success" ? "text-success" : tone === "destructive" ? "text-destructive" : "text-foreground";
+  const color = tone === "success" ? "text-success" : tone === "destructive" ? "text-destructive" : "text-muted-foreground";
   return (
-    <Card>
-      <CardContent className="p-3">
-        <div className={`flex items-center gap-1.5 text-xs ${color}`}>{icon}<span className="text-muted-foreground">{label}</span></div>
-        <div className="mt-1 text-xl font-bold tracking-tight">{value}</div>
+    <Card className="transition-shadow hover:shadow-md">
+      <CardContent className="p-3.5">
+        <div className={`flex items-center gap-1.5 text-xs ${color}`}>{icon}<span className="text-muted-foreground leading-tight">{label}</span></div>
+        <div className="num mt-1.5 text-xl font-bold tracking-tight">{value}</div>
       </CardContent>
     </Card>
   );
@@ -186,7 +193,7 @@ function MiniStat({ label, value, accent }: { label: string; value: string; acce
   return (
     <div>
       <div className="text-[11px] text-muted-foreground">{label}</div>
-      <div className={`text-base font-semibold ${accent ? "text-primary" : ""}`}>{value}</div>
+      <div className={`num text-base font-semibold ${accent ? "text-primary" : ""}`}>{value}</div>
     </div>
   );
 }
