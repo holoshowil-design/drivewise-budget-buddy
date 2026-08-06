@@ -84,7 +84,7 @@ function IncomeForm() {
   return (
     <Card className="mt-4"><CardContent className="p-4 space-y-3">
       <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
-      <Field label="סכום ברוטו (₪)"><Input className="h-12 text-lg font-semibold" inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" /></Field>
+      <Field label="סכום ברוטו ₪"><Input className="h-13 text-xl font-bold" style={{ height: "3.25rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" /></Field>
       <div className="grid grid-cols-3 gap-3">
         <Field label="עמלה %"><Input inputMode="decimal" value={form.commissionPct} onChange={(e) => setForm({ ...form, commissionPct: e.target.value })} /></Field>
         <Field label="שעות"><Input inputMode="decimal" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} placeholder="0" /></Field>
@@ -97,7 +97,7 @@ function IncomeForm() {
       </button>
       {showMore && (
         <div className="space-y-3 pt-1">
-          <Field label="תשר (₪)"><Input inputMode="decimal" value={form.tip} onChange={(e) => setForm({ ...form, tip: e.target.value })} placeholder="0" /></Field>
+          <Field label="תשר ₪"><Input inputMode="decimal" value={form.tip} onChange={(e) => setForm({ ...form, tip: e.target.value })} placeholder="0" /></Field>
           <Field label="הערה"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
         </div>
       )}
@@ -107,9 +107,9 @@ function IncomeForm() {
       </Button>
 
       {dayIncomes.length > 0 && (
-        <div className="rounded-lg bg-muted/50 p-3 text-center">
+        <div className="rounded-xl border border-primary/15 bg-primary/5 p-3 text-center">
           <div className="text-xs text-muted-foreground">סה״כ מצטבר לתאריך זה ({dayIncomes.length} רשומות)</div>
-          <div className="mt-0.5 text-2xl font-extrabold text-primary">{fmt(dayNet, c)}</div>
+          <div className="num mt-0.5 text-2xl font-extrabold text-primary">{fmt(dayNet, c)}</div>
           <div className="text-xs text-muted-foreground">
             ברוטו {fmt(dayGross, c)}
             {dayHours > 0 && ` · ${dayHours} שעות · ${fmt(Math.round(dayNet / dayHours), c)} לשעה`}
@@ -149,7 +149,7 @@ function ExpenseForm() {
           </SelectContent>
         </Select>
       </Field>
-      <Field label="סכום (₪)"><Input className="h-12 text-lg font-semibold" inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" /></Field>
+      <Field label="סכום ₪"><Input className="text-xl font-bold" style={{ height: "3.25rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" /></Field>
       <Field label="הערה (אופציונלי)"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
       <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">שמירת הוצאה</Button>
     </CardContent></Card>
@@ -181,7 +181,7 @@ function FuelForm() {
     <Card className="mt-4"><CardContent className="p-4 space-y-3">
       <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
       <Field label={label}>
-        <Input className="h-14 text-2xl font-bold text-center" inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="₪ 0" />
+        <Input className="text-2xl font-bold text-center" style={{ height: "3.75rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" />
       </Field>
       <Field label="הערה (אופציונלי)"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
       <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">שמירה</Button>

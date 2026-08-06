@@ -64,11 +64,11 @@ function CalendarPage() {
         <Card>
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-3">
-              <Button variant="ghost" size="icon" onClick={next}><ChevronLeft className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" aria-label="החודש הבא" onClick={next}><ChevronLeft className="h-4 w-4" /></Button>
               <div className="font-semibold">{monthLabel}</div>
-              <Button variant="ghost" size="icon" onClick={prev}><ChevronRight className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" aria-label="החודש הקודם" onClick={prev}><ChevronRight className="h-4 w-4" /></Button>
             </div>
-            <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted-foreground mb-1">
+            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-medium text-muted-foreground mb-1.5">
               {weekDays.map((w) => <div key={w}>{w}</div>)}
             </div>
             <div className="grid grid-cols-7 gap-1">
@@ -80,28 +80,36 @@ function CalendarPage() {
                 const exp = totalCosts(dayIncomes, dayExpenses, data.vehicle, data.settings);
                 const net = Math.round(inc - exp);
                 const hasData = inc > 0 || exp > 0;
-                let tone = "bg-muted/30 text-muted-foreground";
+                let tone = "bg-muted/40 text-muted-foreground";
                 if (hasData) {
-                  if (net < 0) tone = "bg-destructive/20 text-destructive border border-destructive/40";
-                  else if (net >= goal) tone = "bg-success/20 text-success border border-success/40";
-                  else tone = "bg-warning/15 text-warning border border-warning/40";
+                  if (net < 0) tone = "bg-destructive/12 text-destructive border border-destructive/30";
+                  else if (net >= goal) tone = "bg-success/15 text-success border border-success/30";
+                  else tone = "bg-warning/15 text-warning border border-warning/30";
                 }
                 const isSelected = selected === cell.iso;
+                const isToday = cell.iso === todayIso;
                 return (
                   <button
                     key={cell.iso}
                     onClick={() => setSelected(cell.iso!)}
+                    aria-pressed={isSelected}
                     className={cn(
-                      "aspect-square rounded-md flex flex-col items-center justify-center text-[10px] font-medium transition-all",
+                      "aspect-square rounded-xl flex flex-col items-center justify-center text-[10px] font-medium transition-all",
                       tone,
-                      isSelected && "ring-2 ring-primary",
+                      isToday && !isSelected && "ring-1 ring-primary/50",
+                      isSelected && "ring-2 ring-primary ring-offset-1 ring-offset-card",
                     )}
                   >
-                    <span className="text-[11px]">{cell.day}</span>
-                    {hasData && <span className="text-[9px] font-bold leading-none mt-0.5">{net}</span>}
+                    <span className={cn("num text-[11px]", isToday && "font-extrabold text-primary")}>{cell.day}</span>
+                    {hasData && <span className="num text-[9px] font-bold leading-none mt-0.5">{net}</span>}
                   </button>
                 );
               })}
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-t pt-2.5 text-[10px] text-muted-foreground">
+              <LegendDot className="bg-success/60" label={`יעד הושג (${fmt(goal, c)}+)`} />
+              <LegendDot className="bg-warning/70" label="מתחת ליעד" />
+              <LegendDot className="bg-destructive/60" label="הפסד" />
             </div>
           </CardContent>
         </Card>
@@ -110,12 +118,21 @@ function CalendarPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
               <h3 className="font-semibold">{new Date(selected).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}</h3>
-              <div className={cn("font-bold", selectedNet >= 0 ? "text-success" : "text-destructive")}>{fmt(selectedNet, c)}</div>
+              <div className={cn("num font-bold", selectedNet >= 0 ? "text-success" : "text-destructive")}>{fmt(selectedNet, c)}</div>
             </div>
             <RecordsList incomes={selectedIncomes} expenses={selectedExpenses} />
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+function LegendDot({ className, label }: { className: string; label: string }) {
+  return (
+    <span className="flex items-center gap-1">
+      <span className={cn("h-2 w-2 rounded-full", className)} />
+      {label}
+    </span>
   );
 }
