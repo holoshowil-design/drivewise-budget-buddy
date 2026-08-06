@@ -235,8 +235,16 @@ export function energyLabel(e: EnergyType): string {
   return m[e];
 }
 
+/** Currency formatting that stays readable inside RTL text: "1,234 ₪" / "-320 ₪". */
 export function fmt(n: number, currency = "₪") {
-  return `${currency}${n.toLocaleString("he-IL", { maximumFractionDigits: 0 })}`;
+  const rounded = Math.round(n);
+  const abs = Math.abs(rounded).toLocaleString("he-IL", { maximumFractionDigits: 0 });
+  return `${rounded < 0 ? "-" : ""}${abs} ${currency}`;
+}
+
+/** Short human date, e.g. "6 באוג׳". */
+export function fmtDateShort(iso: string) {
+  return new Date(iso).toLocaleDateString("he-IL", { day: "numeric", month: "short" });
 }
 
 export function monthRange(year: number, month: number) {
