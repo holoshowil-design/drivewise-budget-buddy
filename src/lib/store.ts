@@ -149,11 +149,15 @@ export function useAppData() {
   }, []);
 
   const addIncome = useCallback((i: Omit<Income, "id">) => {
-    update((d) => ({ ...d, incomes: [...d.incomes, { ...i, id: crypto.randomUUID() }] }));
+    const id = crypto.randomUUID();
+    update((d) => ({ ...d, incomes: [...d.incomes, { ...i, id }] }));
+    return id;
   }, [update]);
 
   const addExpense = useCallback((e: Omit<Expense, "id">) => {
-    update((d) => ({ ...d, expenses: [...d.expenses, { ...e, id: crypto.randomUUID() }] }));
+    const id = crypto.randomUUID();
+    update((d) => ({ ...d, expenses: [...d.expenses, { ...e, id }] }));
+    return id;
   }, [update]);
 
   const removeIncome = useCallback((id: string) => {
