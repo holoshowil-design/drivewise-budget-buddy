@@ -76,7 +76,10 @@ function Dashboard() {
               <Wallet className="h-4 w-4" /> רווח נקי היום
             </div>
             <div className="num mt-2 text-[2.75rem] font-extrabold leading-none tracking-tight">{fmt(netToday, c)}</div>
-            <div className="mt-2 text-sm opacity-95">רווחיות {profitabilityPct}% · {todayIncomes.length} רשומות</div>
+            <div className="mt-2 text-sm opacity-95">
+              רווחיות {profitabilityPct}% · {todayIncomes.length} רשומות
+              {hoursToday > 0 && ` · ${fmt(netToday / hoursToday, c)} לשעה`}
+            </div>
             <div className="mt-4">
               <div className="flex justify-between text-xs opacity-90 mb-1.5">
                 <span>יעד יומי {fmt(settings.dailyGoal, c)}</span>
