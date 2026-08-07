@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Trash2, RefreshCw, CloudCheck, LogOut, LogIn } from "lucide-react";
+import { Trash2, RefreshCw, CloudCheck, LogOut, LogIn, Download, Upload } from "lucide-react";
 import { useAuthUser } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
@@ -34,8 +34,9 @@ function SettingsPage() {
     try {
       const res = await fetchPrice();
       if (res.ok) {
-        setS((prev) => ({ ...prev, fuelPrice: res.price }));
-        updateSettings({ fuelPrice: res.price });
+        const stamp = new Date().toISOString();
+        setS((prev) => ({ ...prev, fuelPrice: res.price, fuelPriceUpdatedAt: stamp }));
+        updateSettings({ fuelPrice: res.price, fuelPriceUpdatedAt: stamp });
         toast.success(`מחיר עודכן: ₪${res.price} לליטר`);
       } else {
         toast.error(res.error || "לא הצלחתי לעדכן מחיר");
@@ -134,11 +135,16 @@ function SettingsPage() {
                 {loadingPrice ? "מעדכן..." : "עדכן מחיר דלק אונליין (95)"}
               </Button>
             )}
-            <p className="text-xs text-muted-foreground">לפי הצריכה והמחיר מחושבת עלות דלק משוערת לכל ק״מ שנסעת. המחיר האונליין הוא המחיר המרבי לצרכן בשירות עצמי, מתעדכן אחת לחודש.</p>
+            <p className="text-xs text-muted-foreground">
+              לפי הצריכה והמחיר מחושבת עלות דלק משוערת לכל ק״מ שנסעת. המחיר האונליין הוא המחיר המרבי לצרכן בשירות עצמי, מתעדכן אחת לחודש.
+              {s.fuelPriceUpdatedAt && ` עודכן לאחרונה: ${new Date(s.fuelPriceUpdatedAt).toLocaleDateString("he-IL")}.`}
+            </p>
 
             <Button onClick={saveVehicle} className="w-full">שמור רכב</Button>
           </CardContent>
         </Card>
+
+        <BackupCard />
 
         <Card>
           <CardContent className="p-4 space-y-3">
@@ -208,5 +214,74 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <Label className="text-xs text-muted-foreground">{label}</Label>
       {children}
     </div>
+  );
+}
+
+/** Local backup: export the whole dataset to a JSON file and restore it later. */
+function BackupCard() {
+  const { data, update } = useAppData();
+  const inputId = "restore-file";
+
+  const exportJson = () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `driver-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("קובץ גיבוי נוצר");
+  };
+
+  const importJson = async (file: File) => {
+    try {
+      const parsed = JSON.parse(await file.text());
+      if (!Array.isArray(parsed.incomes) || !Array.isArray(parsed.expenses)) throw new Error("bad");
+      update((d) => {
+        const byId = <T extends { id: string }>(a: T[], b: T[]) => {
+          const map = new Map(a.map((x) => [x.id, x]));
+          b.forEach((x) => map.set(x.id, x));
+          return [...map.values()];
+        };
+        return {
+          ...d,
+          incomes: byId(d.incomes, parsed.incomes),
+          expenses: byId(d.expenses, parsed.expenses),
+          vehicle: { ...d.vehicle, ...(parsed.vehicle || {}) },
+          settings: { ...d.settings, ...(parsed.settings || {}) },
+        };
+      });
+      toast.success("הגיבוי שוחזר ומוזג עם הנתונים הקיימים");
+    } catch {
+      toast.error("קובץ לא תקין");
+    }
+  };
+
+  return (
+    <Card>
+      <CardContent className="p-4 space-y-3">
+        <h3 className="font-semibold">גיבוי מקומי</h3>
+        <p className="text-xs text-muted-foreground">שמור עותק של כל הנתונים כקובץ, ושחזר אותו בכל זמן. השחזור ממזג ולא מוחק רשומות קיימות.</p>
+        <div className="grid grid-cols-2 gap-3">
+          <Button variant="outline" onClick={exportJson}>
+            <Download className="h-4 w-4 ml-1" />ייצוא גיבוי
+          </Button>
+          <Button variant="outline" onClick={() => document.getElementById(inputId)?.click()}>
+            <Upload className="h-4 w-4 ml-1" />שחזור מקובץ
+          </Button>
+        </div>
+        <input
+          id={inputId}
+          type="file"
+          accept="application/json"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void importJson(f);
+            e.target.value = "";
+          }}
+        />
+      </CardContent>
+    </Card>
   );
 }

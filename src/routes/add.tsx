@@ -44,8 +44,29 @@ function AddPage() {
   );
 }
 
+/** Quick "+amount" chips so a value can be entered without typing. */
+function QuickAmounts({ steps, onPick, onClear }: { steps: number[]; onPick: (v: number) => void; onClear: () => void }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {steps.map((s) => (
+        <button
+          key={s}
+          type="button"
+          onClick={() => onPick(s)}
+          className="num rounded-full border border-border bg-muted/50 px-3 py-1.5 text-sm font-semibold text-foreground active:bg-muted"
+        >
+          +{s}
+        </button>
+      ))}
+      <button type="button" onClick={onClear} className="rounded-full px-3 py-1.5 text-sm text-muted-foreground">
+        נקה
+      </button>
+    </div>
+  );
+}
+
 function IncomeForm() {
-  const { data, addIncome } = useAppData();
+  const { data, addIncome, removeIncome } = useAppData();
   const [showMore, setShowMore] = useState(false);
   const [form, setForm] = useState({
     date: todayISO(),
@@ -64,27 +85,41 @@ function IncomeForm() {
   const dayHours = dayIncomes.reduce((s, i) => s + (i.hours || 0), 0);
   const dayKm = dayIncomes.reduce((s, i) => s + (i.km || 0), 0);
 
+  const amountNum = parseFloat(form.amount) || 0;
+  const commission = parseFloat(form.commissionPct) || 0;
+  const previewNet = amountNum > 0 ? amountNum * (1 - commission / 100) + (parseFloat(form.tip) || 0) : 0;
+
+  const bump = (v: number) => setForm((f) => ({ ...f, amount: String((parseFloat(f.amount) || 0) + v) }));
+
   const submit = () => {
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) return toast.error("הכנס סכום תקין");
-    addIncome({
+    const id = addIncome({
       date: form.date,
       amount,
       platform: "פרטי",
-      commissionPct: parseFloat(form.commissionPct) || 0,
+      commissionPct: commission,
       tip: parseFloat(form.tip) || 0,
       hours: parseFloat(form.hours) || 0,
       km: parseFloat(form.km) || 0,
       note: form.note.trim() || undefined,
     });
-    toast.success("הכנסה נוספה");
+    toast.success(`נוספה הכנסה · נטו ${fmt(previewNet, c)}`, {
+      action: { label: "ביטול", onClick: () => removeIncome(id) },
+    });
     setForm({ ...form, amount: "", tip: "", hours: "", km: "", note: "" });
   };
 
   return (
     <Card className="mt-4"><CardContent className="p-4 space-y-3">
       <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
-      <Field label="סכום ברוטו ₪"><Input className="h-13 text-xl font-bold" style={{ height: "3.25rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" /></Field>
+      <Field label="סכום ברוטו ₪">
+        <Input className="num text-xl font-bold" style={{ height: "3.25rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" />
+      </Field>
+      <QuickAmounts steps={[20, 50, 100, 200]} onPick={bump} onClear={() => setForm({ ...form, amount: "" })} />
+      {amountNum > 0 && (
+        <div className="num text-sm font-medium text-primary">נטו אחרי עמלה: {fmt(previewNet, c)}</div>
+      )}
       <div className="grid grid-cols-3 gap-3">
         <Field label="עמלה %"><Input inputMode="decimal" value={form.commissionPct} onChange={(e) => setForm({ ...form, commissionPct: e.target.value })} /></Field>
         <Field label="שעות"><Input inputMode="decimal" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} placeholder="0" /></Field>
@@ -125,14 +160,17 @@ function IncomeForm() {
 const expenseCats: ExpenseCategory[] = ["insurance", "license", "maintenance", "parking", "food", "wash", "other"];
 
 function ExpenseForm() {
-  const { addExpense } = useAppData();
+  const { data, addExpense, removeExpense } = useAppData();
   const [form, setForm] = useState({ date: todayISO(), category: "maintenance" as ExpenseCategory, amount: "", note: "" });
+  const c = data.settings.currency;
+
+  const bump = (v: number) => setForm((f) => ({ ...f, amount: String((parseFloat(f.amount) || 0) + v) }));
 
   const submit = () => {
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) return toast.error("הכנס סכום תקין");
-    addExpense({ date: form.date, category: form.category, amount, note: form.note.trim() || undefined });
-    toast.success("הוצאה נוספה");
+    const id = addExpense({ date: form.date, category: form.category, amount, note: form.note.trim() || undefined });
+    toast.success(`נוספה הוצאה · ${fmt(amount, c)}`, { action: { label: "ביטול", onClick: () => removeExpense(id) } });
     setForm({ ...form, amount: "", note: "" });
   };
 
@@ -140,16 +178,23 @@ function ExpenseForm() {
     <Card className="mt-4"><CardContent className="p-4 space-y-3">
       <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
       <Field label="קטגוריה">
-        <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v as ExpenseCategory })}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {expenseCats.map((c) => (
-              <SelectItem key={c} value={c}>{categoryLabel(c)}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="grid grid-cols-4 gap-2">
+          {expenseCats.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setForm({ ...form, category: cat })}
+              className={`rounded-xl border px-2 py-2 text-[11px] font-medium leading-tight transition-colors ${
+                form.category === cat ? "border-primary bg-primary/10 text-primary" : "border-border bg-muted/40 text-muted-foreground"
+              }`}
+            >
+              {categoryLabel(cat)}
+            </button>
+          ))}
+        </div>
       </Field>
-      <Field label="סכום ₪"><Input className="text-xl font-bold" style={{ height: "3.25rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" /></Field>
+      <Field label="סכום ₪"><Input className="num text-xl font-bold" style={{ height: "3.25rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" /></Field>
+      <QuickAmounts steps={[10, 20, 50, 100]} onPick={bump} onClear={() => setForm({ ...form, amount: "" })} />
       <Field label="הערה (אופציונלי)"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
       <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">שמירת הוצאה</Button>
     </CardContent></Card>
@@ -157,32 +202,48 @@ function ExpenseForm() {
 }
 
 function FuelForm() {
-  const { data, addExpense } = useAppData();
+  const { data, addExpense, removeExpense } = useAppData();
   const [form, setForm] = useState({ date: todayISO(), amount: "", note: "" });
+  const c = data.settings.currency;
+
+  const amountNum = parseFloat(form.amount) || 0;
+  const price = data.settings.fuelPrice || 0;
+  const units = price > 0 ? amountNum / price : 0;
+  const isElectric = data.vehicle.type === "electric";
+  const unitLabel = isElectric ? "kWh" : "ליטר";
+
+  const bump = (v: number) => setForm((f) => ({ ...f, amount: String((parseFloat(f.amount) || 0) + v) }));
 
   const submit = () => {
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) return toast.error("הכנס סכום תקין");
-    const isElectric = data.vehicle.type === "electric";
-    addExpense({
+    const id = addExpense({
       date: form.date,
       category: "fuel",
       amount,
       energyType: isElectric ? "electric" : "petrol95",
       note: form.note.trim() || undefined,
     });
-    toast.success(isElectric ? "טעינה נרשמה" : "תדלוק נרשם");
+    toast.success(`${isElectric ? "טעינה נרשמה" : "תדלוק נרשם"} · ${fmt(amount, c)}`, {
+      action: { label: "ביטול", onClick: () => removeExpense(id) },
+    });
     setForm({ ...form, amount: "", note: "" });
   };
 
-  const label = data.vehicle.type === "electric" ? "כמה עלתה הטעינה?" : "כמה עלה התדלוק?";
+  const label = isElectric ? "כמה עלתה הטעינה?" : "כמה עלה התדלוק?";
 
   return (
     <Card className="mt-4"><CardContent className="p-4 space-y-3">
       <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
       <Field label={label}>
-        <Input className="text-2xl font-bold text-center" style={{ height: "3.75rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" />
+        <Input className="num text-2xl font-bold text-center" style={{ height: "3.75rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" />
       </Field>
+      <QuickAmounts steps={[50, 100, 200, 300]} onPick={bump} onClear={() => setForm({ ...form, amount: "" })} />
+      {amountNum > 0 && price > 0 && (
+        <div className="num text-center text-sm text-muted-foreground">
+          ≈ {units.toFixed(1)} {unitLabel} לפי {price} ₪ ל{unitLabel}
+        </div>
+      )}
       <Field label="הערה (אופציונלי)"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
       <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">שמירה</Button>
     </CardContent></Card>

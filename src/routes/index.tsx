@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useAppData, todayISO, filterByDate, filterByRange, sumIncomes, fmt, monthRange, totalCosts, netProfit } from "@/lib/store";
+import { useAppData, todayISO, filterByDate, filterByRange, sumIncomes, fmt, monthRange, totalCosts, netProfit, sumHours } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { InsightsCard } from "@/components/InsightsCard";
@@ -32,6 +32,7 @@ function Dashboard() {
   const incomeToday = sumIncomes(todayIncomes);
   const expenseToday = totalCosts(todayIncomes, todayExpenses, data.vehicle, settings);
   const netToday = incomeToday - expenseToday;
+  const hoursToday = sumHours(todayIncomes);
   const profitabilityPct = incomeToday > 0 ? Math.round((netToday / incomeToday) * 100) : 0;
   const goalPct = settings.dailyGoal > 0 ? Math.min(100, Math.round((netToday / settings.dailyGoal) * 100)) : 0;
 
@@ -76,7 +77,10 @@ function Dashboard() {
               <Wallet className="h-4 w-4" /> רווח נקי היום
             </div>
             <div className="num mt-2 text-[2.75rem] font-extrabold leading-none tracking-tight">{fmt(netToday, c)}</div>
-            <div className="mt-2 text-sm opacity-95">רווחיות {profitabilityPct}% · {todayIncomes.length} רשומות</div>
+            <div className="mt-2 text-sm opacity-95">
+              רווחיות {profitabilityPct}% · {todayIncomes.length} רשומות
+              {hoursToday > 0 && ` · ${fmt(netToday / hoursToday, c)} לשעה`}
+            </div>
             <div className="mt-4">
               <div className="flex justify-between text-xs opacity-90 mb-1.5">
                 <span>יעד יומי {fmt(settings.dailyGoal, c)}</span>
