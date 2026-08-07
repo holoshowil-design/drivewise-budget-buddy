@@ -135,11 +135,16 @@ function SettingsPage() {
                 {loadingPrice ? "מעדכן..." : "עדכן מחיר דלק אונליין (95)"}
               </Button>
             )}
-            <p className="text-xs text-muted-foreground">לפי הצריכה והמחיר מחושבת עלות דלק משוערת לכל ק״מ שנסעת. המחיר האונליין הוא המחיר המרבי לצרכן בשירות עצמי, מתעדכן אחת לחודש.</p>
+            <p className="text-xs text-muted-foreground">
+              לפי הצריכה והמחיר מחושבת עלות דלק משוערת לכל ק״מ שנסעת. המחיר האונליין הוא המחיר המרבי לצרכן בשירות עצמי, מתעדכן אחת לחודש.
+              {s.fuelPriceUpdatedAt && ` עודכן לאחרונה: ${new Date(s.fuelPriceUpdatedAt).toLocaleDateString("he-IL")}.`}
+            </p>
 
             <Button onClick={saveVehicle} className="w-full">שמור רכב</Button>
           </CardContent>
         </Card>
+
+        <BackupCard />
 
         <Card>
           <CardContent className="p-4 space-y-3">
