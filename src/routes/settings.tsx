@@ -34,8 +34,9 @@ function SettingsPage() {
     try {
       const res = await fetchPrice();
       if (res.ok) {
-        setS((prev) => ({ ...prev, fuelPrice: res.price }));
-        updateSettings({ fuelPrice: res.price });
+        const stamp = new Date().toISOString();
+        setS((prev) => ({ ...prev, fuelPrice: res.price, fuelPriceUpdatedAt: stamp }));
+        updateSettings({ fuelPrice: res.price, fuelPriceUpdatedAt: stamp });
         toast.success(`מחיר עודכן: ₪${res.price} לליטר`);
       } else {
         toast.error(res.error || "לא הצלחתי לעדכן מחיר");
