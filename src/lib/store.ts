@@ -302,3 +302,7 @@ export function netProfit(incomes: Income[], expenses: Expense[], vehicle: Vehic
   return sumIncomes(incomes) - totalCosts(incomes, expenses, vehicle, settings);
 }
 
+
+export function sumHours(list: Income[]) {
+  return list.reduce((s, i) => s + (i.hours || 0), 0);
+}
