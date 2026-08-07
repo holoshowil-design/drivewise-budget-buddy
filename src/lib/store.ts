@@ -54,6 +54,7 @@ export type Settings = {
   defaultCommissionPct: number;
   currency: string;
   fuelPrice: number; // ₪ per liter (or per kWh for electric)
+  fuelPriceUpdatedAt?: string; // ISO date of last online price sync
 };
 
 export type AppData = {
