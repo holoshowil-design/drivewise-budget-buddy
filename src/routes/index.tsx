@@ -32,6 +32,7 @@ function Dashboard() {
   const incomeToday = sumIncomes(todayIncomes);
   const expenseToday = totalCosts(todayIncomes, todayExpenses, data.vehicle, settings);
   const netToday = incomeToday - expenseToday;
+  const hoursToday = sumHours(todayIncomes);
   const profitabilityPct = incomeToday > 0 ? Math.round((netToday / incomeToday) * 100) : 0;
   const goalPct = settings.dailyGoal > 0 ? Math.min(100, Math.round((netToday / settings.dailyGoal) * 100)) : 0;
 
