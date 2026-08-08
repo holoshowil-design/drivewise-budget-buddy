@@ -1,14 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useAppData, todayISO, filterByDate, filterByRange, sumIncomes, fmt, monthRange, totalCosts, netProfit, sumHours } from "@/lib/store";
+import { useAppData, todayISO, filterByDate, filterByRange, sumIncomes, fmt, monthRange, totalCosts, sumHours } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { InsightsCard } from "@/components/InsightsCard";
 import { KmCostCard } from "@/components/KmCostCard";
 import { MonthPaceCard, IncomeVsExpenseCard, WeekdayProfitCard, ProfitabilityGauge } from "@/components/DashboardCharts";
 
-import { TrendingUp, TrendingDown, Wallet, Target, Zap, Clock, Plus } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Target, Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, CartesianGrid } from "recharts";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -52,19 +51,8 @@ function Dashboard() {
   const dayOfMonth = now.getDate();
   const forecast = daysWorked > 0 ? Math.round((monthNet / daysWorked) * 30) : 0;
 
-  // weekly chart - last 7 days
-  const weekData: { day: string; net: number }[] = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-    const net = netProfit(filterByDate(data.incomes, iso), filterByDate(data.expenses, iso), data.vehicle, settings);
-    weekData.push({ day: d.toLocaleDateString("he-IL", { weekday: "short" }), net: Math.round(net) });
-  }
-
   const hour = now.getHours();
   const greeting = hour < 5 ? "לילה טוב" : hour < 12 ? "בוקר טוב" : hour < 17 ? "צהריים טובים" : hour < 21 ? "ערב טוב" : "לילה טוב";
-  const hasWeekData = weekData.some((d) => d.net !== 0);
 
   return (
     <div className="mx-auto max-w-xl">
