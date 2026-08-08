@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { InsightsCard } from "@/components/InsightsCard";
 import { KmCostCard } from "@/components/KmCostCard";
+import { MonthPaceCard, IncomeVsExpenseCard, WeekdayProfitCard, ProfitabilityGauge } from "@/components/DashboardCharts";
 
 import { TrendingUp, TrendingDown, Wallet, Target, Zap, Clock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -100,6 +101,14 @@ function Dashboard() {
           <StatCard icon={<Zap className="h-4 w-4" />} label="תחזית חודשית" value={fmt(forecast, c)} />
         </div>
 
+        <ProfitabilityGauge data={data} />
+
+        <MonthPaceCard data={data} />
+
+        <IncomeVsExpenseCard data={data} />
+
+        <WeekdayProfitCard data={data} />
+
         <KmCostCard data={data} />
 
         <InsightsCard data={data} />
@@ -128,38 +137,6 @@ function Dashboard() {
             </Button>
           </Link>
         </div>
-
-        {/* Weekly chart */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold">7 ימים אחרונים</h3>
-              <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />רווח נקי יומי</span>
-            </div>
-            {hasWeekData ? (
-              <div className="h-40">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={weekData} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      cursor={{ fill: "var(--muted)" }}
-                      contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 12, boxShadow: "var(--shadow-card)" }}
-                      formatter={(v: number) => [fmt(v, c), "נטו"]}
-                    />
-                    <Bar dataKey="net" fill="var(--primary)" radius={[6, 6, 0, 0]} maxBarSize={34} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="flex h-28 flex-col items-center justify-center gap-1 rounded-xl bg-muted/40 text-center">
-                <p className="text-sm font-medium">עוד אין נתונים לשבוע הזה</p>
-                <p className="text-xs text-muted-foreground">הוסף הכנסה ראשונה והגרף יתמלא</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
 
         {/* Month summary */}
         <Card>
