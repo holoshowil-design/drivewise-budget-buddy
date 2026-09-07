@@ -164,15 +164,16 @@ export function useAppData() {
 
   const addIncome = useCallback((i: Omit<Income, "id">) => {
     const id = crypto.randomUUID();
-    update((d) => ({ ...d, incomes: [...d.incomes, { ...i, id }] }));
+    update((d) => ({ ...d, incomes: [...d.incomes, { time: nowHHMM(), ...i, id }] }));
     return id;
   }, [update]);
 
   const addExpense = useCallback((e: Omit<Expense, "id">) => {
     const id = crypto.randomUUID();
-    update((d) => ({ ...d, expenses: [...d.expenses, { ...e, id }] }));
+    update((d) => ({ ...d, expenses: [...d.expenses, { time: nowHHMM(), ...e, id }] }));
     return id;
   }, [update]);
+
 
   const removeIncome = useCallback((id: string) => {
     update((d) => ({ ...d, incomes: d.incomes.filter((x) => x.id !== id) }));
@@ -199,16 +200,17 @@ export function useAppData() {
   }, [update]);
 
   /**
-   * Records a fuel price and/or consumption change into the history with
-   * today's date, so future calculations use the new values while past
-   * records keep the values that were effective at their time.
+   * Records a fuel price and/or consumption change into the history stamped
+   * with the current date AND hour, so future calculations use the new values
+   * while records entered earlier today keep the values effective at the time.
    */
   const recordFuelPriceChange = useCallback((price: number, consumption: number) => {
     const date = todayISO();
+    const time = nowHHMM();
     update((d) => {
       const history = [...(d.settings.fuelPriceHistory || [])];
-      const existingIdx = history.findIndex((h) => h.date === date);
-      const entry: FuelPriceEntry = { date, price, consumption };
+      const existingIdx = history.findIndex((h) => h.date === date && (h.time ?? "00:00") === time);
+      const entry: FuelPriceEntry = { date, time, price, consumption };
       if (existingIdx >= 0) history[existingIdx] = entry;
       else history.push(entry);
       return {
@@ -222,6 +224,7 @@ export function useAppData() {
       };
     });
   }, [update]);
+
 
   return { data, ready, addIncome, addExpense, removeIncome, removeExpense, updateIncome, updateExpense, updateSettings, updateVehicle, recordFuelPriceChange, update };
 }
