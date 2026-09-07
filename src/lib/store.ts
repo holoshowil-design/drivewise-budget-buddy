@@ -316,24 +316,32 @@ export function sumKm(list: Income[]) {
 }
 
 /**
- * Returns the fuel price and consumption that were effective on a given date.
- * Uses fuelPriceHistory (sorted by date) to find the entry active on that date;
- * falls back to current settings/vehicle values if no history exists.
+ * Returns the fuel price and consumption that were effective at a given
+ * moment (date + optional hour). Price/consumption changes are stamped with
+ * the exact hour they were made, so a change made at 14:00 does not affect a
+ * record entered at 09:00 the same day.
  */
-export function effectiveFuelParams(date: string, vehicle: Vehicle, settings: Settings) {
+export function effectiveFuelParams(
+  date: string,
+  vehicle: Vehicle,
+  settings: Settings,
+  time?: string,
+) {
   const history = settings.fuelPriceHistory;
+  const stamp = `${date} ${time ?? "00:00"}`;
   if (history && history.length > 0) {
-    const sorted = [...history].sort((a, b) => a.date.localeCompare(b.date));
+    const key = (h: FuelPriceEntry) => `${h.date} ${h.time ?? "00:00"}`;
+    const sorted = [...history].sort((a, b) => key(a).localeCompare(key(b)));
     let entry: FuelPriceEntry | null = null;
     for (const h of sorted) {
-      if (h.date <= date) entry = h;
+      if (key(h) <= stamp) entry = h;
       else break;
     }
     if (entry) {
-      return { price: entry.price, consumption: entry.consumption };
+      return { price: entry.price, consumption: entry.consumption, since: key(entry) };
     }
   }
-  return { price: settings.fuelPrice, consumption: vehicle.consumption };
+  return { price: settings.fuelPrice, consumption: vehicle.consumption, since: null };
 }
 
 /** Estimated energy cost for a given distance, based on vehicle consumption and fuel price. */
@@ -345,9 +353,9 @@ export function estimateEnergyCost(km: number, vehicle: Vehicle, settings: Setti
 }
 
 /**
- * Date-aware energy cost: sums per-income using the price & consumption that
- * were effective on each income's own date, so price changes don't apply
- * retroactively to older records.
+ * Time-aware energy cost: sums per-income using the price & consumption that
+ * were effective at each record's own date and hour, so price or consumption
+ * changes never apply retroactively.
  */
 export function estimateEnergyCostByDate(incomes: Income[], vehicle: Vehicle, settings: Settings) {
   let totalCost = 0;
@@ -356,7 +364,7 @@ export function estimateEnergyCostByDate(incomes: Income[], vehicle: Vehicle, se
   for (const i of incomes) {
     const km = i.km || 0;
     if (km === 0) continue;
-    const { price, consumption } = effectiveFuelParams(i.date, vehicle, settings);
+    const { price, consumption } = effectiveFuelParams(i.date, vehicle, settings, i.time);
     const cons = consumption > 0 ? consumption : 1;
     const units = km / cons;
     totalKm += km;
@@ -367,6 +375,7 @@ export function estimateEnergyCostByDate(incomes: Income[], vehicle: Vehicle, se
   const costPerKm = settings.fuelPrice / currentCons;
   return { units: totalUnits, cost: totalCost, costPerKm, km: totalKm };
 }
+
 
 export function energyUnitLabel(v: Vehicle) {
   return v.type === "electric" ? "kWh" : "ליטר";
