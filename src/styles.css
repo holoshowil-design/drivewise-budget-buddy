@@ -220,3 +220,50 @@
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+
+/* ---- Extra motion polish ---- */
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes sheen {
+  0% { transform: translateX(-120%) skewX(-18deg); }
+  100% { transform: translateX(220%) skewX(-18deg); }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.35s ease-out both;
+}
+
+.float-soft {
+  animation: float-soft 4s ease-in-out infinite;
+}
+
+/* Moving light sweep across the hero card */
+.sheen {
+  position: relative;
+  overflow: hidden;
+}
+.sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  animation: sheen 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Pressable surfaces (cards acting as buttons, chips) */
+.pressable {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.pressable:active {
+  transform: scale(0.97);
+}

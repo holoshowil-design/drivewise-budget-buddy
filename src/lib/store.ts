@@ -6,6 +6,7 @@ export type VehicleType = "petrol" | "hybrid" | "electric";
 export type Income = {
   id: string;
   date: string; // YYYY-MM-DD
+  time?: string; // HH:MM — when the record was created
   amount: number; // gross
   platform: string;
   commissionPct: number;
@@ -14,6 +15,7 @@ export type Income = {
   km: number;
   note?: string;
 };
+
 
 export type ExpenseCategory =
   | "fuel"
@@ -28,6 +30,7 @@ export type ExpenseCategory =
 export type Expense = {
   id: string;
   date: string;
+  time?: string; // HH:MM
   category: ExpenseCategory;
   amount: number;
   note?: string;
@@ -49,9 +52,11 @@ export type Vehicle = {
 
 export type FuelPriceEntry = {
   date: string; // YYYY-MM-DD — effective from this date onward
+  time?: string; // HH:MM — effective from this exact hour onward
   price: number; // ₪ per liter or per kWh
   consumption: number; // km per liter or km per kWh
 };
+
 
 export type Settings = {
   dailyGoal: number;
@@ -159,15 +164,16 @@ export function useAppData() {
 
   const addIncome = useCallback((i: Omit<Income, "id">) => {
     const id = crypto.randomUUID();
-    update((d) => ({ ...d, incomes: [...d.incomes, { ...i, id }] }));
+    update((d) => ({ ...d, incomes: [...d.incomes, { time: nowHHMM(), ...i, id }] }));
     return id;
   }, [update]);
 
   const addExpense = useCallback((e: Omit<Expense, "id">) => {
     const id = crypto.randomUUID();
-    update((d) => ({ ...d, expenses: [...d.expenses, { ...e, id }] }));
+    update((d) => ({ ...d, expenses: [...d.expenses, { time: nowHHMM(), ...e, id }] }));
     return id;
   }, [update]);
+
 
   const removeIncome = useCallback((id: string) => {
     update((d) => ({ ...d, incomes: d.incomes.filter((x) => x.id !== id) }));
@@ -194,16 +200,17 @@ export function useAppData() {
   }, [update]);
 
   /**
-   * Records a fuel price and/or consumption change into the history with
-   * today's date, so future calculations use the new values while past
-   * records keep the values that were effective at their time.
+   * Records a fuel price and/or consumption change into the history stamped
+   * with the current date AND hour, so future calculations use the new values
+   * while records entered earlier today keep the values effective at the time.
    */
   const recordFuelPriceChange = useCallback((price: number, consumption: number) => {
     const date = todayISO();
+    const time = nowHHMM();
     update((d) => {
       const history = [...(d.settings.fuelPriceHistory || [])];
-      const existingIdx = history.findIndex((h) => h.date === date);
-      const entry: FuelPriceEntry = { date, price, consumption };
+      const existingIdx = history.findIndex((h) => h.date === date && (h.time ?? "00:00") === time);
+      const entry: FuelPriceEntry = { date, time, price, consumption };
       if (existingIdx >= 0) history[existingIdx] = entry;
       else history.push(entry);
       return {
@@ -218,6 +225,7 @@ export function useAppData() {
     });
   }, [update]);
 
+
   return { data, ready, addIncome, addExpense, removeIncome, removeExpense, updateIncome, updateExpense, updateSettings, updateVehicle, recordFuelPriceChange, update };
 }
 
@@ -228,6 +236,13 @@ export function todayISO() {
   const local = new Date(d.getTime() - tz * 60000);
   return local.toISOString().slice(0, 10);
 }
+
+/** Current local time as "HH:MM" — used to stamp records and price changes. */
+export function nowHHMM() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 
 export function netFromIncome(i: Income) {
   return i.amount * (1 - i.commissionPct / 100) + (i.tip || 0);
@@ -301,24 +316,32 @@ export function sumKm(list: Income[]) {
 }
 
 /**
- * Returns the fuel price and consumption that were effective on a given date.
- * Uses fuelPriceHistory (sorted by date) to find the entry active on that date;
- * falls back to current settings/vehicle values if no history exists.
+ * Returns the fuel price and consumption that were effective at a given
+ * moment (date + optional hour). Price/consumption changes are stamped with
+ * the exact hour they were made, so a change made at 14:00 does not affect a
+ * record entered at 09:00 the same day.
  */
-export function effectiveFuelParams(date: string, vehicle: Vehicle, settings: Settings) {
+export function effectiveFuelParams(
+  date: string,
+  vehicle: Vehicle,
+  settings: Settings,
+  time?: string,
+) {
   const history = settings.fuelPriceHistory;
+  const stamp = `${date} ${time ?? "00:00"}`;
   if (history && history.length > 0) {
-    const sorted = [...history].sort((a, b) => a.date.localeCompare(b.date));
+    const key = (h: FuelPriceEntry) => `${h.date} ${h.time ?? "00:00"}`;
+    const sorted = [...history].sort((a, b) => key(a).localeCompare(key(b)));
     let entry: FuelPriceEntry | null = null;
     for (const h of sorted) {
-      if (h.date <= date) entry = h;
+      if (key(h) <= stamp) entry = h;
       else break;
     }
     if (entry) {
-      return { price: entry.price, consumption: entry.consumption };
+      return { price: entry.price, consumption: entry.consumption, since: key(entry) };
     }
   }
-  return { price: settings.fuelPrice, consumption: vehicle.consumption };
+  return { price: settings.fuelPrice, consumption: vehicle.consumption, since: null };
 }
 
 /** Estimated energy cost for a given distance, based on vehicle consumption and fuel price. */
@@ -330,9 +353,9 @@ export function estimateEnergyCost(km: number, vehicle: Vehicle, settings: Setti
 }
 
 /**
- * Date-aware energy cost: sums per-income using the price & consumption that
- * were effective on each income's own date, so price changes don't apply
- * retroactively to older records.
+ * Time-aware energy cost: sums per-income using the price & consumption that
+ * were effective at each record's own date and hour, so price or consumption
+ * changes never apply retroactively.
  */
 export function estimateEnergyCostByDate(incomes: Income[], vehicle: Vehicle, settings: Settings) {
   let totalCost = 0;
@@ -341,7 +364,7 @@ export function estimateEnergyCostByDate(incomes: Income[], vehicle: Vehicle, se
   for (const i of incomes) {
     const km = i.km || 0;
     if (km === 0) continue;
-    const { price, consumption } = effectiveFuelParams(i.date, vehicle, settings);
+    const { price, consumption } = effectiveFuelParams(i.date, vehicle, settings, i.time);
     const cons = consumption > 0 ? consumption : 1;
     const units = km / cons;
     totalKm += km;
@@ -352,6 +375,7 @@ export function estimateEnergyCostByDate(incomes: Income[], vehicle: Vehicle, se
   const costPerKm = settings.fuelPrice / currentCons;
   return { units: totalUnits, cost: totalCost, costPerKm, km: totalKm };
 }
+
 
 export function energyUnitLabel(v: Vehicle) {
   return v.type === "electric" ? "kWh" : "ליטר";

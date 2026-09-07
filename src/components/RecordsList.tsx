@@ -46,7 +46,7 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
             const incomeItem = isIncome ? (r.item as Income) : null;
             const energy = incomeItem && km > 0
               ? (() => {
-                  const { price, consumption } = effectiveFuelParams(incomeItem.date, data.vehicle, data.settings);
+                  const { price, consumption } = effectiveFuelParams(incomeItem.date, data.vehicle, data.settings, incomeItem.time);
                   const cons = consumption > 0 ? consumption : 1;
                   return (km / cons) * price;
                 })()
