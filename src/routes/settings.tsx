@@ -175,18 +175,38 @@ function SettingsPage() {
 function AccountCard() {
   const { user, loading } = useAuthUser();
   if (loading) return null;
+
+  const meta = (user?.user_metadata ?? {}) as Record<string, string>;
+  const name = meta.full_name || meta.name || "";
+  const avatar = meta.avatar_url || meta.picture || "";
+  const provider = (user?.app_metadata?.provider as string) || "email";
+  const providerLabel = provider === "google" ? "חשבון Google" : "אימייל וסיסמה";
+
   return (
-    <Card>
+    <Card className="card-lift animate-fade-in-up">
       <CardContent className="p-4 space-y-3">
         <h3 className="font-semibold">חשבון וגיבוי בענן</h3>
         {user ? (
           <>
-            <div className="flex items-center gap-2 text-sm">
-              <CloudCheck className="h-4 w-4 text-primary" />
-              <span className="text-muted-foreground">מחובר כ־</span>
-              <span dir="ltr" className="font-medium">{user.email}</span>
+            <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
+              {avatar ? (
+                <img src={avatar} alt={name || "תמונת פרופיל"} className="h-11 w-11 rounded-full object-cover" />
+              ) : (
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-base font-bold text-primary">
+                  {(name || user.email || "?").slice(0, 1).toUpperCase()}
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                {name && <div className="truncate text-sm font-semibold">{name}</div>}
+                <div dir="ltr" className="truncate text-right text-xs text-muted-foreground">{user.email}</div>
+                <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                  <CloudCheck className="h-3 w-3" /> מחובר · {providerLabel}
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">כל שינוי נשמר אוטומטית בענן וזמין בכל מכשיר שתתחבר בו.</p>
+            <p className="text-xs text-muted-foreground">
+              כל שינוי נשמר אוטומטית בענן בדיוק כפי שהוא מוצג באפליקציה, וזמין בכל מכשיר שתתחבר בו לאותו חשבון.
+            </p>
             <Button
               variant="outline"
               className="w-full"
@@ -214,6 +234,7 @@ function AccountCard() {
     </Card>
   );
 }
+
 
 function navigateToAuth() {
   window.location.href = "/auth";
