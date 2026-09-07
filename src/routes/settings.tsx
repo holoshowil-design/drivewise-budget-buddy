@@ -147,9 +147,10 @@ function SettingsPage() {
               </Button>
             )}
             <p className="text-xs text-muted-foreground">
-              שינוי מחיר או צריכה יחול רק מהיום ואילך — רשומות ישנות ישמרו את המחיר שהיה תקף באותו תאריך. המחיר האונליין הוא המחיר המרבי לצרכן בשירות עצמי, מתעדכן אחת לחודש.
-              {s.fuelPriceUpdatedAt && ` עודכן לאחרונה: ${new Date(s.fuelPriceUpdatedAt).toLocaleDateString("he-IL")}.`}
+              שינוי מחיר או צריכה נרשם עם התאריך והשעה המדויקת ויחול רק מאותו רגע והלאה — רשומות שהוזנו קודם ישמרו את המחיר והצריכה שהיו תקפים אז. המחיר האונליין הוא המחיר המרבי לצרכן בשירות עצמי.
+              {s.fuelPriceUpdatedAt && ` עודכן לאחרונה: ${new Date(s.fuelPriceUpdatedAt).toLocaleString("he-IL", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" })}.`}
             </p>
+
 
             <Button onClick={saveVehicle} className="w-full">שמור רכב</Button>
           </CardContent>

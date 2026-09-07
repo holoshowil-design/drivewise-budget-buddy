@@ -8,6 +8,8 @@ import { MonthPaceCard, IncomeVsExpenseCard, WeekdayProfitCard, ProfitabilityGau
 
 import { TrendingUp, TrendingDown, Wallet, Target, Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CountUp } from "@/components/CountUp";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -60,12 +62,16 @@ function Dashboard() {
 
       <div className="px-4 space-y-4 stagger">
         {/* Hero net card */}
-        <Card className="overflow-hidden border-0 hero-glow animate-scale-in" style={{ background: "var(--gradient-primary)" }}>
+        <Card className="overflow-hidden border-0 hero-glow sheen animate-scale-in" style={{ background: "var(--gradient-primary)" }}>
           <CardContent className="p-6 text-primary-foreground">
             <div className="flex items-center gap-2 text-xs font-semibold opacity-90">
-              <Wallet className="h-4 w-4" /> רווח נקי היום
+              <Wallet className="h-4 w-4" /> רווח נקי היום (אחרי דלק)
             </div>
-            <div className="num mt-2 text-[2.75rem] font-extrabold leading-none tracking-tight">{fmt(netToday, c)}</div>
+            <CountUp
+              value={netToday}
+              format={(n) => fmt(n, c)}
+              className="num mt-2 block text-[2.75rem] font-extrabold leading-none tracking-tight"
+            />
             <div className="mt-2 text-sm opacity-95">
               רווחיות {profitabilityPct}% · {todayIncomes.length} רשומות
               {hoursToday > 0 && ` · ${fmt(netToday / hoursToday, c)} לשעה`}
@@ -76,11 +82,12 @@ function Dashboard() {
                 <span className="num font-semibold">{goalPct}%</span>
               </div>
               <div className="h-2 rounded-full bg-black/20 overflow-hidden">
-                <div className="h-full bg-white rounded-full fill-animate" style={{ width: `${goalPct}%`, transition: "width 0.5s ease" }} />
+                <div className="h-full bg-white rounded-full fill-animate" style={{ width: `${goalPct}%`, transition: "width 0.6s cubic-bezier(0.22,1,0.36,1)" }} />
               </div>
             </div>
           </CardContent>
         </Card>
+
 
         <div className="grid grid-cols-2 gap-3 animate-fade-in-up">
           <StatCard icon={<TrendingUp className="h-4 w-4" />} label="הכנסות היום" value={fmt(incomeToday, c)} tone="success" />
