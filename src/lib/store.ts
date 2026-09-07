@@ -237,6 +237,13 @@ export function todayISO() {
   return local.toISOString().slice(0, 10);
 }
 
+/** Current local time as "HH:MM" — used to stamp records and price changes. */
+export function nowHHMM() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+
 export function netFromIncome(i: Income) {
   return i.amount * (1 - i.commissionPct / 100) + (i.tip || 0);
 }
