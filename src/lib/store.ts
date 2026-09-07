@@ -6,6 +6,7 @@ export type VehicleType = "petrol" | "hybrid" | "electric";
 export type Income = {
   id: string;
   date: string; // YYYY-MM-DD
+  time?: string; // HH:MM — when the record was created
   amount: number; // gross
   platform: string;
   commissionPct: number;
@@ -14,6 +15,7 @@ export type Income = {
   km: number;
   note?: string;
 };
+
 
 export type ExpenseCategory =
   | "fuel"
@@ -28,6 +30,7 @@ export type ExpenseCategory =
 export type Expense = {
   id: string;
   date: string;
+  time?: string; // HH:MM
   category: ExpenseCategory;
   amount: number;
   note?: string;
@@ -49,9 +52,11 @@ export type Vehicle = {
 
 export type FuelPriceEntry = {
   date: string; // YYYY-MM-DD — effective from this date onward
+  time?: string; // HH:MM — effective from this exact hour onward
   price: number; // ₪ per liter or per kWh
   consumption: number; // km per liter or km per kWh
 };
+
 
 export type Settings = {
   dailyGoal: number;
