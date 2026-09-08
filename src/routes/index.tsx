@@ -9,6 +9,8 @@ import { MonthPaceCard, IncomeVsExpenseCard, WeekdayProfitCard, ProfitabilityGau
 import { TrendingUp, TrendingDown, Wallet, Target, Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/CountUp";
+import { AccountBadge } from "@/components/AccountBadge";
+
 
 
 export const Route = createFileRoute("/")({
@@ -58,7 +60,12 @@ function Dashboard() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <PageHeader title={`היי, ${greeting}`} subtitle={new Date().toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })} />
+      <PageHeader
+        title={`היי, ${greeting}`}
+        subtitle={new Date().toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}
+        action={<AccountBadge />}
+      />
+
 
       <div className="px-4 space-y-4 stagger">
         {/* Hero net card */}

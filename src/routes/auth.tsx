@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CloudCheck } from "lucide-react";
+import { loadLastAccount, type LastAccount } from "@/lib/last-account";
+
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -30,10 +32,18 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [busy, setBusy] = useState(false);
+  const [last, setLast] = useState<LastAccount | null>(null);
+
+  useEffect(() => {
+    const l = loadLastAccount();
+    setLast(l);
+    if (l?.email && l.provider !== "google") setEmail(l.email);
+  }, []);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/" });
   }, [loading, user, navigate]);
+
 
   const submit = async () => {
     setBusy(true);
@@ -61,6 +71,9 @@ function AuthPage() {
   const google = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
+      ...(last?.provider === "google" && last.email
+        ? { extraParams: { login_hint: last.email } }
+        : {}),
     });
     if (result.error) {
       toast.error("לא הצלחתי להתחבר עם גוגל");
@@ -79,11 +92,29 @@ function AuthPage() {
               אחרי התחברות כל הנתונים שכבר הזנת בטלפון הזה יעלו אוטומטית לענן.
             </div>
 
+            {last && (
+              <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
+                {last.avatar ? (
+                  <img src={last.avatar} alt={last.name || "תמונת פרופיל"} className="h-10 w-10 rounded-full object-cover" />
+                ) : (
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                    {(last.name || last.email).slice(0, 1).toUpperCase()}
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs text-muted-foreground">התחברת כאן לאחרונה עם</div>
+                  {last.name && <div className="truncate text-sm font-semibold">{last.name}</div>}
+                  <div dir="ltr" className="truncate text-right text-xs text-muted-foreground">{last.email}</div>
+                </div>
+              </div>
+            )}
+
             <Button variant="outline" className="w-full" onClick={google}>
-              המשך עם Google
+              {last?.provider === "google" ? `המשך כ־${last.email}` : "המשך עם Google"}
             </Button>
 
             <div className="text-center text-xs text-muted-foreground">או</div>
+
 
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">אימייל</Label>
