@@ -405,6 +405,47 @@ export function estimateEnergyCostByDate(incomes: Income[], vehicle: Vehicle, se
 }
 
 
+/** Total km recorded by the GPS trip tracker. */
+export function sumTripKm(trips: Trip[]) {
+  return trips.reduce((s, t) => s + (t.km || 0), 0);
+}
+
+/** Total tracked driving seconds. */
+export function sumTripSeconds(trips: Trip[]) {
+  return trips.reduce((s, t) => s + (t.seconds || 0), 0);
+}
+
+/**
+ * Energy cost of tracked GPS trips, using the price & consumption effective
+ * at each trip's own date and hour (never retroactive).
+ */
+export function estimateTripEnergyCost(trips: Trip[], vehicle: Vehicle, settings: Settings) {
+  let cost = 0;
+  let units = 0;
+  let km = 0;
+  for (const t of trips) {
+    const d = t.km || 0;
+    if (d <= 0) continue;
+    const p = effectiveFuelParams(t.date, vehicle, settings, t.time);
+    const cons = p.consumption > 0 ? p.consumption : 1;
+    const u = d / cons;
+    km += d;
+    units += u;
+    cost += u * p.price;
+  }
+  return { cost, units, km };
+}
+
+/** "1:05:20" / "24:10" for a duration in seconds. */
+export function fmtDuration(totalSeconds: number) {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
+}
+
 export function energyUnitLabel(v: Vehicle) {
   return v.type === "electric" ? "kWh" : "ליטר";
 }
