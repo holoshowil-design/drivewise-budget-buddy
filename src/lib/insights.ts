@@ -21,7 +21,7 @@ export function buildInsights(data: AppData): Insight[] {
   const lastWeek = { from: isoOffset(13), to: isoOffset(7) };
 
   const netIn = (r: { from: string; to: string }) =>
-    netProfit(filterByRange(data.incomes, r.from, r.to), filterByRange(data.expenses, r.from, r.to), data.vehicle, data.settings);
+    netProfit(filterByRange(data.incomes, r.from, r.to), filterByRange(data.expenses, r.from, r.to), data.vehicle, data.settings, filterByRange(data.trips ?? [], r.from, r.to));
 
   const cur = netIn(thisWeek);
   const prev = netIn(lastWeek);
@@ -41,7 +41,8 @@ export function buildInsights(data: AppData): Insight[] {
   const from30 = isoOffset(29);
   const inc30 = filterByRange(data.incomes, from30, isoOffset(0));
   const exp30 = filterByRange(data.expenses, from30, isoOffset(0));
-  const net30 = netProfit(inc30, exp30, data.vehicle, data.settings);
+  const trips30 = filterByRange(data.trips ?? [], from30, isoOffset(0));
+  const net30 = netProfit(inc30, exp30, data.vehicle, data.settings, trips30);
   const hours30 = inc30.reduce((s, i) => s + (i.hours || 0), 0);
   const km30 = inc30.reduce((s, i) => s + (i.km || 0), 0);
 
@@ -89,7 +90,7 @@ export function buildInsights(data: AppData): Insight[] {
   const now = new Date();
   const monthFrom = new Date(now.getFullYear(), now.getMonth(), 1);
   const mFrom = new Date(monthFrom.getTime() - monthFrom.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-  const monthNet = netProfit(filterByRange(data.incomes, mFrom, isoOffset(0)), filterByRange(data.expenses, mFrom, isoOffset(0)), data.vehicle, data.settings);
+  const monthNet = netProfit(filterByRange(data.incomes, mFrom, isoOffset(0)), filterByRange(data.expenses, mFrom, isoOffset(0)), data.vehicle, data.settings, filterByRange(data.trips ?? [], mFrom, isoOffset(0)));
   const fixed = data.settings.fixedMonthlyExpenses;
   if (fixed > 0) {
     const remaining = fixed - monthNet;
@@ -105,7 +106,7 @@ export function buildInsights(data: AppData): Insight[] {
   let streak = 0;
   for (let i = 0; i < 30; i++) {
     const day = isoOffset(i);
-    const n = netProfit(data.incomes.filter((x) => x.date === day), data.expenses.filter((x) => x.date === day), data.vehicle, data.settings);
+    const n = netProfit(data.incomes.filter((x) => x.date === day), data.expenses.filter((x) => x.date === day), data.vehicle, data.settings, (data.trips ?? []).filter((x) => x.date === day));
     if (n >= data.settings.dailyGoal && data.settings.dailyGoal > 0) streak++;
     else break;
   }
