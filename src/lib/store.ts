@@ -193,6 +193,16 @@ export function useAppData() {
   }, [update]);
 
 
+  const addTrip = useCallback((t: Omit<Trip, "id">) => {
+    const id = crypto.randomUUID();
+    update((d) => ({ ...d, trips: [...(d.trips || []), { ...t, id }] }));
+    return id;
+  }, [update]);
+
+  const removeTrip = useCallback((id: string) => {
+    update((d) => ({ ...d, trips: (d.trips || []).filter((x) => x.id !== id) }));
+  }, [update]);
+
   const removeIncome = useCallback((id: string) => {
     update((d) => ({ ...d, incomes: d.incomes.filter((x) => x.id !== id) }));
   }, [update]);
@@ -244,7 +254,7 @@ export function useAppData() {
   }, [update]);
 
 
-  return { data, ready, addIncome, addExpense, removeIncome, removeExpense, updateIncome, updateExpense, updateSettings, updateVehicle, recordFuelPriceChange, update };
+  return { data, ready, addIncome, addExpense, addTrip, removeTrip, removeIncome, removeExpense, updateIncome, updateExpense, updateSettings, updateVehicle, recordFuelPriceChange, update };
 }
 
 // ---------- computations ----------
