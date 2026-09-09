@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Plus, Calendar, BarChart3, Settings } from "lucide-react";
+import { Home, Plus, Calendar, BarChart3, Settings, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type NavItem = { to: string; label: string; icon: typeof Home; highlight?: boolean };
@@ -7,6 +7,7 @@ const items: NavItem[] = [
   { to: "/", label: "דשבורד", icon: Home },
   { to: "/calendar", label: "לוח שנה", icon: Calendar },
   { to: "/add", label: "הוסף", icon: Plus, highlight: true },
+  { to: "/trip", label: "נסיעה", icon: Navigation },
   { to: "/reports", label: "דוחות", icon: BarChart3 },
   { to: "/settings", label: "הגדרות", icon: Settings },
 ];

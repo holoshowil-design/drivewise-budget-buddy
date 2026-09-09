@@ -50,11 +50,13 @@ function CalendarPage() {
   const { from, to } = monthRange(year, month);
   const mIncomes = data.incomes.filter((i) => i.date >= from && i.date <= to);
   const mExpenses = data.expenses.filter((e) => e.date >= from && e.date <= to);
-  const monthNet = netProfit(mIncomes, mExpenses, data.vehicle, data.settings);
+  const mTrips = (data.trips ?? []).filter((t) => t.date >= from && t.date <= to);
+  const monthNet = netProfit(mIncomes, mExpenses, data.vehicle, data.settings, mTrips);
 
   const selectedIncomes = selected ? filterByDate(data.incomes, selected) : [];
   const selectedExpenses = selected ? filterByDate(data.expenses, selected) : [];
-  const selectedNet = netProfit(selectedIncomes, selectedExpenses, data.vehicle, data.settings);
+  const selectedTrips = selected ? filterByDate(data.trips ?? [], selected) : [];
+  const selectedNet = netProfit(selectedIncomes, selectedExpenses, data.vehicle, data.settings, selectedTrips);
 
   return (
     <div className="mx-auto max-w-xl">
@@ -77,7 +79,8 @@ function CalendarPage() {
                 const dayIncomes = filterByDate(data.incomes, cell.iso);
                 const dayExpenses = filterByDate(data.expenses, cell.iso);
                 const inc = sumIncomes(dayIncomes);
-                const exp = totalCosts(dayIncomes, dayExpenses, data.vehicle, data.settings);
+                const dayTrips = filterByDate(data.trips ?? [], cell.iso);
+                const exp = totalCosts(dayIncomes, dayExpenses, data.vehicle, data.settings, dayTrips);
                 const net = Math.round(inc - exp);
                 const hasData = inc > 0 || exp > 0;
                 let tone = "bg-muted/40 text-muted-foreground";

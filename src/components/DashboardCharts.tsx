@@ -68,7 +68,7 @@ export function MonthPaceCard({ data }: { data: AppData }) {
     for (let d = 1; d <= daysInMonth; d++) {
       const date = iso(new Date(now.getFullYear(), now.getMonth(), d));
       if (d <= today) {
-        running += netProfit(filterByDate(data.incomes, date), filterByDate(data.expenses, date), data.vehicle, data.settings);
+        running += netProfit(filterByDate(data.incomes, date), filterByDate(data.expenses, date), data.vehicle, data.settings, filterByDate(data.trips ?? [], date));
       }
       series.push({ day: d, cum: d <= today ? Math.round(running) : null, pace: Math.round((goalMonth / daysInMonth) * d) });
     }
@@ -135,7 +135,7 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
       const inc = filterByDate(data.incomes, date);
       const exp = filterByDate(data.expenses, date);
       const income = sumIncomes(inc);
-      const expense = totalCosts(inc, exp, data.vehicle, data.settings);
+      const expense = totalCosts(inc, exp, data.vehicle, data.settings, filterByDate(data.trips ?? [], date));
       out.push({
         day: d.toLocaleDateString("he-IL", { day: "numeric", month: "numeric" }),
         income: Math.round(income),
@@ -196,7 +196,7 @@ export function WeekdayProfitCard({ data }: { data: AppData }) {
     const dates = new Set(incomes.map((i) => i.date));
     for (const date of dates) {
       const dow = new Date(date).getDay();
-      sums[dow].total += netProfit(filterByDate(data.incomes, date), filterByDate(data.expenses, date), data.vehicle, data.settings);
+      sums[dow].total += netProfit(filterByDate(data.incomes, date), filterByDate(data.expenses, date), data.vehicle, data.settings, filterByDate(data.trips ?? [], date));
       sums[dow].days.add(date);
     }
     return sums.map((s, i) => ({ day: names[i], avg: s.days.size ? Math.round(s.total / s.days.size) : 0 }));
@@ -248,7 +248,7 @@ export function ProfitabilityGauge({ data }: { data: AppData }) {
   const inc = filterByRange(data.incomes, from, to);
   const exp = filterByRange(data.expenses, from, to);
   const income = sumIncomes(inc);
-  const costs = totalCosts(inc, exp, data.vehicle, data.settings);
+  const costs = totalCosts(inc, exp, data.vehicle, data.settings, filterByRange(data.trips ?? [], from, to));
   const pct = income > 0 ? Math.max(0, Math.min(100, Math.round(((income - costs) / income) * 100))) : 0;
   const tone = pct >= 65 ? "var(--success)" : pct >= 45 ? "var(--warning)" : "var(--destructive)";
   const msg = pct >= 65 ? "רווחיות מצוינת" : pct >= 45 ? "רווחיות סבירה — כדאי לצמצם הוצאות" : "רווחיות נמוכה — בדוק דלק ועמלות";

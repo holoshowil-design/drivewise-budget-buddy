@@ -42,8 +42,9 @@ function Reports() {
 
   const incomes = filterByRange(data.incomes, from, to);
   const expenses = filterByRange(data.expenses, from, to);
+  const trips = filterByRange(data.trips ?? [], from, to);
   const incomeTotal = sumIncomes(incomes);
-  const expenseTotal = totalCosts(incomes, expenses, data.vehicle, data.settings);
+  const expenseTotal = totalCosts(incomes, expenses, data.vehicle, data.settings, trips);
   const net = incomeTotal - expenseTotal;
   const daysWorked = new Set(incomes.map((i) => i.date)).size;
   const totalHours = incomes.reduce((s, i) => s + (i.hours || 0), 0);
@@ -58,7 +59,7 @@ function Reports() {
     if (e.category === "fuel") continue;
     byCategory.set(e.category, (byCategory.get(e.category) || 0) + e.amount);
   }
-  const fuelCharged = fuelCostFor(incomes, expenses, data.vehicle, data.settings).charged;
+  const fuelCharged = fuelCostFor(incomes, expenses, data.vehicle, data.settings, trips).charged;
   if (fuelCharged > 0) byCategory.set("fuel", fuelCharged);
   const pieData = Array.from(byCategory.entries()).map(([k, v]) => ({ name: categoryLabel(k), value: Math.round(v) }));
   const colors = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--primary)", "var(--warning)", "var(--destructive)"];

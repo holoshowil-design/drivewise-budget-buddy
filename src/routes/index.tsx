@@ -6,7 +6,7 @@ import { InsightsCard } from "@/components/InsightsCard";
 import { KmCostCard } from "@/components/KmCostCard";
 import { MonthPaceCard, IncomeVsExpenseCard, WeekdayProfitCard, ProfitabilityGauge } from "@/components/DashboardCharts";
 
-import { TrendingUp, TrendingDown, Wallet, Target, Zap, Plus } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Target, Zap, Plus, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/CountUp";
 import { AccountBadge } from "@/components/AccountBadge";
@@ -33,8 +33,9 @@ function Dashboard() {
 
   const todayIncomes = filterByDate(data.incomes, today);
   const todayExpenses = filterByDate(data.expenses, today);
+  const todayTrips = filterByDate(data.trips ?? [], today);
   const incomeToday = sumIncomes(todayIncomes);
-  const expenseToday = totalCosts(todayIncomes, todayExpenses, data.vehicle, settings);
+  const expenseToday = totalCosts(todayIncomes, todayExpenses, data.vehicle, settings, todayTrips);
   const netToday = incomeToday - expenseToday;
   const hoursToday = sumHours(todayIncomes);
   const profitabilityPct = incomeToday > 0 ? Math.round((netToday / incomeToday) * 100) : 0;
@@ -48,8 +49,9 @@ function Dashboard() {
   const { from, to } = monthRange(now.getFullYear(), now.getMonth());
   const monthIncomes = filterByRange(data.incomes, from, to);
   const monthExpenses = filterByRange(data.expenses, from, to);
+  const monthTrips = filterByRange(data.trips ?? [], from, to);
   const monthIncome = sumIncomes(monthIncomes);
-  const monthExpense = totalCosts(monthIncomes, monthExpenses, data.vehicle, settings);
+  const monthExpense = totalCosts(monthIncomes, monthExpenses, data.vehicle, settings, monthTrips);
   const monthNet = monthIncome - monthExpense;
   const daysWorked = new Set(monthIncomes.map((i) => i.date)).size;
   const dayOfMonth = now.getDate();
@@ -117,6 +119,12 @@ function Dashboard() {
 
 
 
+
+        <Link to={"/trip" as never}>
+          <Button className="h-16 w-full rounded-2xl text-base font-extrabold pressable" >
+            <Navigation className="ms-2 h-6 w-6" /> התחל נסיעת עבודה
+          </Button>
+        </Link>
 
         {/* Quick actions */}
         <div className="grid grid-cols-3 gap-2">

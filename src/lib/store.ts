@@ -69,9 +69,20 @@ export type Settings = {
   fuelPriceHistory?: FuelPriceEntry[]; // historical price+consumption changes
 };
 
+/** A tracked work trip recorded by the live GPS tracker. */
+export type Trip = {
+  id: string;
+  date: string; // YYYY-MM-DD (start date)
+  time?: string; // HH:MM start time
+  km: number;
+  seconds: number;
+  endedAt?: string; // ISO timestamp
+};
+
 export type AppData = {
   incomes: Income[];
   expenses: Expense[];
+  trips: Trip[];
   vehicle: Vehicle;
   settings: Settings;
 };
@@ -81,6 +92,7 @@ const KEY = "driver-app-v1";
 const defaultData: AppData = {
   incomes: [],
   expenses: [],
+  trips: [],
   vehicle: {
     make: "",
     model: "",
@@ -106,7 +118,13 @@ export function load(): AppData {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaultData;
     const parsed = JSON.parse(raw);
-    return { ...defaultData, ...parsed, settings: { ...defaultData.settings, ...parsed.settings }, vehicle: { ...defaultData.vehicle, ...parsed.vehicle } };
+    return {
+      ...defaultData,
+      ...parsed,
+      trips: Array.isArray(parsed.trips) ? parsed.trips : [],
+      settings: { ...defaultData.settings, ...parsed.settings },
+      vehicle: { ...defaultData.vehicle, ...parsed.vehicle },
+    };
   } catch {
     return defaultData;
   }
@@ -175,6 +193,16 @@ export function useAppData() {
   }, [update]);
 
 
+  const addTrip = useCallback((t: Omit<Trip, "id">) => {
+    const id = crypto.randomUUID();
+    update((d) => ({ ...d, trips: [...(d.trips || []), { ...t, id }] }));
+    return id;
+  }, [update]);
+
+  const removeTrip = useCallback((id: string) => {
+    update((d) => ({ ...d, trips: (d.trips || []).filter((x) => x.id !== id) }));
+  }, [update]);
+
   const removeIncome = useCallback((id: string) => {
     update((d) => ({ ...d, incomes: d.incomes.filter((x) => x.id !== id) }));
   }, [update]);
@@ -226,7 +254,7 @@ export function useAppData() {
   }, [update]);
 
 
-  return { data, ready, addIncome, addExpense, removeIncome, removeExpense, updateIncome, updateExpense, updateSettings, updateVehicle, recordFuelPriceChange, update };
+  return { data, ready, addIncome, addExpense, addTrip, removeTrip, removeIncome, removeExpense, updateIncome, updateExpense, updateSettings, updateVehicle, recordFuelPriceChange, update };
 }
 
 // ---------- computations ----------
@@ -377,6 +405,47 @@ export function estimateEnergyCostByDate(incomes: Income[], vehicle: Vehicle, se
 }
 
 
+/** Total km recorded by the GPS trip tracker. */
+export function sumTripKm(trips: Trip[]) {
+  return trips.reduce((s, t) => s + (t.km || 0), 0);
+}
+
+/** Total tracked driving seconds. */
+export function sumTripSeconds(trips: Trip[]) {
+  return trips.reduce((s, t) => s + (t.seconds || 0), 0);
+}
+
+/**
+ * Energy cost of tracked GPS trips, using the price & consumption effective
+ * at each trip's own date and hour (never retroactive).
+ */
+export function estimateTripEnergyCost(trips: Trip[], vehicle: Vehicle, settings: Settings) {
+  let cost = 0;
+  let units = 0;
+  let km = 0;
+  for (const t of trips) {
+    const d = t.km || 0;
+    if (d <= 0) continue;
+    const p = effectiveFuelParams(t.date, vehicle, settings, t.time);
+    const cons = p.consumption > 0 ? p.consumption : 1;
+    const u = d / cons;
+    km += d;
+    units += u;
+    cost += u * p.price;
+  }
+  return { cost, units, km };
+}
+
+/** "1:05:20" / "24:10" for a duration in seconds. */
+export function fmtDuration(totalSeconds: number) {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
+}
+
 export function energyUnitLabel(v: Vehicle) {
   return v.type === "electric" ? "kWh" : "ליטר";
 }
@@ -388,21 +457,41 @@ export function energyUnitLabel(v: Vehicle) {
  * so it is never counted twice and never ignored.
  * Uses date-aware estimation so price changes don't apply retroactively.
  */
-export function fuelCostFor(incomes: Income[], expenses: Expense[], vehicle: Vehicle, settings: Settings) {
-  const estimated = estimateEnergyCostByDate(incomes, vehicle, settings).cost;
+export function fuelCostFor(
+  incomes: Income[],
+  expenses: Expense[],
+  vehicle: Vehicle,
+  settings: Settings,
+  trips: Trip[] = [],
+) {
+  const estimated =
+    estimateEnergyCostByDate(incomes, vehicle, settings).cost +
+    estimateTripEnergyCost(trips, vehicle, settings).cost;
   const actual = expenses.filter((e) => e.category === "fuel").reduce((s, e) => s + e.amount, 0);
   return { estimated, actual, charged: Math.max(estimated, actual) };
 }
 
 /** Total costs for a period: non-fuel expenses + certain fuel cost. */
-export function totalCosts(incomes: Income[], expenses: Expense[], vehicle: Vehicle, settings: Settings) {
+export function totalCosts(
+  incomes: Income[],
+  expenses: Expense[],
+  vehicle: Vehicle,
+  settings: Settings,
+  trips: Trip[] = [],
+) {
   const nonFuel = expenses.filter((e) => e.category !== "fuel").reduce((s, e) => s + e.amount, 0);
-  return nonFuel + fuelCostFor(incomes, expenses, vehicle, settings).charged;
+  return nonFuel + fuelCostFor(incomes, expenses, vehicle, settings, trips).charged;
 }
 
 /** Net profit: income after commission/tips, minus expenses including certain fuel cost. */
-export function netProfit(incomes: Income[], expenses: Expense[], vehicle: Vehicle, settings: Settings) {
-  return sumIncomes(incomes) - totalCosts(incomes, expenses, vehicle, settings);
+export function netProfit(
+  incomes: Income[],
+  expenses: Expense[],
+  vehicle: Vehicle,
+  settings: Settings,
+  trips: Trip[] = [],
+) {
+  return sumIncomes(incomes) - totalCosts(incomes, expenses, vehicle, settings, trips);
 }
 
 
