@@ -5,6 +5,8 @@ import {
   filterByRange,
   monthRange,
   sumKm,
+  sumTripKm,
+  estimateTripEnergyCost,
   sumIncomes,
   sumExpenses,
   estimateEnergyCostByDate,
@@ -28,14 +30,34 @@ export function KmCostCard({ data }: { data: AppData }) {
   const monthIncomes = filterByRange(data.incomes, from, to);
   const monthExpenses = filterByRange(data.expenses, from, to);
 
-  const kmToday = sumKm(todayIncomes);
-  const kmMonth = sumKm(monthIncomes);
+  const todayTrips = filterByDate(data.trips ?? [], today);
+  const monthTrips = filterByRange(data.trips ?? [], from, to);
 
-  const estToday = estimateEnergyCostByDate(todayIncomes, data.vehicle, data.settings);
-  const estMonth = estimateEnergyCostByDate(monthIncomes, data.vehicle, data.settings);
+  const tripKmToday = sumTripKm(todayTrips);
+  const tripKmMonth = sumTripKm(monthTrips);
+  const tripEstToday = estimateTripEnergyCost(todayTrips, data.vehicle, data.settings);
+  const tripEstMonth = estimateTripEnergyCost(monthTrips, data.vehicle, data.settings);
 
-  const fuelToday = fuelCostFor(todayIncomes, todayExpenses, data.vehicle, data.settings);
-  const fuelMonth = fuelCostFor(monthIncomes, monthExpenses, data.vehicle, data.settings);
+  const manualKmToday = sumKm(todayIncomes);
+  const manualKmMonth = sumKm(monthIncomes);
+  const kmToday = manualKmToday + tripKmToday;
+  const kmMonth = manualKmMonth + tripKmMonth;
+
+  const estIncomeToday = estimateEnergyCostByDate(todayIncomes, data.vehicle, data.settings);
+  const estIncomeMonth = estimateEnergyCostByDate(monthIncomes, data.vehicle, data.settings);
+  const estToday = {
+    cost: estIncomeToday.cost + tripEstToday.cost,
+    units: estIncomeToday.units + tripEstToday.units,
+    costPerKm: estIncomeToday.costPerKm,
+  };
+  const estMonth = {
+    cost: estIncomeMonth.cost + tripEstMonth.cost,
+    units: estIncomeMonth.units + tripEstMonth.units,
+    costPerKm: estIncomeMonth.costPerKm,
+  };
+
+  const fuelToday = fuelCostFor(todayIncomes, todayExpenses, data.vehicle, data.settings, todayTrips);
+  const fuelMonth = fuelCostFor(monthIncomes, monthExpenses, data.vehicle, data.settings, monthTrips);
 
   const netAfterFuelToday = sumIncomes(todayIncomes) - fuelToday.charged;
   const netAfterFuelMonth = sumIncomes(monthIncomes) - fuelMonth.charged;
@@ -51,7 +73,7 @@ export function KmCostCard({ data }: { data: AppData }) {
             <GaugeIcon className="h-4 w-4 text-primary" /> קילומטרים ועלות דלק
           </h3>
           <p className="text-xs text-muted-foreground">
-            הוסף ק״מ בהזנת ההכנסה כדי לראות כמה נסעת וכמה זה עלה לך באנרגיה.
+              הפעל מעקב נסיעה או הוסף ק״מ בהזנת ההכנסה כדי לראות כמה נסעת וכמה זה עלה לך באנרגיה.
           </p>
         </CardContent>
       </Card>
@@ -100,6 +122,13 @@ export function KmCostCard({ data }: { data: AppData }) {
             גם בימים שלא תדלקת, הדלק יורד מהנטו לפי הק״מ שנסעת — כך תמיד רואים את הרווח האמיתי.
           </p>
         </div>
+
+        {tripKmMonth > 0 && (
+          <div className="num mt-2 flex justify-between rounded-lg bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground">
+            <span>ידני {Math.round(manualKmMonth).toLocaleString("he-IL")} ק״מ</span>
+            <span>מעקב GPS {tripKmMonth.toFixed(1)} ק״מ</span>
+          </div>
+        )}
 
         <div className="mt-3 space-y-1 border-t pt-3 text-xs text-muted-foreground">
           <div className="flex justify-between">

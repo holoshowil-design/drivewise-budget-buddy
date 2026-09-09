@@ -6,7 +6,7 @@ import { InsightsCard } from "@/components/InsightsCard";
 import { KmCostCard } from "@/components/KmCostCard";
 import { MonthPaceCard, IncomeVsExpenseCard, WeekdayProfitCard, ProfitabilityGauge } from "@/components/DashboardCharts";
 
-import { TrendingUp, TrendingDown, Wallet, Target, Zap, Plus } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Target, Zap, Plus, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/CountUp";
 import { AccountBadge } from "@/components/AccountBadge";
@@ -119,6 +119,12 @@ function Dashboard() {
 
 
 
+
+        <Link to={"/trip" as never}>
+          <Button className="h-16 w-full rounded-2xl text-base font-extrabold pressable" >
+            <Navigation className="ms-2 h-6 w-6" /> התחל נסיעת עבודה
+          </Button>
+        </Link>
 
         {/* Quick actions */}
         <div className="grid grid-cols-3 gap-2">
