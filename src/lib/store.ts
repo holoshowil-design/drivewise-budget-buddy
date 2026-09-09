@@ -69,9 +69,20 @@ export type Settings = {
   fuelPriceHistory?: FuelPriceEntry[]; // historical price+consumption changes
 };
 
+/** A tracked work trip recorded by the live GPS tracker. */
+export type Trip = {
+  id: string;
+  date: string; // YYYY-MM-DD (start date)
+  time?: string; // HH:MM start time
+  km: number;
+  seconds: number;
+  endedAt?: string; // ISO timestamp
+};
+
 export type AppData = {
   incomes: Income[];
   expenses: Expense[];
+  trips: Trip[];
   vehicle: Vehicle;
   settings: Settings;
 };
@@ -81,6 +92,7 @@ const KEY = "driver-app-v1";
 const defaultData: AppData = {
   incomes: [],
   expenses: [],
+  trips: [],
   vehicle: {
     make: "",
     model: "",
