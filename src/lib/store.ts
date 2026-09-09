@@ -118,7 +118,13 @@ export function load(): AppData {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaultData;
     const parsed = JSON.parse(raw);
-    return { ...defaultData, ...parsed, settings: { ...defaultData.settings, ...parsed.settings }, vehicle: { ...defaultData.vehicle, ...parsed.vehicle } };
+    return {
+      ...defaultData,
+      ...parsed,
+      trips: Array.isArray(parsed.trips) ? parsed.trips : [],
+      settings: { ...defaultData.settings, ...parsed.settings },
+      vehicle: { ...defaultData.vehicle, ...parsed.vehicle },
+    };
   } catch {
     return defaultData;
   }
