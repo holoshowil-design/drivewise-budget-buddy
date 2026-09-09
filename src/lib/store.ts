@@ -416,21 +416,41 @@ export function energyUnitLabel(v: Vehicle) {
  * so it is never counted twice and never ignored.
  * Uses date-aware estimation so price changes don't apply retroactively.
  */
-export function fuelCostFor(incomes: Income[], expenses: Expense[], vehicle: Vehicle, settings: Settings) {
-  const estimated = estimateEnergyCostByDate(incomes, vehicle, settings).cost;
+export function fuelCostFor(
+  incomes: Income[],
+  expenses: Expense[],
+  vehicle: Vehicle,
+  settings: Settings,
+  trips: Trip[] = [],
+) {
+  const estimated =
+    estimateEnergyCostByDate(incomes, vehicle, settings).cost +
+    estimateTripEnergyCost(trips, vehicle, settings).cost;
   const actual = expenses.filter((e) => e.category === "fuel").reduce((s, e) => s + e.amount, 0);
   return { estimated, actual, charged: Math.max(estimated, actual) };
 }
 
 /** Total costs for a period: non-fuel expenses + certain fuel cost. */
-export function totalCosts(incomes: Income[], expenses: Expense[], vehicle: Vehicle, settings: Settings) {
+export function totalCosts(
+  incomes: Income[],
+  expenses: Expense[],
+  vehicle: Vehicle,
+  settings: Settings,
+  trips: Trip[] = [],
+) {
   const nonFuel = expenses.filter((e) => e.category !== "fuel").reduce((s, e) => s + e.amount, 0);
-  return nonFuel + fuelCostFor(incomes, expenses, vehicle, settings).charged;
+  return nonFuel + fuelCostFor(incomes, expenses, vehicle, settings, trips).charged;
 }
 
 /** Net profit: income after commission/tips, minus expenses including certain fuel cost. */
-export function netProfit(incomes: Income[], expenses: Expense[], vehicle: Vehicle, settings: Settings) {
-  return sumIncomes(incomes) - totalCosts(incomes, expenses, vehicle, settings);
+export function netProfit(
+  incomes: Income[],
+  expenses: Expense[],
+  vehicle: Vehicle,
+  settings: Settings,
+  trips: Trip[] = [],
+) {
+  return sumIncomes(incomes) - totalCosts(incomes, expenses, vehicle, settings, trips);
 }
 
 
