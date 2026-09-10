@@ -11,6 +11,7 @@ export function mergeAppData(local: AppData, remote: AppData): AppData {
   return {
     incomes: byId(local.incomes ?? [], remote.incomes ?? []),
     expenses: byId(local.expenses ?? [], remote.expenses ?? []),
+    trips: byId(local.trips ?? [], remote.trips ?? []),
     vehicle: { ...local.vehicle, ...remote.vehicle },
     settings: { ...local.settings, ...remote.settings },
   };

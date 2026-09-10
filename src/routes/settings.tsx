@@ -79,7 +79,7 @@ function SettingsPage() {
 
   const resetAll = () => {
     if (!confirm("למחוק את כל הנתונים? פעולה זו לא ניתנת לביטול.")) return;
-    update(() => ({ incomes: [], expenses: [], vehicle: v, settings: s }));
+    update(() => ({ incomes: [], expenses: [], trips: [], vehicle: v, settings: s }));
     toast.success("כל הנתונים נמחקו");
   };
 
