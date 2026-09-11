@@ -2,11 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { TripTracker } from "@/components/TripTracker";
 
-type TripSearch = { action?: string };
+type TripSearch = { action?: string; mode?: string };
 
 export const Route = createFileRoute("/trip")({
   validateSearch: (search: Record<string, unknown>): TripSearch => ({
     action: typeof search.action === "string" ? search.action : undefined,
+    mode: typeof search.mode === "string" ? search.mode : undefined,
   }),
   head: () => ({
     meta: [
@@ -26,7 +27,7 @@ function TripPage() {
     <div className="mx-auto max-w-xl">
       <PageHeader title="נסיעת עבודה" subtitle="מדידת ק״מ וזמן בזמן אמת" />
       <div className="px-4">
-        <TripTracker autoStart={action === "start_trip"} />
+        <TripTracker autoStart={action === "start_trip"} driveMode={Route.useSearch().mode === "drive"} />
       </div>
     </div>
   );
