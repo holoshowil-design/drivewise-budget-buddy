@@ -1,15 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAppData, todayISO, filterByDate, filterByRange, sumIncomes, fmt, monthRange, totalCosts, sumHours } from "@/lib/store";
-import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { InsightsCard } from "@/components/InsightsCard";
 import { KmCostCard } from "@/components/KmCostCard";
-import { MonthPaceCard, IncomeVsExpenseCard, WeekdayProfitCard, ProfitabilityGauge } from "@/components/DashboardCharts";
+import { MonthPaceCard, IncomeVsExpenseCard, ProfitabilityGauge } from "@/components/DashboardCharts";
+import { DailyProfitGauge, DriveModeAction, InteractiveWeeklyEarnings, PremiumStats } from "@/components/PremiumDashboard";
 
-import { TrendingUp, TrendingDown, Wallet, Target, Zap, Plus, Navigation } from "lucide-react";
+import { Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CountUp } from "@/components/CountUp";
 import { AccountBadge } from "@/components/AccountBadge";
+import { useEffect, useState } from "react";
 
 
 
@@ -18,6 +18,10 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "דרייבר - דשבורד" },
       { name: "description", content: "סיכום ההכנסות וההוצאות שלך, יעדים יומיים ומצב רווחיות." },
+      { property: "og:title", content: "דרייבר - דשבורד" },
+      { property: "og:description", content: "סיכום ההכנסות וההוצאות שלך, יעדים יומיים ומצב רווחיות." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Dashboard,
@@ -25,6 +29,13 @@ export const Route = createFileRoute("/")({
 
 function Dashboard() {
   const { data, ready } = useAppData();
+  const [tripActive, setTripActive] = useState(false);
+  useEffect(() => {
+    const check = () => setTripActive(Boolean(localStorage.getItem("driver-active-trip")));
+    check();
+    window.addEventListener("storage", check);
+    return () => window.removeEventListener("storage", check);
+  }, []);
   if (!ready) return null;
 
   const today = todayISO();
@@ -62,48 +73,19 @@ function Dashboard() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <PageHeader
-        title={`היי, ${greeting}`}
-        subtitle={new Date().toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}
-        action={<AccountBadge />}
-      />
-
-
-      <div className="px-4 space-y-4 stagger">
-        {/* Hero net card */}
-        <Card className="overflow-hidden border-0 hero-glow sheen animate-scale-in" style={{ background: "var(--gradient-primary)" }}>
-          <CardContent className="p-6 text-primary-foreground">
-            <div className="flex items-center gap-2 text-xs font-semibold opacity-90">
-              <Wallet className="h-4 w-4" /> רווח נקי היום (אחרי דלק)
-            </div>
-            <CountUp
-              value={netToday}
-              format={(n) => fmt(n, c)}
-              className="num mt-2 block text-[2.75rem] font-extrabold leading-none tracking-tight"
-            />
-            <div className="mt-2 text-sm opacity-95">
-              רווחיות {profitabilityPct}% · {todayIncomes.length} רשומות
-              {hoursToday > 0 && ` · ${fmt(netToday / hoursToday, c)} לשעה`}
-            </div>
-            <div className="mt-4">
-              <div className="flex justify-between text-xs opacity-90 mb-1.5">
-                <span>יעד יומי {fmt(settings.dailyGoal, c)}</span>
-                <span className="num font-semibold">{goalPct}%</span>
-              </div>
-              <div className="h-2 rounded-full bg-black/20 overflow-hidden">
-                <div className="h-full bg-white rounded-full fill-animate" style={{ width: `${goalPct}%`, transition: "width 0.6s cubic-bezier(0.22,1,0.36,1)" }} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-
-        <div className="grid grid-cols-2 gap-3 animate-fade-in-up">
-          <StatCard icon={<TrendingUp className="h-4 w-4" />} label="הכנסות היום" value={fmt(incomeToday, c)} tone="success" />
-          <StatCard icon={<TrendingDown className="h-4 w-4" />} label="הוצאות היום (כולל דלק)" value={fmt(expenseToday, c)} tone="destructive" />
-          <StatCard icon={<Target className="h-4 w-4" />} label="נקודת איזון יומית" value={fmt(breakeven, c)} />
-          <StatCard icon={<Zap className="h-4 w-4" />} label="תחזית חודשית" value={fmt(forecast, c)} />
+      <header className="flex items-center justify-between gap-3 px-4 pb-4 pt-[calc(1.5rem+env(safe-area-inset-top,0px))]">
+        <div>
+          <p className="text-xs font-semibold text-primary">{new Date().toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}</p>
+          <h1 className="font-display mt-1 text-2xl font-bold">{greeting}</h1>
         </div>
+        <AccountBadge />
+      </header>
+
+      <div className="stagger space-y-4 px-4">
+        <DailyProfitGauge net={netToday} goal={settings.dailyGoal} breakEven={breakeven} currency={c} profitability={profitabilityPct} hourly={hoursToday > 0 ? netToday / hoursToday : 0} />
+        <DriveModeAction active={tripActive} />
+        <PremiumStats data={data} income={incomeToday} expense={expenseToday} breakEven={breakeven} forecast={forecast} />
+        <InteractiveWeeklyEarnings data={data} />
 
         <ProfitabilityGauge data={data} />
 
@@ -111,20 +93,9 @@ function Dashboard() {
 
         <IncomeVsExpenseCard data={data} />
 
-        <WeekdayProfitCard data={data} />
-
         <KmCostCard data={data} />
 
         <InsightsCard data={data} />
-
-
-
-
-        <Link to={"/trip" as never}>
-          <Button className="h-16 w-full rounded-2xl text-base font-extrabold pressable" >
-            <Navigation className="ms-2 h-6 w-6" /> התחל נסיעת עבודה
-          </Button>
-        </Link>
 
         {/* Quick actions */}
         <div className="grid grid-cols-3 gap-2">
@@ -165,18 +136,6 @@ function Dashboard() {
         </Card>
       </div>
     </div>
-  );
-}
-
-function StatCard({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string; tone?: "success" | "destructive" }) {
-  const color = tone === "success" ? "text-success" : tone === "destructive" ? "text-destructive" : "text-muted-foreground";
-  return (
-    <Card className="card-lift transition-shadow hover:shadow-md">
-      <CardContent className="p-3.5">
-        <div className={`flex items-center gap-1.5 text-xs ${color}`}>{icon}<span className="text-muted-foreground leading-tight">{label}</span></div>
-        <div className="num mt-1.5 text-xl font-bold tracking-tight">{value}</div>
-      </CardContent>
-    </Card>
   );
 }
 

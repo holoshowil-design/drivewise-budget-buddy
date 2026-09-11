@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Square, MapPin, Timer, Fuel, Trash2, AlertTriangle } from "lucide-react";
+import { Play, Square, MapPin, Timer, Fuel, Trash2, AlertTriangle, Gauge, Minimize2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   useAppData,
@@ -45,7 +45,7 @@ function haversine(a: { lat: number; lon: number }, b: { lat: number; lon: numbe
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-export function TripTracker({ autoStart = false }: { autoStart?: boolean }) {
+export function TripTracker({ autoStart = false, driveMode = false }: { autoStart?: boolean; driveMode?: boolean }) {
   const { data, ready, addTrip, removeTrip } = useAppData();
   const [active, setActive] = useState<ActiveTrip | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -180,6 +180,10 @@ export function TripTracker({ autoStart = false }: { autoStart?: boolean }) {
   const liveParams = effectiveFuelParams(todayISO(), data.vehicle, data.settings, nowHHMM());
   const liveCost = active ? (active.km / (liveParams.consumption || 1)) * liveParams.price : 0;
   const avgSpeed = active && elapsed > 0 ? (active.km / (elapsed / 3600)) : 0;
+  const today = todayISO();
+  const todayIncomes = data.incomes.filter((item) => item.date === today);
+  const grossToday = todayIncomes.reduce((sum, item) => sum + item.amount * (1 - item.commissionPct / 100) + (item.tip || 0), 0);
+  const liveNet = grossToday - liveCost;
 
   const trips: Trip[] = [...(data.trips ?? [])].sort((a, b) =>
     `${b.date} ${b.time ?? ""}`.localeCompare(`${a.date} ${a.time ?? ""}`),
@@ -187,6 +191,41 @@ export function TripTracker({ autoStart = false }: { autoStart?: boolean }) {
 
   return (
     <div className="space-y-4">
+      {driveMode && (
+        <section className="drive-hud fixed inset-0 z-50 flex flex-col p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] pt-[calc(1.25rem+env(safe-area-inset-top,0px))]" aria-label="מצב נהיגה">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-bold text-hud-accent">
+              <span className={`h-2.5 w-2.5 rounded-full ${active ? "animate-pulse bg-hud-accent" : "bg-hud-muted"}`} />
+              {active ? "GPS פעיל · המסך נשאר דלוק" : "מוכן לנסיעה"}
+            </div>
+            <Link to="/trip" search={{}} aria-label="צא ממצב נהיגה" className="hud-icon-button"><Minimize2 className="h-5 w-5" /></Link>
+          </div>
+          <div className="flex flex-1 flex-col items-center justify-center gap-8">
+            <div className="text-center">
+              <MapPin className="mx-auto mb-2 h-6 w-6 text-hud-accent" />
+              <div className="num font-display text-[clamp(4rem,18vw,7rem)] font-extrabold leading-none text-hud-foreground">{active?.km.toFixed(2) ?? "0.00"}</div>
+              <div className="mt-2 text-lg font-semibold text-hud-muted">קילומטר</div>
+            </div>
+            <div className="grid w-full max-w-xl grid-cols-2 gap-3">
+              <div className="hud-metric">
+                <Timer className="h-5 w-5 text-hud-accent" />
+                <span className="num font-display mt-2 text-4xl font-bold text-hud-foreground">{fmtDuration(elapsed)}</span>
+                <span className="text-xs text-hud-muted">זמן נסיעה</span>
+              </div>
+              <div className="hud-metric">
+                <Gauge className="h-5 w-5 text-hud-accent" />
+                <span className="num font-display mt-2 text-4xl font-bold text-hud-foreground">{fmt(liveNet, c)}</span>
+                <span className="text-xs text-hud-muted">נטו היום אחרי דלק</span>
+              </div>
+            </div>
+          </div>
+          {active ? (
+            <Button variant="destructive" className="h-20 w-full rounded-2xl text-xl font-extrabold" onClick={end}><Square className="h-7 w-7" /> סיים נסיעה</Button>
+          ) : (
+            <Button className="h-20 w-full rounded-2xl text-xl font-extrabold" onClick={start}><Play className="h-7 w-7" /> התחל נסיעה</Button>
+          )}
+        </section>
+      )}
       {/* Auto-prompt from ?action=start_trip */}
       {askStart && !active && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 pb-10 backdrop-blur-sm">
