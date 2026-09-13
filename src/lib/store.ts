@@ -69,6 +69,8 @@ export type Settings = {
   fuelPrice: number; // ₪ per liter (or per kWh for electric)
   fuelPriceUpdatedAt?: string; // ISO date of last online price sync
   fuelPriceHistory?: FuelPriceEntry[]; // historical price+consumption changes
+  autoDetectTrip?: boolean; // prompt automatically when driving is detected
+  askWaiting?: boolean; // ask after a few standing minutes whether it's a wait
 };
 
 /** A tracked work trip recorded by the live GPS tracker. */
