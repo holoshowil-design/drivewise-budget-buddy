@@ -207,8 +207,69 @@ export function useAppData() {
   }, [update]);
 
   const removeTrip = useCallback((id: string) => {
-    update((d) => ({ ...d, trips: (d.trips || []).filter((x) => x.id !== id) }));
+    update((d) => ({
+      ...d,
+      trips: (d.trips || []).filter((x) => x.id !== id),
+      incomes: d.incomes.filter((x) => x.tripId !== id),
+    }));
   }, [update]);
+
+  const updateTrip = useCallback((id: string, patch: Partial<Omit<Trip, "id">>) => {
+    update((d) => ({ ...d, trips: (d.trips || []).map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+  }, [update]);
+
+  /**
+   * Saves a finished trip together with an optional linked income record.
+   * The income keeps `km: 0` so the driven distance is counted once only
+   * (through the trip itself) in the existing fuel-cost calculations.
+   */
+  const saveTripWithIncome = useCallback(
+    (trip: Omit<Trip, "id">, income?: Omit<Income, "id" | "km" | "tripId"> | null) => {
+      const tripId = crypto.randomUUID();
+      const incomeId = income ? crypto.randomUUID() : undefined;
+      update((d) => ({
+        ...d,
+        trips: [...(d.trips || []), { ...trip, id: tripId, incomeId }],
+        incomes: income
+          ? [...d.incomes, { ...income, km: 0, tripId, id: incomeId as string }]
+          : d.incomes,
+      }));
+      return tripId;
+    },
+    [update],
+  );
+
+  /** Updates a trip and its linked income together (edit flow). */
+  const updateTripWithIncome = useCallback(
+    (
+      id: string,
+      patch: Partial<Omit<Trip, "id">>,
+      income?: Omit<Income, "id" | "km" | "tripId"> | null,
+    ) => {
+      update((d) => {
+        const trip = (d.trips || []).find((t) => t.id === id);
+        let incomes = d.incomes;
+        let incomeId = trip?.incomeId;
+        if (income) {
+          if (incomeId && incomes.some((x) => x.id === incomeId)) {
+            incomes = incomes.map((x) => (x.id === incomeId ? { ...x, ...income, km: 0, tripId: id } : x));
+          } else {
+            incomeId = crypto.randomUUID();
+            incomes = [...incomes, { ...income, km: 0, tripId: id, id: incomeId }];
+          }
+        } else if (incomeId) {
+          incomes = incomes.filter((x) => x.id !== incomeId);
+          incomeId = undefined;
+        }
+        return {
+          ...d,
+          incomes,
+          trips: (d.trips || []).map((t) => (t.id === id ? { ...t, ...patch, incomeId } : t)),
+        };
+      });
+    },
+    [update],
+  );
 
   const removeIncome = useCallback((id: string) => {
     update((d) => ({ ...d, incomes: d.incomes.filter((x) => x.id !== id) }));
