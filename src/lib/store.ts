@@ -14,6 +14,8 @@ export type Income = {
   hours: number;
   km: number;
   note?: string;
+  /** Linked GPS trip — its km are already counted by the trip itself. */
+  tripId?: string;
 };
 
 
