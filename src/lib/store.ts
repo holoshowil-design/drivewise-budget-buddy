@@ -81,6 +81,9 @@ export type Trip = {
   km: number;
   seconds: number;
   endedAt?: string; // ISO timestamp
+  waitSeconds?: number; // standing/waiting time inside the trip
+  incomeId?: string; // linked income record created from the end-of-trip form
+  note?: string;
 };
 
 export type AppData = {
