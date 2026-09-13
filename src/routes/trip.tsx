@@ -21,13 +21,13 @@ export const Route = createFileRoute("/trip")({
 });
 
 function TripPage() {
-  const { action } = Route.useSearch();
+  const { action, mode } = Route.useSearch();
 
   return (
     <div className="mx-auto max-w-xl">
       <PageHeader title="נסיעת עבודה" subtitle="מדידת ק״מ וזמן בזמן אמת" />
       <div className="px-4">
-        <TripTracker autoStart={action === "start_trip"} driveMode={Route.useSearch().mode === "drive"} />
+        <TripTracker autoStart={action === "start_trip"} driveMode={mode === "drive"} />
       </div>
     </div>
   );

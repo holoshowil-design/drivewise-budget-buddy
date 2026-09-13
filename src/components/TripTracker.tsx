@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Square, MapPin, Timer, Fuel, Trash2, AlertTriangle, Gauge, Minimize2 } from "lucide-react";
