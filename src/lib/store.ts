@@ -464,9 +464,12 @@ export function fuelCostFor(
   settings: Settings,
   trips: Trip[] = [],
 ) {
-  const estimated =
-    estimateEnergyCostByDate(incomes, vehicle, settings).cost +
-    estimateTripEnergyCost(trips, vehicle, settings).cost;
+  // GPS is authoritative when a tracked trip exists for the period. Manual km
+  // remains the fallback for older/untracked records, preventing overlap from
+  // charging the same driven distance twice.
+  const manualEstimate = estimateEnergyCostByDate(incomes, vehicle, settings).cost;
+  const trackedEstimate = estimateTripEnergyCost(trips, vehicle, settings).cost;
+  const estimated = trips.length > 0 ? trackedEstimate : manualEstimate;
   const actual = expenses.filter((e) => e.category === "fuel").reduce((s, e) => s + e.amount, 0);
   return { estimated, actual, charged: Math.max(estimated, actual) };
 }
