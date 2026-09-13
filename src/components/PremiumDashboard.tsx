@@ -125,7 +125,9 @@ export function DriveModeAction({ active }: { active: boolean }) {
 export function PremiumStats({ data, income, expense, breakEven, forecast }: { data: AppData; income: number; expense: number; breakEven: number; forecast: number }) {
   const c = data.settings.currency;
   const hours = sumHours(filterByDate(data.incomes, iso(new Date())));
-  const km = sumKm(filterByDate(data.incomes, iso(new Date()))) + sumTripKm(filterByDate(data.trips ?? [], iso(new Date())));
+  const manualKm = sumKm(filterByDate(data.incomes, iso(new Date())));
+  const gpsKm = sumTripKm(filterByDate(data.trips ?? [], iso(new Date())));
+  const km = gpsKm > 0 ? gpsKm : manualKm;
   const hourly = hours > 0 ? (income - expense) / hours : 0;
   const kmRatio = km > 0 ? (income - expense) / km : 0;
   const badges = [
@@ -167,7 +169,9 @@ export function InteractiveWeeklyEarnings({ data }: { data: AppData }) {
       const expenses = filterByDate(data.expenses, day);
       const trips = filterByDate(data.trips ?? [], day);
       const net = netProfit(incomes, expenses, data.vehicle, data.settings, trips);
-      const km = sumKm(incomes) + sumTripKm(trips);
+      const manualKm = sumKm(incomes);
+      const gpsKm = sumTripKm(trips);
+      const km = gpsKm > 0 ? gpsKm : manualKm;
       return {
         date: day,
         label: date.toLocaleDateString("he-IL", { weekday: "short" }).replace("יום ", ""),

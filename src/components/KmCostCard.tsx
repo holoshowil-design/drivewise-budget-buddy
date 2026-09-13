@@ -40,21 +40,17 @@ export function KmCostCard({ data }: { data: AppData }) {
 
   const manualKmToday = sumKm(todayIncomes);
   const manualKmMonth = sumKm(monthIncomes);
-  const kmToday = manualKmToday + tripKmToday;
-  const kmMonth = manualKmMonth + tripKmMonth;
+  const kmToday = tripKmToday > 0 ? tripKmToday : manualKmToday;
+  const kmMonth = tripKmMonth > 0 ? tripKmMonth : manualKmMonth;
 
   const estIncomeToday = estimateEnergyCostByDate(todayIncomes, data.vehicle, data.settings);
   const estIncomeMonth = estimateEnergyCostByDate(monthIncomes, data.vehicle, data.settings);
-  const estToday = {
-    cost: estIncomeToday.cost + tripEstToday.cost,
-    units: estIncomeToday.units + tripEstToday.units,
-    costPerKm: estIncomeToday.costPerKm,
-  };
-  const estMonth = {
-    cost: estIncomeMonth.cost + tripEstMonth.cost,
-    units: estIncomeMonth.units + tripEstMonth.units,
-    costPerKm: estIncomeMonth.costPerKm,
-  };
+  const estToday = tripKmToday > 0
+    ? { ...tripEstToday, costPerKm: tripKmToday > 0 ? tripEstToday.cost / tripKmToday : estIncomeToday.costPerKm }
+    : estIncomeToday;
+  const estMonth = tripKmMonth > 0
+    ? { ...tripEstMonth, costPerKm: tripKmMonth > 0 ? tripEstMonth.cost / tripKmMonth : estIncomeMonth.costPerKm }
+    : estIncomeMonth;
 
   const fuelToday = fuelCostFor(todayIncomes, todayExpenses, data.vehicle, data.settings, todayTrips);
   const fuelMonth = fuelCostFor(monthIncomes, monthExpenses, data.vehicle, data.settings, monthTrips);
@@ -126,7 +122,7 @@ export function KmCostCard({ data }: { data: AppData }) {
         {tripKmMonth > 0 && (
           <div className="num mt-2 flex justify-between rounded-lg bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground">
             <span>ידני {Math.round(manualKmMonth).toLocaleString("he-IL")} ק״מ</span>
-            <span>מעקב GPS {tripKmMonth.toFixed(1)} ק״מ</span>
+            <span>מעקב GPS קובע {tripKmMonth.toFixed(1)} ק״מ</span>
           </div>
         )}
 
