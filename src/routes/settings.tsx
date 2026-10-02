@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Trash2, RefreshCw, CloudCheck, LogOut, LogIn, Download, Upload } from "lucide-react";
@@ -157,6 +158,27 @@ function SettingsPage() {
         </Card>
 
         <BackupCard />
+
+        <Card>
+          <CardContent className="p-4 space-y-4">
+            <h3 className="font-semibold">זיהוי נסיעות אוטומטי</h3>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <Label htmlFor="auto-detect">שאל כשמזוהה נסיעה</Label>
+                <p className="text-xs text-muted-foreground">כשהאפליקציה פתוחה ומזוהה תנועה ברכב</p>
+              </div>
+              <Switch id="auto-detect" checked={data.settings.autoDetectTrip !== false} onCheckedChange={(v) => updateSettings({ autoDetectTrip: v })} />
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <Label htmlFor="ask-wait">שאל על המתנה</Label>
+                <p className="text-xs text-muted-foreground">אחרי 4 דקות עמידה במקום בזמן נסיעה</p>
+              </div>
+              <Switch id="ask-wait" checked={data.settings.askWaiting !== false} onCheckedChange={(v) => updateSettings({ askWaiting: v })} />
+            </div>
+          </CardContent>
+        </Card>
+
 
         <Card>
           <CardContent className="p-4 space-y-3">
