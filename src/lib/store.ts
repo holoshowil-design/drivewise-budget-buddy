@@ -322,7 +322,7 @@ export function useAppData() {
   }, [update]);
 
 
-  return { data, ready, addIncome, addExpense, addTrip, removeTrip, removeIncome, removeExpense, updateIncome, updateExpense, updateSettings, updateVehicle, recordFuelPriceChange, update };
+  return { data, ready, addIncome, addExpense, addTrip, removeTrip, updateTrip, saveTripWithIncome, updateTripWithIncome, removeIncome, removeExpense, updateIncome, updateExpense, updateSettings, updateVehicle, recordFuelPriceChange, update };
 }
 
 // ---------- computations ----------
