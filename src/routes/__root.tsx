@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/BottomNav";
+import { DriveDetector } from "@/components/DriveDetector";
 import { useCloudSync } from "@/hooks/use-auth";
 
 function NotFoundComponent() {
@@ -129,6 +130,7 @@ function RootComponent() {
       <div className="min-h-screen bg-background text-foreground pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
         <Outlet />
       </div>
+      <DriveDetector />
       <BottomNav />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>

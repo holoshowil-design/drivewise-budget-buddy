@@ -83,7 +83,7 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
           const speedKmh = (d / dt) * 3600;
           // ignore GPS jitter and impossible jumps
           if (d >= 0.008 && speedKmh <= 220) {
-            persist({ ...cur, km: cur.km + d, last: point, lastMoveAt: point.t > 2 ? Date.now() : cur.lastMoveAt });
+            persist({ ...cur, km: cur.km + d, last: point, lastMoveAt: Date.now() });
             return;
           }
           if (d < 0.008) return; // stayed in place — keep old anchor
