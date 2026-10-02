@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Square, MapPin, Timer, Fuel, Trash2, AlertTriangle, Gauge, Minimize2 } from "lucide-react";
+import { Play, Square, MapPin, Timer, Fuel, Trash2, AlertTriangle, Gauge, Minimize2, Pencil, Hourglass, Flag } from "lucide-react";
 import { toast } from "sonner";
 import {
   useAppData,
@@ -14,57 +14,40 @@ import {
   energyUnitLabel,
   type Trip,
 } from "@/lib/store";
+import {
+  readActive,
+  writeActive,
+  haversine,
+  notifyIfHidden,
+  requestNotifyPermission,
+  type ActiveTrip,
+} from "@/lib/active-trip";
+import { TripEndDialog, type TripFormValues } from "@/components/TripEndDialog";
 
-const ACTIVE_KEY = "driver-active-trip";
-
-type ActiveTrip = {
-  startedAt: number; // epoch ms
-  date: string;
-  time: string;
-  km: number;
-  last?: { lat: number; lon: number; t: number };
-};
-
-function readActive(): ActiveTrip | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(ACTIVE_KEY);
-    return raw ? (JSON.parse(raw) as ActiveTrip) : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Great-circle distance between two coordinates, in kilometers. */
-function haversine(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
-  const R = 6371;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLon = ((b.lon - a.lon) * Math.PI) / 180;
-  const la1 = (a.lat * Math.PI) / 180;
-  const la2 = (b.lat * Math.PI) / 180;
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
+const WAIT_ASK_MS = 4 * 60 * 1000;
+const WAIT_SNOOZE_MS = 15 * 60 * 1000;
 
 export function TripTracker({ autoStart = false, driveMode = false }: { autoStart?: boolean; driveMode?: boolean }) {
-  const { data, ready, addTrip, removeTrip } = useAppData();
+  const { data, ready, removeTrip, saveTripWithIncome, updateTripWithIncome } = useAppData();
   const [active, setActive] = useState<ActiveTrip | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [askStart, setAskStart] = useState(false);
+  const [askWait, setAskWait] = useState(false);
+  const [ending, setEnding] = useState<TripFormValues | null>(null);
+  const [editing, setEditing] = useState<Trip | null>(null);
   const watchRef = useRef<number | null>(null);
   const wakeRef = useRef<{ release: () => Promise<void> } | null>(null);
   const activeRef = useRef<ActiveTrip | null>(null);
 
   const c = data.settings.currency;
   const unit = energyUnitLabel(data.vehicle);
+  const askWaiting = data.settings.askWaiting !== false;
 
   const persist = useCallback((t: ActiveTrip | null) => {
     activeRef.current = t;
     setActive(t);
-    if (typeof window === "undefined") return;
-    if (t) localStorage.setItem(ACTIVE_KEY, JSON.stringify(t));
-    else localStorage.removeItem(ACTIVE_KEY);
+    writeActive(t);
   }, []);
 
   const releaseWakeLock = useCallback(() => {
@@ -100,7 +83,7 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
           const speedKmh = (d / dt) * 3600;
           // ignore GPS jitter and impossible jumps
           if (d >= 0.008 && speedKmh <= 220) {
-            persist({ ...cur, km: cur.km + d, last: point });
+            persist({ ...cur, km: cur.km + d, last: point, lastMoveAt: point.t > 2 ? Date.now() : cur.lastMoveAt });
             return;
           }
           if (d < 0.008) return; // stayed in place — keep old anchor
@@ -130,30 +113,53 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
 
   const start = useCallback(() => {
     if (activeRef.current) return;
-    const t: ActiveTrip = { startedAt: Date.now(), date: todayISO(), time: nowHHMM(), km: 0 };
-    persist(t);
+    const now = Date.now();
+    persist({ startedAt: now, date: todayISO(), time: nowHHMM(), km: 0, lastMoveAt: now });
     setAskStart(false);
+    requestNotifyPermission();
     startWatch();
     toast.success("נסיעת עבודה התחילה");
   }, [persist, startWatch]);
 
+  /** Stops tracking and opens the end-of-trip form (nothing is saved yet). */
   const end = useCallback(() => {
     const cur = activeRef.current;
     if (!cur) return;
     stopWatch();
+    setAskWait(false);
     const seconds = Math.round((Date.now() - cur.startedAt) / 1000);
-    const km = Math.round(cur.km * 100) / 100;
+    setEnding({
+      date: cur.date,
+      time: cur.time,
+      km: Math.round(cur.km * 100) / 100,
+      seconds,
+      waitSeconds: Math.min(seconds, Math.round(cur.waitSeconds ?? 0)),
+    });
+  }, [stopWatch]);
+
+  const finishEnding = () => {
     persist(null);
     setElapsed(0);
-    if (km <= 0 && seconds < 30) {
-      toast("הנסיעה הייתה קצרה מדי ולא נשמרה");
-      return;
-    }
-    addTrip({ date: cur.date, time: cur.time, km, seconds, endedAt: new Date().toISOString() });
-    toast.success(`נסיעה נשמרה · ${km.toFixed(1)} ק״מ · ${fmtDuration(seconds)}`);
-  }, [addTrip, persist, stopWatch]);
+    setEnding(null);
+  };
 
-  // restore an active trip after a reload / accidental close
+  const resumeAfterCancel = () => {
+    // closed the popup without choosing — keep the trip running
+    setEnding(null);
+    if (activeRef.current) startWatch();
+  };
+
+  const confirmWaiting = () => {
+    const cur = activeRef.current;
+    setAskWait(false);
+    if (!cur) return;
+    const now = Date.now();
+    const stoodFor = Math.max(0, (now - (cur.lastMoveAt ?? now)) / 1000);
+    persist({ ...cur, waitSeconds: (cur.waitSeconds ?? 0) + stoodFor, lastMoveAt: now, waitSnoozeUntil: now + WAIT_SNOOZE_MS });
+    toast("ההמתנה נרשמת · נשאל שוב בעוד 15 דקות");
+  };
+
+  // restore an active trip after a reload / accidental close / auto-detection
   useEffect(() => {
     const saved = readActive();
     if (saved) {
@@ -167,20 +173,35 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // live timer
+  // live timer + waiting check
   useEffect(() => {
     if (!active) return;
-    const tick = () => setElapsed(Math.round((Date.now() - active.startedAt) / 1000));
+    const tick = () => {
+      setElapsed(Math.round((Date.now() - active.startedAt) / 1000));
+      const cur = activeRef.current;
+      if (!cur || !askWaiting || ending) return;
+      const now = Date.now();
+      const stoodMs = now - (cur.lastMoveAt ?? cur.startedAt);
+      if (stoodMs >= WAIT_ASK_MS && now >= (cur.waitSnoozeUntil ?? 0)) {
+        setAskWait((was) => {
+          if (!was) {
+            notifyIfHidden("עומד במקום כמה דקות", "אתה בהמתנה או שהנסיעה הסתיימה?");
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          }
+          return true;
+        });
+      }
+    };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [active]);
+  }, [active, askWaiting, ending]);
 
   if (!ready) return null;
 
   const liveParams = effectiveFuelParams(todayISO(), data.vehicle, data.settings, nowHHMM());
   const liveCost = active ? (active.km / (liveParams.consumption || 1)) * liveParams.price : 0;
-  const avgSpeed = active && elapsed > 0 ? (active.km / (elapsed / 3600)) : 0;
+  const avgSpeed = active && elapsed > 0 ? active.km / (elapsed / 3600) : 0;
   const today = todayISO();
   const todayIncomes = data.incomes.filter((item) => item.date === today);
   const grossToday = todayIncomes.reduce((sum, item) => sum + item.amount * (1 - item.commissionPct / 100) + (item.tip || 0), 0);
@@ -189,6 +210,7 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
   const trips: Trip[] = [...(data.trips ?? [])].sort((a, b) =>
     `${b.date} ${b.time ?? ""}`.localeCompare(`${a.date} ${a.time ?? ""}`),
   );
+  const editIncome = editing?.incomeId ? data.incomes.find((i) => i.id === editing.incomeId) ?? null : null;
 
   return (
     <div className="space-y-4">
@@ -227,6 +249,7 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
           )}
         </section>
       )}
+
       {/* Auto-prompt from ?action=start_trip */}
       {askStart && !active && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 pb-10 backdrop-blur-sm">
@@ -245,6 +268,67 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Waiting check */}
+      {askWait && active && !ending && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70 p-4 pb-10 backdrop-blur-sm" role="dialog" aria-modal="true">
+          <Card className="w-full max-w-md border-2">
+            <CardContent className="p-6 text-center">
+              <Hourglass className="mx-auto h-10 w-10 text-primary" />
+              <h2 className="mt-2 text-2xl font-extrabold">עומד במקום כמה דקות</h2>
+              <p className="mt-1 text-sm text-muted-foreground">אתה בהמתנה ללקוח, או שהנסיעה הסתיימה?</p>
+              <div className="mt-5 grid gap-2">
+                <Button className="h-16 text-lg font-bold" onClick={confirmWaiting}>
+                  <Hourglass className="h-6 w-6" /> בהמתנה — המשך לחשב
+                </Button>
+                <Button variant="destructive" className="h-14 text-base font-bold" onClick={end}>
+                  <Flag className="h-5 w-5" /> סיימתי את הנסיעה
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* End-of-trip popup */}
+      {ending && (
+        <TripEndDialog
+          open
+          mode="end"
+          initial={ending}
+          onOpenChange={(o) => { if (!o) resumeAfterCancel(); }}
+          onSave={(trip, income) => {
+            saveTripWithIncome({ ...trip, endedAt: new Date().toISOString() }, income);
+            toast.success(income ? `נסיעה והכנסה נשמרו · ${trip.km.toFixed(1)} ק״מ` : `נסיעה נשמרה · ${trip.km.toFixed(1)} ק״מ`);
+            finishEnding();
+          }}
+          onDiscard={() => {
+            finishEnding();
+            toast("הנסיעה בוטלה ולא נשמרה");
+          }}
+        />
+      )}
+
+      {/* Edit popup */}
+      {editing && (
+        <TripEndDialog
+          open
+          mode="edit"
+          initial={{ date: editing.date, time: editing.time ?? "00:00", km: editing.km, seconds: editing.seconds, waitSeconds: editing.waitSeconds ?? 0 }}
+          initialIncome={editIncome}
+          onOpenChange={(o) => { if (!o) setEditing(null); }}
+          onSave={(trip, income) => {
+            updateTripWithIncome(editing.id, trip, income);
+            setEditing(null);
+            toast.success("הנסיעה עודכנה");
+          }}
+          onDiscard={() => {
+            removeTrip(editing.id);
+            setEditing(null);
+            toast("הנסיעה נמחקה");
+          }}
+        />
       )}
 
       {/* Live tracker */}
@@ -271,13 +355,10 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
               </div>
               <div className="num mt-3 flex justify-between rounded-xl bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
                 <span>מהירות ממוצעת {avgSpeed.toFixed(0)} קמ״ש</span>
+                {(active.waitSeconds ?? 0) > 0 && <span>המתנה {fmtDuration(active.waitSeconds ?? 0)}</span>}
                 <span>דלק משוער {fmt(liveCost, c)}</span>
               </div>
-              <Button
-                variant="destructive"
-                className="mt-4 h-20 w-full text-xl font-extrabold"
-                onClick={end}
-              >
+              <Button variant="destructive" className="mt-4 h-20 w-full text-xl font-extrabold" onClick={end}>
                 <Square className="ms-2 h-7 w-7" /> סיים נסיעת עבודה
               </Button>
             </>
@@ -314,16 +395,22 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
               {trips.slice(0, 30).map((t) => {
                 const p = effectiveFuelParams(t.date, data.vehicle, data.settings, t.time);
                 const units = t.km / (p.consumption || 1);
+                const inc = t.incomeId ? data.incomes.find((i) => i.id === t.incomeId) : undefined;
                 return (
                   <li key={t.id} className="flex items-center justify-between gap-2 py-2.5">
-                    <div>
+                    <button type="button" className="min-w-0 flex-1 text-start" onClick={() => setEditing(t)}>
                       <div className="num text-sm font-semibold">
                         {t.km.toFixed(1)} ק״מ · {fmtDuration(t.seconds)}
+                        {inc && <span className="ms-2 text-success">{fmt(inc.amount, c)}</span>}
                       </div>
                       <div className="num text-[11px] text-muted-foreground">
                         {t.date} {t.time ?? ""} · ≈ {fmt(units * p.price, c)} ({units.toFixed(1)} {unit})
+                        {(t.waitSeconds ?? 0) > 0 && ` · המתנה ${Math.round((t.waitSeconds ?? 0) / 60)} ד׳`}
                       </div>
-                    </div>
+                    </button>
+                    <Button variant="ghost" size="icon" aria-label="ערוך נסיעה" onClick={() => setEditing(t)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
