@@ -380,3 +380,45 @@
   35% { opacity: 1; }
   100% { opacity: 0; transform: rotate(var(--angle)) translateX(150px) scale(1.2); }
 }
+
+/* Visual-only reward choreography; fixed overlay never changes document flow. */
+.reward-layer { position: fixed; inset: 0; z-index: 100; pointer-events: none; overflow: hidden; }
+.reward-layer canvas { position: absolute; inset: 0; }
+.reward-flash { position: absolute; display: grid; place-items: center; width: 0; height: 0; isolation: isolate; }
+.reward-halo {
+  position: absolute; width: 12rem; height: 12rem; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--primary) 28%, transparent), transparent 68%);
+  animation: reward-halo 1.1s ease-out both;
+}
+.reward-ring {
+  position: absolute; width: 3.5rem; height: 3.5rem; border-radius: 50%;
+  border: 2px solid color-mix(in oklab, var(--hud-accent) 70%, transparent);
+  box-shadow: 0 0 22px color-mix(in oklab, var(--primary) 45%, transparent), inset 0 0 18px color-mix(in oklab, var(--primary) 20%, transparent);
+  animation: reward-ring 1.05s cubic-bezier(.12,.68,.2,1) both;
+}
+.reward-message {
+  position: absolute; top: -6.2rem; white-space: nowrap; max-width: calc(100vw - 2rem);
+  padding: .7rem 1.2rem; border-radius: .7rem;
+  background: var(--hud-background); color: var(--hud-foreground);
+  border: 1px solid var(--hud-border);
+  box-shadow: var(--shadow-premium), 0 0 26px color-mix(in oklab, var(--primary) 24%, transparent);
+  font-family: var(--font-sans); font-size: .9rem; font-weight: 800;
+  animation: reward-message 1.15s cubic-bezier(.2,.8,.2,1) both;
+}
+.reward-flash-goal .reward-message { top: -8rem; font-size: 1.05rem; border-color: var(--hud-accent); }
+.reward-flash-goal .reward-halo { width: 20rem; height: 20rem; animation-duration: 1.9s; }
+.reward-flash-goal .reward-ring { animation-duration: 1.65s; }
+.reward-flash-goal .reward-message { animation-duration: 2.1s; }
+@keyframes reward-halo { 0% { opacity: 0; transform: scale(.25); } 30% { opacity: 1; } 100% { opacity: 0; transform: scale(1.5); } }
+@keyframes reward-ring { 0% { opacity: 0; transform: scale(.2); } 20% { opacity: 1; } 100% { opacity: 0; transform: scale(4.6); } }
+@keyframes reward-message { 0% { opacity: 0; transform: translateY(18px) scale(.82); } 22% { opacity: 1; transform: translateY(-5px) scale(1.03); } 40% { transform: translateY(0) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-18px) scale(.97); } }
+.reward-action { position: relative; overflow: hidden; }
+.reward-action:not(:disabled):active { transform: scale(.96); box-shadow: 0 0 0 5px color-mix(in oklab, var(--primary) 15%, transparent); }
+.profit-hero-achieved { box-shadow: 0 24px 50px -28px color-mix(in oklab, var(--primary) 55%, transparent), inset 0 0 28px color-mix(in oklab, var(--hud-accent) 7%, transparent); }
+.profit-hero-achieved .gauge-value { filter: drop-shadow(0 0 7px var(--hud-accent)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .reward-halo, .reward-ring { display: none; }
+  .reward-message { animation: none !important; opacity: 1; }
+  .reward-action:not(:disabled):active { transform: none; }
+}
