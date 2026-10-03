@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/BottomNav";
 import { DriveDetector } from "@/components/DriveDetector";
+import { RewardEffects } from "@/components/RewardEffects";
 import { useCloudSync } from "@/hooks/use-auth";
 
 function NotFoundComponent() {
@@ -132,6 +133,7 @@ function RootComponent() {
         <Outlet />
       </div>
       <DriveDetector />
+      <RewardEffects />
       <BottomNav />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>

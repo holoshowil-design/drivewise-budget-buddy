@@ -108,10 +108,10 @@ export function TripEndDialog({ open, onOpenChange, mode, initial, initialIncome
         </div>
 
         <div className="grid gap-2">
-          <Button className="h-14 text-lg font-bold" onClick={() => save(true)} disabled={amountN <= 0}>
+          <Button className="reward-action h-14 text-lg font-bold" onClick={() => save(true)} disabled={amountN <= 0}>
             שמור עם הסכום
           </Button>
-          <Button variant="outline" className="h-12" onClick={() => save(false)}>
+          <Button variant="outline" className="reward-action h-12" onClick={() => save(false)}>
             {mode === "end" ? "שמור בלי סכום" : initialIncome ? "שמור והסר סכום" : "שמור בלי סכום"}
           </Button>
           {onDiscard && (

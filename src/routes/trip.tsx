@@ -15,6 +15,8 @@ export const Route = createFileRoute("/trip")({
       { name: "description", content: "מעקב GPS חי לנסיעות עבודה: ק״מ, זמן ועלות דלק משוערת." },
       { property: "og:title", content: "דרייבר - מעקב נסיעה" },
       { property: "og:description", content: "מעקב GPS חי לנסיעות עבודה: ק״מ, זמן ועלות דלק משוערת." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: TripPage,
