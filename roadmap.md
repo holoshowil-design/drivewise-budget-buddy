@@ -1,7 +1,5 @@
-# Dashboard upgrade
+# Reward motion upgrade
 
-- [x] Build the interactive daily profit gauge and premium metric cards
-- [x] Add live high-contrast Drive Mode with Wake Lock
-- [x] Add interactive weekly earnings bars with day breakdown
-- [x] Add goal celebration, dynamic badges, and motion polish
-- [x] Verify dashboard and Drive Mode on desktop and mobile
+- [ ] Add a reusable, reduced-motion-aware celebration layer without changing the base layout or palette
+- [ ] Celebrate income saves, completed trips, and genuine daily-goal crossings
+- [ ] Verify interactions and visual behavior on desktop and mobile
