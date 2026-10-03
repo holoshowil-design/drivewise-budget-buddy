@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { useAppData, todayISO, sumIncomes, fmt, type ExpenseCategory, categoryLabel } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,12 +12,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ChevronDown } from "lucide-react";
+import { celebrate, crossedDailyGoal } from "@/lib/rewards";
 
 const searchSchema = z.object({ tab: z.enum(["income", "expense", "fuel"]).optional() });
 
 export const Route = createFileRoute("/add")({
   validateSearch: searchSchema,
-  head: () => ({ meta: [{ title: "הוספת רשומה - דרייבר" }, { name: "description", content: "הוסף הכנסה, הוצאה או תדלוק." }] }),
+  head: () => ({ meta: [{ title: "הוספת רשומה - דרייבר" }, { name: "description", content: "הוסף הכנסה, הוצאה או תדלוק." }, { property: "og:title", content: "הוספת רשומה - דרייבר" }, { property: "og:description", content: "הוסף הכנסה, הוצאה או תדלוק." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AddPage,
 });
 
@@ -91,10 +92,10 @@ function IncomeForm() {
 
   const bump = (v: number) => setForm((f) => ({ ...f, amount: String((parseFloat(f.amount) || 0) + v) }));
 
-  const submit = () => {
+  const submit = (event: MouseEvent<HTMLButtonElement>) => {
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) return toast.error("הכנס סכום תקין");
-    const id = addIncome({
+    const income = {
       date: form.date,
       amount,
       platform: "פרטי",
@@ -103,7 +104,10 @@ function IncomeForm() {
       hours: parseFloat(form.hours) || 0,
       km: parseFloat(form.km) || 0,
       note: form.note.trim() || undefined,
-    });
+    };
+    const reachedGoal = crossedDailyGoal(data, income);
+    const id = addIncome(income);
+    celebrate(reachedGoal ? "goal" : "income", event.currentTarget);
     toast.success(`נוספה הכנסה · נטו ${fmt(previewNet, c)}`, {
       action: { label: "ביטול", onClick: () => removeIncome(id) },
     });
@@ -137,7 +141,7 @@ function IncomeForm() {
         </div>
       )}
 
-      <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">
+      <Button onClick={submit} className="reward-action w-full h-12 text-base font-semibold" size="lg">
         {dayIncomes.length > 0 ? "הוסף לסכום היום" : "שמירת הכנסה"}
       </Button>
 

@@ -39,7 +39,7 @@ export function DailyProfitGauge({
   const goalReached = targetPct >= 100;
 
   return (
-    <section className="profit-hero animate-scale-in" aria-label="מד רווח יומי">
+    <section className={`profit-hero animate-scale-in ${goalReached ? "profit-hero-achieved" : ""}`} aria-label="מד רווח יומי">
       {goalReached && <GoalSparkles />}
       <div className="relative z-10 flex items-center justify-between text-xs">
         <span className="flex items-center gap-1.5 font-semibold text-hud-muted">

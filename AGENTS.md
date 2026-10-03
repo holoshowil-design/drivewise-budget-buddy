@@ -1,0 +1,1 @@
+- Keep achievement visuals in a single client-only overlay driven by custom reward events; this separates ephemeral animation from persisted financial data and preserves the existing layout.

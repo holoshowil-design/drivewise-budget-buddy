@@ -23,6 +23,7 @@ import {
   type ActiveTrip,
 } from "@/lib/active-trip";
 import { TripEndDialog, type TripFormValues } from "@/components/TripEndDialog";
+import { celebrate, crossedDailyGoal } from "@/lib/rewards";
 
 const WAIT_ASK_MS = 4 * 60 * 1000;
 const WAIT_SNOOZE_MS = 15 * 60 * 1000;
@@ -299,7 +300,10 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
           initial={ending}
           onOpenChange={(o) => { if (!o) resumeAfterCancel(); }}
           onSave={(trip, income) => {
+            const reachedGoal = income ? crossedDailyGoal(data, { ...income, km: 0, tripId: "reward-trip-preview" }, trip) : false;
+            const trigger = document.activeElement;
             saveTripWithIncome({ ...trip, endedAt: new Date().toISOString() }, income);
+            celebrate(reachedGoal ? "goal" : "trip", trigger);
             toast.success(income ? `נסיעה והכנסה נשמרו · ${trip.km.toFixed(1)} ק״מ` : `נסיעה נשמרה · ${trip.km.toFixed(1)} ק״מ`);
             finishEnding();
           }}
