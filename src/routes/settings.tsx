@@ -17,7 +17,7 @@ import { getOnlineFuelPrice } from "@/lib/fuel-price.functions";
 
 
 export const Route = createFileRoute("/settings")({
-  head: () => ({ meta: [{ title: "הגדרות - דרייבר" }, { name: "description", content: "הגדרות, יעדים ופרטי רכב." }] }),
+  head: () => ({ meta: [{ title: "הגדרות - דרייבר" }, { name: "description", content: "הגדרות, יעדים ופרטי רכב." }, { property: "og:title", content: "הגדרות - דרייבר" }, { property: "og:description", content: "הגדרות, יעדים ופרטי רכב." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: SettingsPage,
 });
 

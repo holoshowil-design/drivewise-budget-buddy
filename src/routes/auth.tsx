@@ -20,6 +20,8 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "התחבר כדי לשמור את ההכנסות וההוצאות שלך בענן." },
       { property: "og:title", content: "התחברות - דרייבר" },
       { property: "og:description", content: "התחבר כדי לשמור את ההכנסות וההוצאות שלך בענן." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,
