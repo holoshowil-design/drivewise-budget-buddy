@@ -118,7 +118,7 @@ export function RewardEffects() {
       cancelAnimationFrame(frameRef.current);
       if (flashTimer.current) clearTimeout(flashTimer.current);
     };
-  }, []);
+  }, [mounted]);
 
   if (!mounted) return null;
   return createPortal(<div className="reward-layer" aria-live="polite">
