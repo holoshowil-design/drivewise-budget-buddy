@@ -12,7 +12,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recha
 type Range = "today" | "week" | "month" | "all";
 
 export const Route = createFileRoute("/reports")({
-  head: () => ({ meta: [{ title: "דוחות - דרייבר" }, { name: "description", content: "סיכומים ופירוט הכנסות והוצאות." }] }),
+  head: () => ({ meta: [{ title: "דוחות - דרייבר" }, { name: "description", content: "סיכומים ופירוט הכנסות והוצאות." }, { property: "og:title", content: "דוחות - דרייבר" }, { property: "og:description", content: "סיכומים ופירוט הכנסות והוצאות." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Reports,
 });
 

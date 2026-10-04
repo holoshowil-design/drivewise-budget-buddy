@@ -16,7 +16,10 @@ export function RewardEffects() {
   const frameRef = useRef<number>(0);
   const lastRef = useRef<number>(0);
   const [flash, setFlash] = useState<Flash | null>(null);
+  const [mounted, setMounted] = useState(false);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -115,9 +118,9 @@ export function RewardEffects() {
       cancelAnimationFrame(frameRef.current);
       if (flashTimer.current) clearTimeout(flashTimer.current);
     };
-  }, []);
+  }, [mounted]);
 
-  if (typeof document === "undefined") return null;
+  if (!mounted) return null;
   return createPortal(<div className="reward-layer" aria-live="polite">
     <canvas ref={canvasRef} aria-hidden="true" />
     {flash && <div key={flash.id} className={`reward-flash reward-flash-${flash.kind}`} style={{ left: flash.x, top: flash.y }}>

@@ -9,7 +9,7 @@ import { ChevronRight, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/calendar")({
-  head: () => ({ meta: [{ title: "לוח שנה - דרייבר" }, { name: "description", content: "תצוגה חודשית של הרווח היומי." }] }),
+  head: () => ({ meta: [{ title: "לוח שנה - דרייבר" }, { name: "description", content: "תצוגה חודשית של הרווח היומי." }, { property: "og:title", content: "לוח שנה - דרייבר" }, { property: "og:description", content: "תצוגה חודשית של הרווח היומי." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CalendarPage,
 });
 
