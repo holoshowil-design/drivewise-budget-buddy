@@ -303,7 +303,7 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
             const reachedGoal = income ? crossedDailyGoal(data, { ...income, km: 0, tripId: "reward-trip-preview" }, trip) : false;
             const trigger = document.activeElement;
             saveTripWithIncome({ ...trip, endedAt: new Date().toISOString() }, income);
-            celebrate(reachedGoal ? "goal" : "trip", trigger);
+            celebrate(reachedGoal ? "goal" : "trip", trigger, income?.amount, data.settings.currency);
             toast.success(income ? `נסיעה והכנסה נשמרו · ${trip.km.toFixed(1)} ק״מ` : `נסיעה נשמרה · ${trip.km.toFixed(1)} ק״מ`);
             finishEnding();
           }}

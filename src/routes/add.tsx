@@ -107,7 +107,7 @@ function IncomeForm() {
     };
     const reachedGoal = crossedDailyGoal(data, income);
     const id = addIncome(income);
-    celebrate(reachedGoal ? "goal" : "income", event.currentTarget);
+    celebrate(reachedGoal ? "goal" : "income", event.currentTarget, amount, c);
     toast.success(`נוספה הכנסה · נטו ${fmt(previewNet, c)}`, {
       action: { label: "ביטול", onClick: () => removeIncome(id) },
     });
