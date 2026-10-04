@@ -381,34 +381,36 @@
   100% { opacity: 0; transform: rotate(var(--angle)) translateX(150px) scale(1.2); }
 }
 
-/* Visual-only reward choreography; fixed overlay never changes document flow. */
+/* Visual-only reward choreography; the chosen glass composition exists only during a milestone. */
 .reward-layer { position: fixed; inset: 0; z-index: 100; pointer-events: none; overflow: hidden; }
 .reward-layer canvas { position: absolute; inset: 0; }
+.reward-ceremony { position: absolute; inset: 0; display: grid; place-items: center; padding: 1.25rem; background: color-mix(in oklab, var(--card) 42%, transparent); backdrop-filter: blur(12px); animation: ceremony-veil .4s ease-out both; }
+.reward-ceremony-card { pointer-events: auto; position: relative; width: min(100%, 320px); max-height: calc(100dvh - 2.5rem); overflow: auto; border-radius: 32px; padding: 2rem; border: 1px solid color-mix(in oklab, var(--primary) 9%, var(--card)); background: var(--card); text-align: center; box-shadow: 0 32px 64px -16px color-mix(in oklab, var(--primary) 20%, transparent); animation: ceremony-land .75s cubic-bezier(.17,1.2,.25,1) both; }
+.reward-ceremony-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 10% 4%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 45%), radial-gradient(circle at 92% 96%, color-mix(in oklab, var(--primary) 9%, transparent), transparent 42%); }
+.reward-medal { position: relative; display: grid; place-items: center; width: 6rem; height: 6rem; margin: 0 auto 1.5rem; border: 4px solid var(--primary); border-radius: 50%; box-shadow: 0 0 0 6px color-mix(in oklab, var(--primary) 12%, transparent); animation: medal-arrive .85s cubic-bezier(.14,1.5,.28,1) both; }
+.reward-medal-orbit { position: absolute; inset: -1rem; border: 1px solid color-mix(in oklab, var(--primary) 40%, transparent); border-radius: 50%; animation: medal-orbit 1.8s ease-out both; }
+.reward-medal-core { display: grid; place-items: center; width: 4.75rem; height: 4.75rem; border-radius: 50%; color: var(--primary-foreground); background: var(--primary); box-shadow: 0 10px 26px color-mix(in oklab, var(--primary) 35%, transparent); }
+.reward-medal-core svg { width: 2.5rem; height: 2.5rem; stroke-width: 2.4; }
+.reward-ceremony h2 { position: relative; font-size: 1.5rem; font-weight: 800; line-height: 1.25; color: var(--foreground); }
+.reward-ceremony p { position: relative; margin-top: .5rem; font-size: .875rem; line-height: 1.6; font-weight: 600; color: var(--muted-foreground); }
+.reward-amount { position: relative; display: inline-flex; flex-direction: column; gap: .1rem; margin-top: 1.5rem; padding: .6rem 1.5rem; border-radius: 1rem; background: color-mix(in oklab, var(--primary) 8%, var(--card)); }
+.reward-amount-label { font-size: .65rem; font-weight: 700; color: var(--muted-foreground); }
+.reward-amount strong { font-family: var(--font-display); font-size: 1.75rem; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
+.reward-progress { position: relative; margin-top: 1.75rem; }
+.reward-progress > div { display: flex; justify-content: space-between; font-size: .7rem; font-weight: 800; color: var(--muted-foreground); }
+.reward-progress-track { display: block; overflow: hidden; height: .625rem; margin-top: .75rem; border-radius: 999px; background: var(--muted); }
+.reward-progress-track span { display: block; width: 100%; height: 100%; border-radius: inherit; background: var(--gradient-primary); box-shadow: 0 0 12px var(--primary); transform-origin: right; animation: reward-fill 1.2s .3s ease-out both; }
+.reward-continue { position: relative; width: 100%; height: 3rem; margin-top: 2rem; border-radius: 1rem; background: var(--hud-background); color: var(--hud-foreground); font-weight: 800; box-shadow: var(--shadow-premium); }
+.reward-continue:hover { background: var(--hud-surface); }
 .reward-flash { position: absolute; display: grid; place-items: center; width: 0; height: 0; isolation: isolate; }
-.reward-halo {
-  position: absolute; width: 12rem; height: 12rem; border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in oklab, var(--primary) 28%, transparent), transparent 68%);
-  animation: reward-halo 1.1s ease-out both;
-}
-.reward-ring {
-  position: absolute; width: 3.5rem; height: 3.5rem; border-radius: 50%;
-  border: 2px solid color-mix(in oklab, var(--hud-accent) 70%, transparent);
-  box-shadow: 0 0 22px color-mix(in oklab, var(--primary) 45%, transparent), inset 0 0 18px color-mix(in oklab, var(--primary) 20%, transparent);
-  animation: reward-ring 1.05s cubic-bezier(.12,.68,.2,1) both;
-}
-.reward-message {
-  position: absolute; top: -6.2rem; white-space: nowrap; max-width: calc(100vw - 2rem);
-  padding: .7rem 1.2rem; border-radius: .7rem;
-  background: var(--hud-background); color: var(--hud-foreground);
-  border: 1px solid var(--hud-border);
-  box-shadow: var(--shadow-premium), 0 0 26px color-mix(in oklab, var(--primary) 24%, transparent);
-  font-family: var(--font-sans); font-size: .9rem; font-weight: 800;
-  animation: reward-message 1.15s cubic-bezier(.2,.8,.2,1) both;
-}
-.reward-flash-goal .reward-message { top: -8rem; font-size: 1.05rem; border-color: var(--hud-accent); }
-.reward-flash-goal .reward-halo { width: 20rem; height: 20rem; animation-duration: 1.9s; }
-.reward-flash-goal .reward-ring { animation-duration: 1.65s; }
-.reward-flash-goal .reward-message { animation-duration: 2.1s; }
+.reward-halo { position: absolute; width: 12rem; height: 12rem; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--primary) 28%, transparent), transparent 68%); animation: reward-halo 1.6s ease-out both; }
+.reward-ring { position: absolute; width: 3.5rem; height: 3.5rem; border-radius: 50%; border: 2px solid color-mix(in oklab, var(--hud-accent) 70%, transparent); box-shadow: 0 0 22px color-mix(in oklab, var(--primary) 45%, transparent); animation: reward-ring 1.5s cubic-bezier(.12,.68,.2,1) both; }
+.reward-message { position: absolute; top: -6.2rem; display: flex; align-items: center; gap: .4rem; white-space: nowrap; padding: .7rem 1.2rem; border-radius: .7rem; background: var(--hud-background); color: var(--hud-foreground); box-shadow: var(--shadow-premium); font-size: .9rem; font-weight: 800; animation: reward-message 1.8s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes ceremony-veil { from { opacity: 0; backdrop-filter: blur(0); } to { opacity: 1; backdrop-filter: blur(12px); } }
+@keyframes ceremony-land { from { opacity: 0; transform: translateY(32px) scale(.87); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes medal-arrive { from { transform: translateY(28px) scale(.4) rotate(-20deg); opacity: 0; } to { transform: translateY(0) scale(1) rotate(0); opacity: 1; } }
+@keyframes medal-orbit { from { transform: scale(.4); opacity: .9; } to { transform: scale(1.35); opacity: 0; } }
+@keyframes reward-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes reward-halo { 0% { opacity: 0; transform: scale(.25); } 30% { opacity: 1; } 100% { opacity: 0; transform: scale(1.5); } }
 @keyframes reward-ring { 0% { opacity: 0; transform: scale(.2); } 20% { opacity: 1; } 100% { opacity: 0; transform: scale(4.6); } }
 @keyframes reward-message { 0% { opacity: 0; transform: translateY(18px) scale(.82); } 22% { opacity: 1; transform: translateY(-5px) scale(1.03); } 40% { transform: translateY(0) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-18px) scale(.97); } }
@@ -420,5 +422,6 @@
 @media (prefers-reduced-motion: reduce) {
   .reward-halo, .reward-ring { display: none; }
   .reward-message { animation: none !important; opacity: 1; }
+  .reward-ceremony, .reward-ceremony-card, .reward-medal, .reward-medal-orbit, .reward-progress-track span { animation: none !important; }
   .reward-action:not(:disabled):active { transform: none; }
 }

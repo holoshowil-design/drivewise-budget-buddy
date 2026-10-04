@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { Check, Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { fmt } from "@/lib/store";
 import { type RewardDetail } from "@/lib/rewards";
 
 type Particle = {
@@ -7,9 +10,9 @@ type Particle = {
   spin: number; spinSpeed: number; tilt: number; size: number; color: string;
   shape: "ribbon" | "foil" | "spark"; life: number;
 };
-type Flash = { id: number; x: number; y: number; kind: RewardDetail["kind"] };
+type Flash = RewardDetail & { id: number; x: number; y: number };
 
-/** A transient, fixed canvas: layered foil, curved ribbons and perspective-scaled particles. */
+/** One ephemeral reward surface; financial state and page layout remain untouched. */
 export function RewardEffects() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
@@ -22,6 +25,7 @@ export function RewardEffects() {
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
+    if (!mounted) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -86,19 +90,10 @@ export function RewardEffects() {
       else { frameRef.current = 0; lastRef.current = 0; }
     };
 
-    const onReward = (event: Event) => {
-      const { kind, x: requestedX, y: requestedY } = (event as CustomEvent<RewardDetail>).detail;
-      const x = requestedX ?? window.innerWidth / 2;
-      const y = requestedY ?? window.innerHeight * 0.38;
-      if (flashTimer.current) clearTimeout(flashTimer.current);
-      setFlash({ kind, x, y, id: Date.now() });
-      flashTimer.current = setTimeout(() => setFlash(null), kind === "goal" ? 2100 : 1150);
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      const colors = palette();
-      const count = kind === "goal" ? 95 : kind === "trip" ? 58 : 36;
+    const burst = (x: number, y: number, count: number, colors: string[], power: number) => {
       for (let i = 0; i < count; i++) {
-        const angle = -Math.PI / 2 + (Math.random() - 0.5) * (kind === "goal" ? 2.8 : 2.2);
-        const speed = 3 + Math.random() * (kind === "goal" ? 10 : 7);
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * 3.9;
+        const speed = (3 + Math.random() * 9) * power;
         particlesRef.current.push({
           x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
           z: (Math.random() - 0.5) * 140, vz: (Math.random() - 0.5) * 4,
@@ -111,6 +106,22 @@ export function RewardEffects() {
       }
       if (!frameRef.current) frameRef.current = requestAnimationFrame(draw);
     };
+
+    const onReward = (event: Event) => {
+      const { kind, x: requestedX, y: requestedY, amount, currency } = (event as CustomEvent<RewardDetail>).detail;
+      const goal = kind === "goal";
+      const x = goal ? window.innerWidth / 2 : requestedX ?? window.innerWidth / 2;
+      const y = goal ? window.innerHeight / 2 : requestedY ?? window.innerHeight * 0.38;
+      if (flashTimer.current) clearTimeout(flashTimer.current);
+      setFlash({ kind, x, y, amount, currency, id: Date.now() });
+      flashTimer.current = setTimeout(() => setFlash(null), goal ? 5200 : 1850);
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const colors = palette();
+      burst(x, goal ? y - 45 : y, goal ? 135 : kind === "trip" ? 64 : 42, colors, goal ? 1.3 : 1);
+      if (goal) {
+        window.setTimeout(() => burst(x, y - 80, 90, colors, 1.1), 390);
+      }
+    };
     window.addEventListener("driver-reward", onReward);
     return () => {
       window.removeEventListener("driver-reward", onReward);
@@ -122,11 +133,25 @@ export function RewardEffects() {
 
   if (!mounted) return null;
   return createPortal(<div className="reward-layer" aria-live="polite">
+    {flash?.kind === "goal" && <div key={flash.id} className="reward-ceremony" dir="rtl">
+      <div className="reward-ceremony-card" role="status" aria-label="היעד היומי הושג">
+        <div className="reward-medal">
+          <span className="reward-medal-orbit" aria-hidden="true" />
+          <span className="reward-medal-core"><Trophy aria-hidden="true" /></span>
+        </div>
+        <h2>כל הכבוד!</h2>
+        <p>ההכנסה נשמרה בהצלחה.<br />הגעת ליעד היומי שלך!</p>
+        {typeof flash.amount === "number" && flash.amount > 0 &&
+          <div className="reward-amount"><span className="reward-amount-label">נשמרו עכשיו</span><strong dir="ltr">{fmt(flash.amount, flash.currency)}</strong></div>}
+        <div className="reward-progress"><div><span>יעד יומי</span><span>100%</span></div><span className="reward-progress-track"><span /></span></div>
+        <Button className="reward-continue" onClick={() => setFlash(null)}>המשך לעבודה</Button>
+      </div>
+    </div>}
     <canvas ref={canvasRef} aria-hidden="true" />
-    {flash && <div key={flash.id} className={`reward-flash reward-flash-${flash.kind}`} style={{ left: flash.x, top: flash.y }}>
+    {flash && flash.kind !== "goal" && <div key={flash.id} className="reward-flash" style={{ left: flash.x, top: flash.y }}>
       <span className="reward-halo" aria-hidden="true" />
       <span className="reward-ring" aria-hidden="true" />
-      <span className="reward-message">{flash.kind === "goal" ? "היעד היומי הושג!" : flash.kind === "trip" ? "נסיעה הושלמה" : "ההכנסה נשמרה"}</span>
+      <span className="reward-message"><Check aria-hidden="true" size={18} />{flash.kind === "trip" ? "נסיעה הושלמה" : "ההכנסה נשמרה"}</span>
     </div>}
   </div>, document.body);
 }
