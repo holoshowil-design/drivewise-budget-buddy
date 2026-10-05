@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InsightsCard } from "@/components/InsightsCard";
 import { KmCostCard } from "@/components/KmCostCard";
 import { MonthPaceCard, IncomeVsExpenseCard, ProfitabilityGauge } from "@/components/DashboardCharts";
-import { DailyProfitGauge, DriveModeAction, InteractiveWeeklyEarnings, PremiumStats } from "@/components/PremiumDashboard";
+import { DailyProfitGauge, DriveModeAction, InteractiveWeeklyEarnings, MomentumCoach, PremiumStats } from "@/components/PremiumDashboard";
 
 import { Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -83,6 +83,7 @@ function Dashboard() {
 
       <div className="stagger space-y-4 px-4">
         <DailyProfitGauge net={netToday} goal={settings.dailyGoal} breakEven={breakeven} currency={c} profitability={profitabilityPct} hourly={hoursToday > 0 ? netToday / hoursToday : 0} />
+        <MomentumCoach net={netToday} goal={settings.dailyGoal} breakEven={breakeven} hasActivity={todayIncomes.length > 0 || todayTrips.length > 0} currency={c} />
         <DriveModeAction active={tripActive} />
         <PremiumStats data={data} income={incomeToday} expense={expenseToday} breakEven={breakeven} forecast={forecast} />
         <InteractiveWeeklyEarnings data={data} />

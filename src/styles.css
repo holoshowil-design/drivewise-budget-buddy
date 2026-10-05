@@ -419,9 +419,25 @@
 .profit-hero-achieved { box-shadow: 0 24px 50px -28px color-mix(in oklab, var(--primary) 55%, transparent), inset 0 0 28px color-mix(in oklab, var(--hud-accent) 7%, transparent); }
 .profit-hero-achieved .gauge-value { filter: drop-shadow(0 0 7px var(--hud-accent)); }
 
+/* Live motivational feedback: expressive but compact, never obscuring financial data. */
+.momentum-coach { display: flex; align-items: center; gap: .75rem; min-height: 5rem; padding: .85rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--card); box-shadow: var(--shadow-card); transition: background-color .35s ease, border-color .35s ease, box-shadow .35s ease; }
+.momentum-emoji { display: grid; place-items: center; flex: 0 0 auto; width: 2.9rem; height: 2.9rem; border-radius: .85rem; background: var(--muted); font-size: 1.65rem; filter: drop-shadow(0 5px 7px color-mix(in oklab, var(--foreground) 12%, transparent)); animation: momentum-pop .55s cubic-bezier(.2,1.5,.3,1) both; }
+.momentum-coach p { margin-top: .18rem; font-size: .72rem; line-height: 1.5; font-weight: 600; color: var(--muted-foreground); }
+.momentum-percent { flex: 0 0 auto; padding: .15rem .48rem; border-radius: 999px; font-size: .65rem; font-weight: 800; background: var(--muted); color: var(--foreground); }
+.momentum-action { display: grid; place-items: center; flex: 0 0 auto; width: 2.25rem; height: 2.25rem; border-radius: 50%; background: var(--foreground); color: var(--background); box-shadow: 0 6px 16px color-mix(in oklab, var(--foreground) 18%, transparent); }
+.momentum-action svg { width: 1rem; height: 1rem; }
+.momentum-coach-warning { border-color: color-mix(in oklab, var(--warning) 38%, var(--border)); background: color-mix(in oklab, var(--warning) 7%, var(--card)); }
+.momentum-coach-warning .momentum-emoji, .momentum-coach-warning .momentum-percent { background: color-mix(in oklab, var(--warning) 16%, var(--card)); }
+.momentum-coach-progress { border-color: color-mix(in oklab, var(--chart-2) 34%, var(--border)); background: color-mix(in oklab, var(--chart-2) 6%, var(--card)); }
+.momentum-coach-progress .momentum-emoji, .momentum-coach-progress .momentum-percent { background: color-mix(in oklab, var(--chart-2) 13%, var(--card)); }
+.momentum-coach-success { border-color: color-mix(in oklab, var(--primary) 38%, var(--border)); background: color-mix(in oklab, var(--primary) 7%, var(--card)); box-shadow: var(--shadow-card), 0 12px 28px -22px var(--primary); }
+.momentum-coach-success .momentum-emoji, .momentum-coach-success .momentum-percent { background: color-mix(in oklab, var(--primary) 14%, var(--card)); }
+@keyframes momentum-pop { from { opacity: 0; transform: scale(.55) rotate(-12deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+
 @media (prefers-reduced-motion: reduce) {
   .reward-halo, .reward-ring { display: none; }
   .reward-message { animation: none !important; opacity: 1; }
   .reward-ceremony, .reward-ceremony-card, .reward-medal, .reward-medal-orbit, .reward-progress-track span { animation: none !important; }
+  .momentum-emoji { animation: none !important; }
   .reward-action:not(:disabled):active { transform: none; }
 }
