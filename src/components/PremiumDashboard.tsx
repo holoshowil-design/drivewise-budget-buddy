@@ -125,7 +125,7 @@ export function DriveModeAction({ active }: { active: boolean }) {
 type CoachTone = "start" | "warning" | "progress" | "success";
 
 /** Live, non-shaming coaching based only on today's existing financial state. */
-export function MomentumCoach({ net, goal, breakEven, hasActivity }: { net: number; goal: number; breakEven: number; hasActivity: boolean }) {
+export function MomentumCoach({ net, goal, breakEven, hasActivity, currency }: { net: number; goal: number; breakEven: number; hasActivity: boolean; currency: string }) {
   const remaining = Math.max(0, goal - net);
   const progress = goal > 0 ? Math.max(0, Math.round((net / goal) * 100)) : 0;
   const state: { tone: CoachTone; emoji: string; title: string; message: string; cta: string } = !hasActivity
@@ -137,7 +137,7 @@ export function MomentumCoach({ net, goal, breakEven, hasActivity }: { net: numb
         : progress < 70
           ? { tone: "progress", emoji: "💪", title: "אתה כבר ברווח", message: `${progress}% מהיעד מאחוריך. הקצב שלך עובד.`, cta: "שמור על הקצב" }
           : progress < 100
-            ? { tone: "progress", emoji: "🚀", title: "היעד ממש קרוב", message: `נשארו ${fmt(remaining)} בלבד כדי לסגור את היעד היומי.`, cta: "סוגרים את היעד" }
+            ? { tone: "progress", emoji: "🚀", title: "היעד ממש קרוב", message: `נשארו ${fmt(remaining, currency)} בלבד כדי לסגור את היעד היומי.`, cta: "סוגרים את היעד" }
             : { tone: "success", emoji: "🏆", title: "ניצחת את היום", message: `${progress}% מהיעד — כל מה שמכאן הוא בונוס לרווח שלך.`, cta: "ממשיכים חזק" };
 
   return (

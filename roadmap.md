@@ -9,4 +9,4 @@
 - [x] Add Duolingo-style positive and corrective feedback without changing the base design
 - [x] Make feedback react to daily progress, profitability, and inactivity with changing color, emoji, and copy
 - [x] Connect meaningful progress events to distinct premium effects
-- [ ] Verify dashboard states and reward flow on mobile
+- [x] Verify dashboard states and reward flow on mobile

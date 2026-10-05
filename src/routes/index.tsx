@@ -83,7 +83,7 @@ function Dashboard() {
 
       <div className="stagger space-y-4 px-4">
         <DailyProfitGauge net={netToday} goal={settings.dailyGoal} breakEven={breakeven} currency={c} profitability={profitabilityPct} hourly={hoursToday > 0 ? netToday / hoursToday : 0} />
-        <MomentumCoach net={netToday} goal={settings.dailyGoal} breakEven={breakeven} hasActivity={todayIncomes.length > 0 || todayTrips.length > 0} />
+        <MomentumCoach net={netToday} goal={settings.dailyGoal} breakEven={breakeven} hasActivity={todayIncomes.length > 0 || todayTrips.length > 0} currency={c} />
         <DriveModeAction active={tripActive} />
         <PremiumStats data={data} income={incomeToday} expense={expenseToday} breakEven={breakeven} forecast={forecast} />
         <InteractiveWeeklyEarnings data={data} />
