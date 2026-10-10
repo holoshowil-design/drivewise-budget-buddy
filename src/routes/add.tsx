@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, type MouseEvent } from "react";
-import { useAppData, todayISO, sumIncomes, fmt, type ExpenseCategory, categoryLabel } from "@/lib/store";
+import { useAppData, todayISO, sumIncomes, fmt, type Expense, type ExpenseCategory, categoryLabel } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -234,7 +234,7 @@ function FuelForm() {
       amount,
       energyType: isElectric ? "electric" : "petrol95",
       note: form.note.trim() || undefined,
-    };
+    } satisfies Omit<Expense, "id">;
     const feedback = expenseMotivation(data, expense);
     const id = addExpense(expense);
     celebrate("corrective", document.activeElement, Math.abs(feedback.delta), c, { title: feedback.title, message: feedback.message });
