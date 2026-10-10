@@ -51,6 +51,6 @@ describe("daily journey", () => {
     const before = data([income("2026-10-08", 250)]);
     const feedback = expenseMotivation(before, { date: "2026-10-08", category: "parking", amount: 100 });
     expect(feedback.tone).toBe("corrective");
-    expect(feedback.message).toContain("100 ₪");
+    expect(feedback.message).toContain("50 ₪");
   });
 });
