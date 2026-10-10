@@ -259,7 +259,7 @@ export function InteractiveWeeklyEarnings({ data }: { data: AppData }) {
               onClick={() => setSelected(index)}
             >
               <span className={`num text-[9px] font-semibold transition-opacity ${active ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>{Math.round(item.net)}</span>
-              <span className={`weekly-bar ${item.net < 0 ? "weekly-bar-negative" : ""} ${active ? "weekly-bar-active" : ""}`} style={{ height: `${height}%` }} />
+              <span className={`weekly-bar ${item.net < 0 ? "weekly-bar-negative" : ""} ${active ? "weekly-bar-active" : ""} ${index === 6 ? "weekly-bar-today" : ""}`} style={{ height: `${height}%` }} />
               <span className={`text-[10px] font-bold ${active ? "text-primary" : "text-muted-foreground"}`}>{item.label}</span>
             </button>
           );
