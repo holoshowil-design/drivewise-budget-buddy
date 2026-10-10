@@ -1,14 +1,14 @@
 import { filterByDate, netProfit, todayISO, type AppData, type Income, type Trip } from "@/lib/store";
 
-export type RewardKind = "income" | "trip" | "goal";
-export type RewardDetail = { kind: RewardKind; x?: number; y?: number; amount?: number; currency?: string };
+export type RewardKind = "income" | "trip" | "goal" | "break-even" | "streak" | "corrective";
+export type RewardDetail = { kind: RewardKind; x?: number; y?: number; amount?: number; currency?: string; title?: string; message?: string; streak?: number };
 
 /** Visual-only event; never affects storage or calculations. */
-export function celebrate(kind: RewardKind, element?: Element | null, amount?: number, currency?: string) {
+export function celebrate(kind: RewardKind, element?: Element | null, amount?: number, currency?: string, copy?: { title?: string; message?: string; streak?: number }) {
   if (typeof window === "undefined") return;
   const rect = element?.getBoundingClientRect();
   window.dispatchEvent(new CustomEvent<RewardDetail>("driver-reward", {
-    detail: { kind, x: rect ? rect.left + rect.width / 2 : undefined, y: rect ? rect.top + rect.height / 2 : undefined, amount, currency },
+    detail: { kind, x: rect ? rect.left + rect.width / 2 : undefined, y: rect ? rect.top + rect.height / 2 : undefined, amount, currency, ...copy },
   }));
 }
 

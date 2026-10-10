@@ -24,6 +24,7 @@ import {
 } from "@/lib/active-trip";
 import { TripEndDialog, type TripFormValues } from "@/components/TripEndDialog";
 import { celebrate, crossedDailyGoal } from "@/lib/rewards";
+import { calculateWorkStreak, tripMotivation } from "@/lib/motivation";
 
 const WAIT_ASK_MS = 4 * 60 * 1000;
 const WAIT_SNOOZE_MS = 15 * 60 * 1000;
@@ -301,9 +302,12 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
           onOpenChange={(o) => { if (!o) resumeAfterCancel(); }}
           onSave={(trip, income) => {
             const reachedGoal = income ? crossedDailyGoal(data, { ...income, km: 0, tripId: "reward-trip-preview" }, trip) : false;
+            const feedback = tripMotivation(data, trip, income);
+            const nextStreak = income ? calculateWorkStreak([...data.incomes, { ...income, km: 0, tripId: "streak-preview", id: "streak-preview" }]) : calculateWorkStreak(data.incomes);
             const trigger = document.activeElement;
             saveTripWithIncome({ ...trip, endedAt: new Date().toISOString() }, income);
-            celebrate(reachedGoal ? "goal" : "trip", trigger, income?.amount, data.settings.currency);
+            const kind = reachedGoal ? "goal" : feedback.milestone === "break-even" ? "break-even" : income && nextStreak.milestone ? "streak" : "trip";
+            celebrate(kind, trigger, income?.amount, data.settings.currency, { title: kind === "streak" ? `רצף של ${nextStreak.current} ימים` : feedback.title, message: feedback.message, streak: nextStreak.current });
             toast.success(income ? `נסיעה והכנסה נשמרו · ${trip.km.toFixed(1)} ק״מ` : `נסיעה נשמרה · ${trip.km.toFixed(1)} ק״מ`);
             finishEnding();
           }}

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, type MouseEvent } from "react";
-import { useAppData, todayISO, sumIncomes, fmt, type ExpenseCategory, categoryLabel } from "@/lib/store";
+import { useAppData, todayISO, sumIncomes, fmt, type Expense, type ExpenseCategory, categoryLabel } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { ChevronDown } from "lucide-react";
 import { celebrate, crossedDailyGoal } from "@/lib/rewards";
+import { calculateWorkStreak, expenseMotivation, incomeMotivation } from "@/lib/motivation";
 
 const searchSchema = z.object({ tab: z.enum(["income", "expense", "fuel"]).optional() });
 
@@ -106,8 +107,11 @@ function IncomeForm() {
       note: form.note.trim() || undefined,
     };
     const reachedGoal = crossedDailyGoal(data, income);
+    const feedback = incomeMotivation(data, income);
+    const nextStreak = calculateWorkStreak([...data.incomes, { ...income, id: "streak-preview" }]);
     const id = addIncome(income);
-    celebrate(reachedGoal ? "goal" : "income", event.currentTarget, amount, c);
+    const kind = reachedGoal ? "goal" : feedback.milestone === "break-even" ? "break-even" : nextStreak.milestone ? "streak" : "income";
+    celebrate(kind, event.currentTarget, amount, c, { title: nextStreak.milestone && kind === "streak" ? `רצף של ${nextStreak.current} ימים` : feedback.title, message: feedback.message, streak: nextStreak.current });
     toast.success(`נוספה הכנסה · נטו ${fmt(previewNet, c)}`, {
       action: { label: "ביטול", onClick: () => removeIncome(id) },
     });
@@ -173,7 +177,10 @@ function ExpenseForm() {
   const submit = () => {
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) return toast.error("הכנס סכום תקין");
-    const id = addExpense({ date: form.date, category: form.category, amount, note: form.note.trim() || undefined });
+    const expense = { date: form.date, category: form.category, amount, note: form.note.trim() || undefined };
+    const feedback = expenseMotivation(data, expense);
+    const id = addExpense(expense);
+    celebrate("corrective", document.activeElement, Math.abs(feedback.delta), c, { title: feedback.title, message: feedback.message });
     toast.success(`נוספה הוצאה · ${fmt(amount, c)}`, { action: { label: "ביטול", onClick: () => removeExpense(id) } });
     setForm({ ...form, amount: "", note: "" });
   };
@@ -221,13 +228,16 @@ function FuelForm() {
   const submit = () => {
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) return toast.error("הכנס סכום תקין");
-    const id = addExpense({
+    const expense = {
       date: form.date,
-      category: "fuel",
+      category: "fuel" as const,
       amount,
       energyType: isElectric ? "electric" : "petrol95",
       note: form.note.trim() || undefined,
-    });
+    } satisfies Omit<Expense, "id">;
+    const feedback = expenseMotivation(data, expense);
+    const id = addExpense(expense);
+    celebrate("corrective", document.activeElement, Math.abs(feedback.delta), c, { title: feedback.title, message: feedback.message });
     toast.success(`${isElectric ? "טעינה נרשמה" : "תדלוק נרשם"} · ${fmt(amount, c)}`, {
       action: { label: "ביטול", onClick: () => removeExpense(id) },
     });

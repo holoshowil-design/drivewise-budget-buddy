@@ -1,1 +1,2 @@
 - Keep achievement visuals in a single client-only overlay driven by custom reward events; this separates ephemeral animation from persisted financial data and preserves the existing layout.
+- Derive motivation state from financial records rather than storing duplicate counters; this keeps streaks and milestones consistent across local data and cloud sync.
