@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Award, ChevronDown, Gauge, Navigation, Sparkles, TrendingUp, Zap, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/CountUp";
+import { calculateDailyMomentum, calculateWorkStreak } from "@/lib/motivation";
 import {
   filterByDate,
   fmt,
@@ -125,36 +126,48 @@ export function DriveModeAction({ active }: { active: boolean }) {
 type CoachTone = "start" | "warning" | "progress" | "success";
 
 /** Live, non-shaming coaching based only on today's existing financial state. */
-export function MomentumCoach({ net, goal, breakEven, hasActivity, currency }: { net: number; goal: number; breakEven: number; hasActivity: boolean; currency: string }) {
-  const remaining = Math.max(0, goal - net);
+export function MomentumCoach({ data }: { data: AppData }) {
+  const momentum = calculateDailyMomentum(data);
+  const streak = calculateWorkStreak(data.incomes);
+  const { net, goal, breakEven, remaining } = momentum;
   const progress = goal > 0 ? Math.max(0, Math.round((net / goal) * 100)) : 0;
-  const state: { tone: CoachTone; emoji: string; title: string; message: string; cta: string } = !hasActivity
-    ? { tone: "start", emoji: "👋", title: "מתחילים את היום?", message: "נסיעה אחת טובה מספיקה כדי להכניס את היום לתנועה.", cta: "התחל נסיעת עבודה" }
+  const state: { tone: CoachTone; emoji: string; title: string; message: string; cta: string } = !streak.activeToday
+    ? { tone: "start", emoji: "👋", title: streak.current > 0 ? `שומרים על רצף של ${streak.current} ימים` : "מתחילים רצף חדש", message: "רישום ההכנסה הראשונה היום ישמור את יום העבודה ברצף.", cta: "רשום הכנסה" }
     : net < 0
-      ? { tone: "warning", emoji: "🧭", title: "עוצרים ומכוונים מחדש", message: "כרגע ההוצאות מובילות. הנסיעה הבאה יכולה להחזיר אותך למסלול.", cta: "צא לנסיעה הבאה" }
+      ? { tone: "warning", emoji: "🧭", title: "מכוונים מחדש", message: `הרצף נשמר. חסרים ${fmt(Math.max(0, breakEven - net), data.settings.currency)} כדי לחזור לאיזון.`, cta: "המשך לצבור" }
       : net < breakEven
-        ? { tone: "warning", emoji: "⛽", title: "עוד קצת עד האיזון", message: `התקדמת יפה — נשאר לעבור את נקודת האיזון היומית.`, cta: "המשך לצבור" }
+        ? { tone: "warning", emoji: "⛽", title: "היום בתנועה", message: `הרצף נשמר. עוד ${fmt(Math.max(0, breakEven - net), data.settings.currency)} והיום עובר לרווח.`, cta: "המשך לצבור" }
         : progress < 70
-          ? { tone: "progress", emoji: "💪", title: "אתה כבר ברווח", message: `${progress}% מהיעד מאחוריך. הקצב שלך עובד.`, cta: "שמור על הקצב" }
+          ? { tone: "progress", emoji: "💪", title: "עברת לרווח", message: `${progress}% מהיעד הושלמו. התחנה הבאה היא ניצחון יומי.`, cta: "שמור על הקצב" }
           : progress < 100
-            ? { tone: "progress", emoji: "🚀", title: "היעד ממש קרוב", message: `נשארו ${fmt(remaining, currency)} בלבד כדי לסגור את היעד היומי.`, cta: "סוגרים את היעד" }
-            : { tone: "success", emoji: "🏆", title: "ניצחת את היום", message: `${progress}% מהיעד — כל מה שמכאן הוא בונוס לרווח שלך.`, cta: "ממשיכים חזק" };
+            ? { tone: "progress", emoji: "🚀", title: "היעד ממש קרוב", message: `נשארו ${fmt(remaining, data.settings.currency)} בלבד כדי להשלים את היום.`, cta: "סוגרים את היעד" }
+            : { tone: "success", emoji: "🏆", title: "היום הושלם", message: `רצף של ${streak.current} ימים נשמר · כל מה שמכאן מגדיל את הרווח.`, cta: "ממשיכים חזק" };
 
   return (
-    <section className={`momentum-coach momentum-coach-${state.tone}`} aria-live="polite">
+    <section key={`${state.tone}-${momentum.stage}`} className={`momentum-coach momentum-coach-${state.tone}`} aria-live="polite">
       <span className="momentum-emoji" aria-hidden="true">{state.emoji}</span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-display text-sm font-bold">{state.title}</h2>
-          {hasActivity && <span className="momentum-percent num">{progress}%</span>}
+          <span className="momentum-percent num">🔥 {streak.current}</span>
         </div>
         <p>{state.message}</p>
       </div>
-      <Link to="/trip" search={{ action: "start_trip", mode: "drive" } as never} className="momentum-action" aria-label={state.cta}>
+      <Link to={streak.activeToday ? "/trip" : "/add"} search={(streak.activeToday ? { action: "start_trip", mode: "drive" } : { tab: "income" }) as never} className="momentum-action" aria-label={state.cta}>
         <ArrowLeft aria-hidden="true" />
       </Link>
+      <DailyJourney stage={momentum.stage} progress={momentum.progress} />
     </section>
   );
+}
+
+function DailyJourney({ stage, progress }: { stage: "start" | "stability" | "victory"; progress: number }) {
+  const active = stage === "start" ? 0 : stage === "stability" ? 1 : 2;
+  const steps = ["התחלה", "איזון", "יעד"];
+  return <div className="daily-journey" aria-label={`מסלול היום: ${steps[active]}`}>
+    <span className="daily-journey-line"><span style={{ width: `${active === 0 ? 0 : active === 1 ? Math.max(12, progress / 2) : 100}%` }} /></span>
+    {steps.map((label, index) => <span key={label} className={`daily-step ${index < active ? "daily-step-done" : index === active ? "daily-step-active" : ""}`}><i>{index < active ? "✓" : index + 1}</i><b>{label}</b></span>)}
+  </div>;
 }
 
 export function PremiumStats({ data, income, expense, breakEven, forecast }: { data: AppData; income: number; expense: number; breakEven: number; forecast: number }) {
