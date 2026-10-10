@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, Trophy } from "lucide-react";
+import { Check, Flame, Gauge, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { fmt } from "@/lib/store";
 import { type RewardDetail } from "@/lib/rewards";
@@ -109,16 +109,16 @@ export function RewardEffects() {
 
     const onReward = (event: Event) => {
       const { kind, x: requestedX, y: requestedY, amount, currency } = (event as CustomEvent<RewardDetail>).detail;
-      const goal = kind === "goal";
-      const x = goal ? window.innerWidth / 2 : requestedX ?? window.innerWidth / 2;
-      const y = goal ? window.innerHeight / 2 : requestedY ?? window.innerHeight * 0.38;
+      const ceremony = kind === "goal" || kind === "streak";
+      const x = ceremony ? window.innerWidth / 2 : requestedX ?? window.innerWidth / 2;
+      const y = ceremony ? window.innerHeight / 2 : requestedY ?? window.innerHeight * 0.38;
       if (flashTimer.current) clearTimeout(flashTimer.current);
       setFlash({ kind, x, y, amount, currency, id: Date.now() });
-      flashTimer.current = setTimeout(() => setFlash(null), goal ? 5200 : 1850);
+      flashTimer.current = setTimeout(() => setFlash(null), ceremony ? 5200 : kind === "corrective" ? 3600 : 2600);
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const colors = palette();
-      burst(x, goal ? y - 45 : y, goal ? 135 : kind === "trip" ? 64 : 42, colors, goal ? 1.3 : 1);
-      if (goal) {
+      burst(x, ceremony ? y - 45 : y, ceremony ? 135 : kind === "trip" || kind === "break-even" ? 64 : kind === "corrective" ? 18 : 42, colors, ceremony ? 1.3 : kind === "corrective" ? .55 : 1);
+      if (ceremony) {
         window.setTimeout(() => burst(x, y - 80, 90, colors, 1.1), 390);
       }
     };
@@ -133,25 +133,25 @@ export function RewardEffects() {
 
   if (!mounted) return null;
   return createPortal(<div className="reward-layer" aria-live="polite">
-    {flash?.kind === "goal" && <div key={flash.id} className="reward-ceremony" dir="rtl">
-      <div className="reward-ceremony-card" role="status" aria-label="היעד היומי הושג">
+    {flash && (flash.kind === "goal" || flash.kind === "streak") && <div key={flash.id} className="reward-ceremony" dir="rtl">
+      <div className="reward-ceremony-card" role="status" aria-label={flash.title ?? "הישג חדש"}>
         <div className="reward-medal">
           <span className="reward-medal-orbit" aria-hidden="true" />
-          <span className="reward-medal-core"><Trophy aria-hidden="true" /></span>
+          <span className="reward-medal-core">{flash.kind === "streak" ? <Flame aria-hidden="true" /> : <Trophy aria-hidden="true" />}</span>
         </div>
-        <h2>כל הכבוד!</h2>
-        <p>ההכנסה נשמרה בהצלחה.<br />הגעת ליעד היומי שלך!</p>
+        <h2>{flash.title ?? "כל הכבוד!"}</h2>
+        <p>{flash.message ?? "הגעת ליעד היומי שלך!"}</p>
         {typeof flash.amount === "number" && flash.amount > 0 &&
           <div className="reward-amount"><span className="reward-amount-label">נשמרו עכשיו</span><strong dir="ltr">{fmt(flash.amount, flash.currency)}</strong></div>}
-        <div className="reward-progress"><div><span>יעד יומי</span><span>100%</span></div><span className="reward-progress-track"><span /></span></div>
+        <div className="reward-progress"><div><span>{flash.kind === "streak" ? "רצף עבודה" : "יעד יומי"}</span><span>{flash.kind === "streak" ? `${flash.streak ?? 0} ימים` : "100%"}</span></div><span className="reward-progress-track"><span /></span></div>
         <Button className="reward-continue" onClick={() => setFlash(null)}>המשך לעבודה</Button>
       </div>
     </div>}
     <canvas ref={canvasRef} aria-hidden="true" />
-    {flash && flash.kind !== "goal" && <div key={flash.id} className="reward-flash" style={{ left: flash.x, top: flash.y }}>
+    {flash && flash.kind !== "goal" && flash.kind !== "streak" && <div key={flash.id} className={`reward-flash reward-flash-${flash.kind}`} style={{ left: flash.x, top: flash.y }}>
       <span className="reward-halo" aria-hidden="true" />
       <span className="reward-ring" aria-hidden="true" />
-      <span className="reward-message"><Check aria-hidden="true" size={18} />{flash.kind === "trip" ? "נסיעה הושלמה" : "ההכנסה נשמרה"}</span>
+      <span className="reward-message">{flash.kind === "corrective" ? <Gauge aria-hidden="true" size={18} /> : <Check aria-hidden="true" size={18} />}<span><b>{flash.title ?? (flash.kind === "trip" ? "נסיעה הושלמה" : flash.kind === "break-even" ? "עברת לרווח" : "ההכנסה נשמרה")}</b>{flash.message && <small>{flash.message}</small>}</span></span>
     </div>}
   </div>, document.body);
 }

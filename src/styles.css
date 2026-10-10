@@ -405,7 +405,12 @@
 .reward-flash { position: absolute; display: grid; place-items: center; width: 0; height: 0; isolation: isolate; }
 .reward-halo { position: absolute; width: 12rem; height: 12rem; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--primary) 28%, transparent), transparent 68%); animation: reward-halo 1.6s ease-out both; }
 .reward-ring { position: absolute; width: 3.5rem; height: 3.5rem; border-radius: 50%; border: 2px solid color-mix(in oklab, var(--hud-accent) 70%, transparent); box-shadow: 0 0 22px color-mix(in oklab, var(--primary) 45%, transparent); animation: reward-ring 1.5s cubic-bezier(.12,.68,.2,1) both; }
-.reward-message { position: absolute; top: -6.2rem; display: flex; align-items: center; gap: .4rem; white-space: nowrap; padding: .7rem 1.2rem; border-radius: .7rem; background: var(--hud-background); color: var(--hud-foreground); box-shadow: var(--shadow-premium); font-size: .9rem; font-weight: 800; animation: reward-message 1.8s cubic-bezier(.2,.8,.2,1) both; }
+.reward-message { position: absolute; top: -7.4rem; display: flex; align-items: flex-start; gap: .55rem; width: min(20rem, calc(100vw - 2rem)); padding: .8rem 1rem; border-radius: .8rem; background: var(--hud-background); color: var(--hud-foreground); box-shadow: var(--shadow-premium); font-size: .9rem; font-weight: 800; animation: reward-message 2.6s cubic-bezier(.2,.8,.2,1) both; }
+.reward-message > span { min-width: 0; }
+.reward-message b, .reward-message small { display: block; }
+.reward-message small { margin-top: .15rem; color: var(--hud-muted); font-size: .68rem; line-height: 1.45; font-weight: 600; }
+.reward-flash-corrective .reward-ring { border-color: color-mix(in oklab, var(--warning) 75%, transparent); box-shadow: 0 0 22px color-mix(in oklab, var(--warning) 42%, transparent); }
+.reward-flash-corrective .reward-message { background: color-mix(in oklab, var(--warning) 14%, var(--hud-background)); }
 @keyframes ceremony-veil { from { opacity: 0; backdrop-filter: blur(0); } to { opacity: 1; backdrop-filter: blur(12px); } }
 @keyframes ceremony-land { from { opacity: 0; transform: translateY(32px) scale(.87); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes medal-arrive { from { transform: translateY(28px) scale(.4) rotate(-20deg); opacity: 0; } to { transform: translateY(0) scale(1) rotate(0); opacity: 1; } }
@@ -420,7 +425,7 @@
 .profit-hero-achieved .gauge-value { filter: drop-shadow(0 0 7px var(--hud-accent)); }
 
 /* Live motivational feedback: expressive but compact, never obscuring financial data. */
-.momentum-coach { display: flex; align-items: center; gap: .75rem; min-height: 5rem; padding: .85rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--card); box-shadow: var(--shadow-card); transition: background-color .35s ease, border-color .35s ease, box-shadow .35s ease; }
+.momentum-coach { position: relative; display: flex; align-items: center; gap: .75rem; min-height: 8.75rem; padding: .85rem .85rem 3.8rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--card); box-shadow: var(--shadow-card); overflow: hidden; animation: coach-shift .45s cubic-bezier(.2,.8,.2,1) both; transition: background-color .35s ease, border-color .35s ease, box-shadow .35s ease; }
 .momentum-emoji { display: grid; place-items: center; flex: 0 0 auto; width: 2.9rem; height: 2.9rem; border-radius: .85rem; background: var(--muted); font-size: 1.65rem; filter: drop-shadow(0 5px 7px color-mix(in oklab, var(--foreground) 12%, transparent)); animation: momentum-pop .55s cubic-bezier(.2,1.5,.3,1) both; }
 .momentum-coach p { margin-top: .18rem; font-size: .72rem; line-height: 1.5; font-weight: 600; color: var(--muted-foreground); }
 .momentum-percent { flex: 0 0 auto; padding: .15rem .48rem; border-radius: 999px; font-size: .65rem; font-weight: 800; background: var(--muted); color: var(--foreground); }
@@ -433,11 +438,23 @@
 .momentum-coach-success { border-color: color-mix(in oklab, var(--primary) 38%, var(--border)); background: color-mix(in oklab, var(--primary) 7%, var(--card)); box-shadow: var(--shadow-card), 0 12px 28px -22px var(--primary); }
 .momentum-coach-success .momentum-emoji, .momentum-coach-success .momentum-percent { background: color-mix(in oklab, var(--primary) 14%, var(--card)); }
 @keyframes momentum-pop { from { opacity: 0; transform: scale(.55) rotate(-12deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+@keyframes coach-shift { from { opacity: .7; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.daily-journey { position: absolute; inset-inline: .85rem; bottom: .7rem; display: grid; grid-template-columns: repeat(3, 1fr); align-items: start; }
+.daily-journey-line { position: absolute; top: .58rem; inset-inline: 16%; height: 3px; border-radius: 999px; background: var(--muted); overflow: hidden; }
+.daily-journey-line span { display: block; height: 100%; border-radius: inherit; background: var(--primary); transition: width .75s cubic-bezier(.22,1,.36,1); }
+.daily-step { position: relative; z-index: 1; display: grid; justify-items: center; gap: .18rem; color: var(--muted-foreground); font-size: .58rem; font-weight: 800; }
+.daily-step i { display: grid; place-items: center; width: 1.2rem; height: 1.2rem; border: 2px solid var(--muted); border-radius: 50%; background: var(--card); font-size: .56rem; font-style: normal; transition: transform .35s ease, background-color .35s ease, border-color .35s ease; }
+.daily-step-done i { border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); }
+.daily-step-active { color: var(--foreground); }
+.daily-step-active i { border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 12%, transparent); transform: scale(1.08); }
+.weekly-bar-today:not(.weekly-bar-active) { animation: today-breathe 2.4s ease-in-out infinite; }
+@keyframes today-breathe { 0%, 100% { box-shadow: 0 0 0 transparent; } 50% { box-shadow: 0 0 14px color-mix(in oklab, var(--primary) 32%, transparent); } }
 
 @media (prefers-reduced-motion: reduce) {
   .reward-halo, .reward-ring { display: none; }
   .reward-message { animation: none !important; opacity: 1; }
   .reward-ceremony, .reward-ceremony-card, .reward-medal, .reward-medal-orbit, .reward-progress-track span { animation: none !important; }
   .momentum-emoji { animation: none !important; }
+  .momentum-coach, .weekly-bar-today { animation: none !important; }
   .reward-action:not(:disabled):active { transform: none; }
 }
