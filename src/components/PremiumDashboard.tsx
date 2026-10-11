@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { DriverMascot } from "@/components/DriverMascot";
 import { Award, ChevronDown, Gauge, Navigation, Sparkles, TrendingUp, Zap, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/CountUp";
