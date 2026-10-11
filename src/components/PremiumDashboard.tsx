@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { DriverMascot } from "@/components/DriverMascot";
+import { CaricatureTaxi } from "@/components/CaricatureTaxi";
+import { ComicBubble } from "@/components/InkWorld";
 import { Award, ChevronDown, Gauge, Navigation, Sparkles, TrendingUp, Zap, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/CountUp";
@@ -78,6 +80,11 @@ export function DailyProfitGauge({
             strokeDashoffset={dashOffset}
             filter={passedBreakEven ? "url(#gaugeGlow)" : undefined}
           />
+          <g className="gauge-ticks">{Array.from({ length: 11 }, (_, i) => { const ang = Math.PI - (i / 10) * Math.PI; const r1 = i % 5 === 0 ? 62 : 67; return <line key={i} x1={110 + Math.cos(ang) * r1} y1={108 - Math.sin(ang) * r1} x2={110 + Math.cos(ang) * 72} y2={108 - Math.sin(ang) * 72} />; })}</g>
+          <g className="gauge-needle" style={{ transform: `rotate(${-90 + targetPct * 1.8}deg)` }}>
+            <path d="M107 108 L110 46 L113 108 Z" />
+            <circle cx="110" cy="108" r="7" />
+          </g>
           <circle cx="30" cy="108" r="3" fill="var(--warning)" />
           <circle cx="190" cy="108" r="3" fill="var(--hud-accent)" />
         </svg>
@@ -146,17 +153,23 @@ export function MomentumCoach({ data }: { data: AppData }) {
 
   return (
     <section key={`${state.tone}-${momentum.stage}`} className={`momentum-coach momentum-coach-${state.tone}`} aria-live="polite">
-      <DriverMascot mood={state.tone === "start" ? "sleepy" : state.tone === "warning" ? "grumble" : state.tone === "success" ? "victory" : "smirk"} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="font-display text-sm font-bold">{state.title}</h2>
-          <span className="momentum-percent num">🔥 {streak.current}</span>
-        </div>
-        <p>{state.message}</p>
+      <div className="coach-stage" aria-hidden="true">
+        <span className="coach-stage-sun" />
+        <span className="page-stage-floor" />
+        <CaricatureTaxi mood={state.tone === "start" ? "tired" : state.tone === "success" ? "zoom" : "happy"} driving={state.tone === "success"} className="coach-taxi" />
+        <DriverMascot mood={state.tone === "start" ? "sleepy" : state.tone === "warning" ? "grumble" : state.tone === "success" ? "victory" : "smirk"} className="coach-mascot" />
+        <span className="coach-streak num">🔥 {streak.current}</span>
       </div>
-      <Link to={streak.activeToday ? "/trip" : "/add"} search={(streak.activeToday ? { action: "start_trip", mode: "drive" } : { tab: "income" }) as never} className="momentum-action" aria-label={state.cta}>
-        <ArrowLeft aria-hidden="true" />
-      </Link>
+      <ComicBubble tone={state.tone === "warning" ? "warn" : state.tone === "start" ? "default" : "win"} className="coach-bubble">
+        <span className="coach-bubble-emoji" aria-hidden="true">{state.emoji}</span>
+        <span className="min-w-0 flex-1">
+          <h2 className="font-display text-base font-extrabold">{state.title}</h2>
+          <p>{state.message}</p>
+        </span>
+        <Link to={streak.activeToday ? "/trip" : "/add"} search={(streak.activeToday ? { action: "start_trip", mode: "drive" } : { tab: "income" }) as never} className="momentum-action" aria-label={state.cta}>
+          <ArrowLeft aria-hidden="true" />
+        </Link>
+      </ComicBubble>
       <DailyJourney hasIncome={streak.activeToday} net={net} breakEven={breakEven} goal={goal} />
     </section>
   );
