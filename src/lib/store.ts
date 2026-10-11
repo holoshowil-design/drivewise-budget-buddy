@@ -1,4 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
+import { toast } from "sonner";
+import { normalizeMeta, stampChanges, type SyncMeta } from "./sync-meta";
 
 export type EnergyType = "petrol95" | "petrol98" | "diesel" | "electric";
 export type VehicleType = "petrol" | "hybrid" | "electric";
@@ -16,18 +18,11 @@ export type Income = {
   note?: string;
   /** Linked GPS trip — its km are already counted by the trip itself. */
   tripId?: string;
+  updatedAt?: string; // ISO — last local change, used by sync
 };
 
-
 export type ExpenseCategory =
-  | "fuel"
-  | "insurance"
-  | "license"
-  | "maintenance"
-  | "parking"
-  | "food"
-  | "wash"
-  | "other";
+  "fuel" | "insurance" | "license" | "maintenance" | "parking" | "food" | "wash" | "other";
 
 export type Expense = {
   id: string;
@@ -41,6 +36,7 @@ export type Expense = {
   quantity?: number; // liters or kWh
   pricePerUnit?: number;
   odometer?: number;
+  updatedAt?: string; // ISO — last local change, used by sync
 };
 
 export type Vehicle = {
@@ -58,7 +54,6 @@ export type FuelPriceEntry = {
   price: number; // ₪ per liter or per kWh
   consumption: number; // km per liter or km per kWh
 };
-
 
 export type Settings = {
   dailyGoal: number;
@@ -84,6 +79,7 @@ export type Trip = {
   waitSeconds?: number; // standing/waiting time inside the trip
   incomeId?: string; // linked income record created from the end-of-trip form
   note?: string;
+  updatedAt?: string; // ISO — last local change, used by sync
 };
 
 export type AppData = {
@@ -92,6 +88,8 @@ export type AppData = {
   trips: Trip[];
   vehicle: Vehicle;
   settings: Settings;
+  /** Sync bookkeeping (tombstones, change stamps). Optional for older data. */
+  meta?: SyncMeta;
 };
 
 const KEY = "driver-app-v1";
@@ -125,44 +123,52 @@ export function load(): AppData {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaultData;
     const parsed = JSON.parse(raw);
-    return {
+    return normalizeMeta({
       ...defaultData,
       ...parsed,
       trips: Array.isArray(parsed.trips) ? parsed.trips : [],
       settings: { ...defaultData.settings, ...parsed.settings },
       vehicle: { ...defaultData.vehicle, ...parsed.vehicle },
-    };
+    });
   } catch {
     return defaultData;
   }
 }
 
-// ---------- cloud sync ----------
-let currentUserId: string | null = null;
-let pushTimer: ReturnType<typeof setTimeout> | undefined;
+// ---------- local persistence ----------
+let storageWarned = false;
+const PRE_SYNC_BACKUP_KEY = "driver-app-v1-pre-sync-backup";
 
-export function setSyncUser(id: string | null) {
-  currentUserId = id;
+/**
+ * Safety net for the sync-metadata upgrade: before the first save in the new
+ * format, keep the untouched old blob under a separate key (once).
+ */
+function keepPreSyncCopy() {
+  if (localStorage.getItem(PRE_SYNC_BACKUP_KEY)) return;
+  const raw = localStorage.getItem(KEY);
+  if (raw && !raw.includes('"meta"')) localStorage.setItem(PRE_SYNC_BACKUP_KEY, raw);
 }
 
-export function getSyncUser() {
-  return currentUserId;
-}
-
-function scheduleCloudPush(data: AppData) {
-  if (!currentUserId) return;
-  const uid = currentUserId;
-  if (pushTimer) clearTimeout(pushTimer);
-  pushTimer = setTimeout(() => {
-    import("./cloud").then(({ pushCloudData }) => pushCloudData(uid, data).catch(() => {}));
-  }, 600);
-}
-
-export function save(data: AppData) {
+/**
+ * Writes the data locally and notifies listeners. `fromCloud` skips the cloud
+ * push for data that just came from a sync.
+ */
+export function save(data: AppData, opts: { fromCloud?: boolean } = {}) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(KEY, JSON.stringify(data));
+  try {
+    keepPreSyncCopy();
+    localStorage.setItem(KEY, JSON.stringify(data));
+    storageWarned = false;
+  } catch {
+    if (!storageWarned) {
+      storageWarned = true;
+      toast.error("השמירה במכשיר נכשלה (האחסון מלא?). הנתונים יישמרו בענן אם אתה מחובר.", {
+        duration: 10000,
+      });
+    }
+  }
   window.dispatchEvent(new Event("driver-data-changed"));
-  scheduleCloudPush(data);
+  if (!opts.fromCloud) window.dispatchEvent(new CustomEvent("driver-data-local-change"));
 }
 
 export function useAppData() {
@@ -182,41 +188,59 @@ export function useAppData() {
   }, []);
 
   const update = useCallback((updater: (d: AppData) => AppData) => {
-    const next = updater(load());
+    const prev = load();
+    const next = stampChanges(prev, updater(prev));
     save(next);
     setData(next);
   }, []);
 
-  const addIncome = useCallback((i: Omit<Income, "id">) => {
-    const id = crypto.randomUUID();
-    update((d) => ({ ...d, incomes: [...d.incomes, { time: nowHHMM(), ...i, id }] }));
-    return id;
-  }, [update]);
+  const addIncome = useCallback(
+    (i: Omit<Income, "id">) => {
+      const id = crypto.randomUUID();
+      update((d) => ({ ...d, incomes: [...d.incomes, { time: nowHHMM(), ...i, id }] }));
+      return id;
+    },
+    [update],
+  );
 
-  const addExpense = useCallback((e: Omit<Expense, "id">) => {
-    const id = crypto.randomUUID();
-    update((d) => ({ ...d, expenses: [...d.expenses, { time: nowHHMM(), ...e, id }] }));
-    return id;
-  }, [update]);
+  const addExpense = useCallback(
+    (e: Omit<Expense, "id">) => {
+      const id = crypto.randomUUID();
+      update((d) => ({ ...d, expenses: [...d.expenses, { time: nowHHMM(), ...e, id }] }));
+      return id;
+    },
+    [update],
+  );
 
+  const addTrip = useCallback(
+    (t: Omit<Trip, "id">) => {
+      const id = crypto.randomUUID();
+      update((d) => ({ ...d, trips: [...(d.trips || []), { ...t, id }] }));
+      return id;
+    },
+    [update],
+  );
 
-  const addTrip = useCallback((t: Omit<Trip, "id">) => {
-    const id = crypto.randomUUID();
-    update((d) => ({ ...d, trips: [...(d.trips || []), { ...t, id }] }));
-    return id;
-  }, [update]);
+  const removeTrip = useCallback(
+    (id: string) => {
+      update((d) => ({
+        ...d,
+        trips: (d.trips || []).filter((x) => x.id !== id),
+        incomes: d.incomes.filter((x) => x.tripId !== id),
+      }));
+    },
+    [update],
+  );
 
-  const removeTrip = useCallback((id: string) => {
-    update((d) => ({
-      ...d,
-      trips: (d.trips || []).filter((x) => x.id !== id),
-      incomes: d.incomes.filter((x) => x.tripId !== id),
-    }));
-  }, [update]);
-
-  const updateTrip = useCallback((id: string, patch: Partial<Omit<Trip, "id">>) => {
-    update((d) => ({ ...d, trips: (d.trips || []).map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
-  }, [update]);
+  const updateTrip = useCallback(
+    (id: string, patch: Partial<Omit<Trip, "id">>) => {
+      update((d) => ({
+        ...d,
+        trips: (d.trips || []).map((x) => (x.id === id ? { ...x, ...patch } : x)),
+      }));
+    },
+    [update],
+  );
 
   /**
    * Saves a finished trip together with an optional linked income record.
@@ -252,7 +276,9 @@ export function useAppData() {
         let incomeId = trip?.incomeId;
         if (income) {
           if (incomeId && incomes.some((x) => x.id === incomeId)) {
-            incomes = incomes.map((x) => (x.id === incomeId ? { ...x, ...income, km: 0, tripId: id } : x));
+            incomes = incomes.map((x) =>
+              x.id === incomeId ? { ...x, ...income, km: 0, tripId: id } : x,
+            );
           } else {
             incomeId = crypto.randomUUID();
             incomes = [...incomes, { ...income, km: 0, tripId: id, id: incomeId }];
@@ -271,58 +297,114 @@ export function useAppData() {
     [update],
   );
 
-  const removeIncome = useCallback((id: string) => {
-    update((d) => ({ ...d, incomes: d.incomes.filter((x) => x.id !== id) }));
-  }, [update]);
+  const removeIncome = useCallback(
+    (id: string) => {
+      update((d) => ({ ...d, incomes: d.incomes.filter((x) => x.id !== id) }));
+    },
+    [update],
+  );
 
-  const removeExpense = useCallback((id: string) => {
-    update((d) => ({ ...d, expenses: d.expenses.filter((x) => x.id !== id) }));
-  }, [update]);
+  const removeExpense = useCallback(
+    (id: string) => {
+      update((d) => ({ ...d, expenses: d.expenses.filter((x) => x.id !== id) }));
+    },
+    [update],
+  );
 
-  const updateIncome = useCallback((id: string, patch: Partial<Omit<Income, "id">>) => {
-    update((d) => ({ ...d, incomes: d.incomes.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
-  }, [update]);
+  const updateIncome = useCallback(
+    (id: string, patch: Partial<Omit<Income, "id">>) => {
+      update((d) => ({
+        ...d,
+        incomes: d.incomes.map((x) => (x.id === id ? { ...x, ...patch } : x)),
+      }));
+    },
+    [update],
+  );
 
-  const updateExpense = useCallback((id: string, patch: Partial<Omit<Expense, "id">>) => {
-    update((d) => ({ ...d, expenses: d.expenses.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
-  }, [update]);
+  const updateExpense = useCallback(
+    (id: string, patch: Partial<Omit<Expense, "id">>) => {
+      update((d) => ({
+        ...d,
+        expenses: d.expenses.map((x) => (x.id === id ? { ...x, ...patch } : x)),
+      }));
+    },
+    [update],
+  );
 
-  const updateSettings = useCallback((s: Partial<Settings>) => {
-    update((d) => ({ ...d, settings: { ...d.settings, ...s } }));
-  }, [update]);
+  const updateSettings = useCallback(
+    (s: Partial<Settings>) => {
+      update((d) => ({ ...d, settings: { ...d.settings, ...s } }));
+    },
+    [update],
+  );
 
-  const updateVehicle = useCallback((v: Partial<Vehicle>) => {
-    update((d) => ({ ...d, vehicle: { ...d.vehicle, ...v } }));
-  }, [update]);
+  const updateVehicle = useCallback(
+    (v: Partial<Vehicle>) => {
+      update((d) => ({ ...d, vehicle: { ...d.vehicle, ...v } }));
+    },
+    [update],
+  );
 
   /**
    * Records a fuel price and/or consumption change into the history stamped
    * with the current date AND hour, so future calculations use the new values
    * while records entered earlier today keep the values effective at the time.
    */
-  const recordFuelPriceChange = useCallback((price: number, consumption: number) => {
-    const date = todayISO();
-    const time = nowHHMM();
-    update((d) => {
-      const history = [...(d.settings.fuelPriceHistory || [])];
-      const existingIdx = history.findIndex((h) => h.date === date && (h.time ?? "00:00") === time);
-      const entry: FuelPriceEntry = { date, time, price, consumption };
-      if (existingIdx >= 0) history[existingIdx] = entry;
-      else history.push(entry);
-      return {
-        ...d,
-        settings: {
-          ...d.settings,
-          fuelPrice: price,
-          fuelPriceHistory: history,
-        },
-        vehicle: { ...d.vehicle, consumption },
-      };
-    });
-  }, [update]);
+  const recordFuelPriceChange = useCallback(
+    (price: number, consumption: number) => {
+      const date = todayISO();
+      const time = nowHHMM();
+      update((d) => {
+        const history = [...(d.settings.fuelPriceHistory || [])];
+        // First change ever: keep the price that was in effect until now as the
+        // baseline, so older records are not repriced retroactively.
+        if (history.length === 0) {
+          history.push({
+            date: "0000-01-01",
+            time: "00:00",
+            price: d.settings.fuelPrice,
+            consumption: d.vehicle.consumption,
+          });
+        }
+        const existingIdx = history.findIndex(
+          (h) => h.date === date && (h.time ?? "00:00") === time,
+        );
+        const entry: FuelPriceEntry = { date, time, price, consumption };
+        if (existingIdx >= 0) history[existingIdx] = entry;
+        else history.push(entry);
+        return {
+          ...d,
+          settings: {
+            ...d.settings,
+            fuelPrice: price,
+            fuelPriceHistory: history,
+          },
+          vehicle: { ...d.vehicle, consumption },
+        };
+      });
+    },
+    [update],
+  );
 
-
-  return { data, ready, addIncome, addExpense, addTrip, removeTrip, updateTrip, saveTripWithIncome, updateTripWithIncome, removeIncome, removeExpense, updateIncome, updateExpense, updateSettings, updateVehicle, recordFuelPriceChange, update };
+  return {
+    data,
+    ready,
+    addIncome,
+    addExpense,
+    addTrip,
+    removeTrip,
+    updateTrip,
+    saveTripWithIncome,
+    updateTripWithIncome,
+    removeIncome,
+    removeExpense,
+    updateIncome,
+    updateExpense,
+    updateSettings,
+    updateVehicle,
+    recordFuelPriceChange,
+    update,
+  };
 }
 
 // ---------- computations ----------
@@ -338,7 +420,6 @@ export function nowHHMM() {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
-
 
 export function netFromIncome(i: Income) {
   return i.amount * (1 - i.commissionPct / 100) + (i.tip || 0);
@@ -433,9 +514,10 @@ export function effectiveFuelParams(
       if (key(h) <= stamp) entry = h;
       else break;
     }
-    if (entry) {
-      return { price: entry.price, consumption: entry.consumption, since: key(entry) };
-    }
+    // Before the first recorded change, the earliest known values are the
+    // best guess (the current price would reprice old records).
+    entry ??= sorted[0];
+    return { price: entry.price, consumption: entry.consumption, since: key(entry) };
   }
   return { price: settings.fuelPrice, consumption: vehicle.consumption, since: null };
 }
@@ -471,7 +553,6 @@ export function estimateEnergyCostByDate(incomes: Income[], vehicle: Vehicle, se
   const costPerKm = settings.fuelPrice / currentCons;
   return { units: totalUnits, cost: totalCost, costPerKm, km: totalKm };
 }
-
 
 /** Total km recorded by the GPS trip tracker. */
 export function sumTripKm(trips: Trip[]) {
@@ -564,7 +645,6 @@ export function netProfit(
 ) {
   return sumIncomes(incomes) - totalCosts(incomes, expenses, vehicle, settings, trips);
 }
-
 
 export function sumHours(list: Income[]) {
   return list.reduce((s, i) => s + (i.hours || 0), 0);

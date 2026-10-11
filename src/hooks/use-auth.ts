@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { load, save, setSyncUser, type AppData } from "@/lib/store";
+import type { SyncEngine } from "@/lib/sync";
 
 export function useAuthUser() {
   const [user, setUser] = useState<User | null>(null);
@@ -26,32 +26,46 @@ export function useAuthUser() {
 export function useCloudSync() {
   useEffect(() => {
     let cancelled = false;
+    let engine: SyncEngine | null = null;
+    let pendingUser: string | null | undefined;
 
-    const sync = async (userId: string | null) => {
-      setSyncUser(userId);
-      if (!userId) return;
-      const { fetchCloudData, pushCloudData, mergeAppData } = await import("@/lib/cloud");
-      const local = load();
-      const remote = await fetchCloudData(userId);
-      if (cancelled) return;
-      const merged: AppData = remote ? mergeAppData(local, remote) : local;
-      save(merged);
-      try {
-        await pushCloudData(userId, merged);
-      } catch {
-        /* retried on next change */
-      }
+    const setUser = (id: string | null) => {
+      if (engine) engine.setUser(id);
+      else pendingUser = id;
+    };
+    const onLocalChange = () => engine?.notifyLocalChange();
+    const onOnline = () => engine?.flush();
+    const onVisibility = () => {
+      if (!engine) return;
+      // Leaving: push pending changes now. Returning: pick up other devices' changes.
+      if (document.visibilityState === "hidden") engine.flush();
+      else void engine.syncNow();
     };
 
-    supabase.auth.getSession().then(({ data }) => void sync(data.session?.user?.id ?? null));
+    void import("@/lib/sync-client").then(({ getSyncEngine }) => {
+      if (cancelled) return;
+      engine = getSyncEngine();
+      if (pendingUser !== undefined) engine.setUser(pendingUser);
+    });
+
+    window.addEventListener("driver-data-local-change", onLocalChange);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("pagehide", onOnline);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user?.id ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "TOKEN_REFRESHED") return;
-      void sync(session?.user?.id ?? null);
+      setUser(session?.user?.id ?? null);
     });
 
     return () => {
       cancelled = true;
       sub.subscription.unsubscribe();
+      window.removeEventListener("driver-data-local-change", onLocalChange);
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("pagehide", onOnline);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 }

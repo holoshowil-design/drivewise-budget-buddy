@@ -7,22 +7,39 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { Trash2, RefreshCw, CloudCheck, LogOut, LogIn, Download, Upload } from "lucide-react";
 import { useAuthUser } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { getOnlineFuelPrice } from "@/lib/fuel-price.functions";
-
+import { FuelPriceHistoryCard } from "@/components/FuelPriceHistoryCard";
+import { parseBackup, planRestore, applyRestore } from "@/lib/backup";
 
 export const Route = createFileRoute("/settings")({
-  head: () => ({ meta: [{ title: "הגדרות - דרייבר" }, { name: "description", content: "הגדרות, יעדים ופרטי רכב." }, { property: "og:title", content: "הגדרות - דרייבר" }, { property: "og:description", content: "הגדרות, יעדים ופרטי רכב." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({
+    meta: [
+      { title: "הגדרות - דרייבר" },
+      { name: "description", content: "הגדרות, יעדים ופרטי רכב." },
+      { property: "og:title", content: "הגדרות - דרייבר" },
+      { property: "og:description", content: "הגדרות, יעדים ופרטי רכב." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: SettingsPage,
 });
 
 function SettingsPage() {
-  const { data, ready, updateSettings, updateVehicle, recordFuelPriceChange, update } = useAppData();
+  const { data, ready, updateSettings, updateVehicle, recordFuelPriceChange, update } =
+    useAppData();
   const [s, setS] = useState(data.settings);
   const [v, setV] = useState(data.vehicle);
   const [loadingPrice, setLoadingPrice] = useState(false);
@@ -30,7 +47,14 @@ function SettingsPage() {
   const [origFuelPrice, setOrigFuelPrice] = useState(data.settings.fuelPrice);
   const [origConsumption, setOrigConsumption] = useState(data.vehicle.consumption);
 
-  useEffect(() => { if (ready) { setS(data.settings); setV(data.vehicle); setOrigFuelPrice(data.settings.fuelPrice); setOrigConsumption(data.vehicle.consumption); } }, [ready, data.settings, data.vehicle]);
+  useEffect(() => {
+    if (ready) {
+      setS(data.settings);
+      setV(data.vehicle);
+      setOrigFuelPrice(data.settings.fuelPrice);
+      setOrigConsumption(data.vehicle.consumption);
+    }
+  }, [ready, data.settings, data.vehicle]);
 
   const syncFuelPrice = async () => {
     setLoadingPrice(true);
@@ -52,14 +76,13 @@ function SettingsPage() {
     }
   };
 
-
   const saveSettings = () => {
     updateSettings({
       dailyGoal: Number(s.dailyGoal) || 0,
       fixedMonthlyExpenses: Number(s.fixedMonthlyExpenses) || 0,
       workDaysPerMonth: Number(s.workDaysPerMonth) || 1,
       defaultCommissionPct: Number(s.defaultCommissionPct) || 0,
-      fuelPrice: Number(s.fuelPrice) || 0,
+      // fuelPrice is saved only through the price history ("שמור רכב").
       currency: s.currency || "₪",
     });
     toast.success("הגדרות נשמרו");
@@ -68,12 +91,11 @@ function SettingsPage() {
   const saveVehicle = () => {
     const newConsumption = Number(v.consumption) || 0;
     const newPrice = Number(s.fuelPrice) || 0;
+    updateVehicle({ make: v.make, model: v.model, year: v.year, plate: v.plate, type: v.type });
     if (newConsumption !== origConsumption || newPrice !== origFuelPrice) {
       recordFuelPriceChange(newPrice, newConsumption);
       setOrigConsumption(newConsumption);
       setOrigFuelPrice(newPrice);
-    } else {
-      updateVehicle({ ...v, consumption: newConsumption });
     }
     toast.success("פרטי רכב נשמרו");
   };
@@ -88,7 +110,16 @@ function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <PageHeader title="הגדרות" subtitle="יעדים, רכב, ונתונים" scene={{ mood: "smirk", prop: "wrench", line: "המוסך פתוח. מכוונים את המכונה 🔧", taxi: "tired" }} />
+      <PageHeader
+        title="הגדרות"
+        subtitle="יעדים, רכב, ונתונים"
+        scene={{
+          mood: "smirk",
+          prop: "wrench",
+          line: "המוסך פתוח. מכוונים את המכונה 🔧",
+          taxi: "tired",
+        }}
+      />
 
       <div className="px-4 space-y-4">
         <AccountCard />
@@ -97,18 +128,36 @@ function SettingsPage() {
           <CardContent className="p-4 space-y-3">
             <h3 className="font-semibold">יעדים ותקציב</h3>
             <Field label="יעד רווח יומי (₪)">
-              <Input inputMode="decimal" value={s.dailyGoal} onChange={(e) => setS({ ...s, dailyGoal: Number(e.target.value) })} />
+              <Input
+                inputMode="decimal"
+                value={s.dailyGoal}
+                onChange={(e) => setS({ ...s, dailyGoal: Number(e.target.value) })}
+              />
             </Field>
             <Field label="הוצאות קבועות חודשיות (ביטוח, רישוי, ליסינג וכו׳)">
-              <Input inputMode="decimal" value={s.fixedMonthlyExpenses} onChange={(e) => setS({ ...s, fixedMonthlyExpenses: Number(e.target.value) })} />
+              <Input
+                inputMode="decimal"
+                value={s.fixedMonthlyExpenses}
+                onChange={(e) => setS({ ...s, fixedMonthlyExpenses: Number(e.target.value) })}
+              />
             </Field>
             <Field label="ימי עבודה בחודש (ממוצע)">
-              <Input inputMode="decimal" value={s.workDaysPerMonth} onChange={(e) => setS({ ...s, workDaysPerMonth: Number(e.target.value) })} />
+              <Input
+                inputMode="decimal"
+                value={s.workDaysPerMonth}
+                onChange={(e) => setS({ ...s, workDaysPerMonth: Number(e.target.value) })}
+              />
             </Field>
             <Field label="עמלת חברה ברירת מחדל (%)">
-              <Input inputMode="decimal" value={s.defaultCommissionPct} onChange={(e) => setS({ ...s, defaultCommissionPct: Number(e.target.value) })} />
+              <Input
+                inputMode="decimal"
+                value={s.defaultCommissionPct}
+                onChange={(e) => setS({ ...s, defaultCommissionPct: Number(e.target.value) })}
+              />
             </Field>
-            <Button onClick={saveSettings} className="w-full">שמור</Button>
+            <Button onClick={saveSettings} className="w-full">
+              שמור
+            </Button>
           </CardContent>
         </Card>
 
@@ -116,16 +165,29 @@ function SettingsPage() {
           <CardContent className="p-4 space-y-3">
             <h3 className="font-semibold">הרכב שלי</h3>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="יצרן"><Input value={v.make} onChange={(e) => setV({ ...v, make: e.target.value })} /></Field>
-              <Field label="דגם"><Input value={v.model} onChange={(e) => setV({ ...v, model: e.target.value })} /></Field>
+              <Field label="יצרן">
+                <Input value={v.make} onChange={(e) => setV({ ...v, make: e.target.value })} />
+              </Field>
+              <Field label="דגם">
+                <Input value={v.model} onChange={(e) => setV({ ...v, model: e.target.value })} />
+              </Field>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="שנה"><Input value={v.year} onChange={(e) => setV({ ...v, year: e.target.value })} /></Field>
-              <Field label="מספר רישוי"><Input value={v.plate} onChange={(e) => setV({ ...v, plate: e.target.value })} /></Field>
+              <Field label="שנה">
+                <Input value={v.year} onChange={(e) => setV({ ...v, year: e.target.value })} />
+              </Field>
+              <Field label="מספר רישוי">
+                <Input value={v.plate} onChange={(e) => setV({ ...v, plate: e.target.value })} />
+              </Field>
             </div>
             <Field label="סוג רכב">
-              <Select value={v.type} onValueChange={(val) => setV({ ...v, type: val as VehicleType })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={v.type}
+                onValueChange={(val) => setV({ ...v, type: val as VehicleType })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="petrol">בנזין / סולר</SelectItem>
                   <SelectItem value="hybrid">היברידי</SelectItem>
@@ -135,27 +197,46 @@ function SettingsPage() {
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label={v.type === "electric" ? "צריכה (ק״מ ל-kWh)" : "צריכה (ק״מ לליטר)"}>
-                <Input inputMode="decimal" value={v.consumption} onChange={(e) => setV({ ...v, consumption: Number(e.target.value) })} />
+                <Input
+                  inputMode="decimal"
+                  value={v.consumption}
+                  onChange={(e) => setV({ ...v, consumption: Number(e.target.value) })}
+                />
               </Field>
               <Field label={v.type === "electric" ? "מחיר kWh (₪)" : "מחיר ליטר (₪)"}>
-                <Input inputMode="decimal" value={s.fuelPrice} onChange={(e) => setS({ ...s, fuelPrice: Number(e.target.value) })} />
+                <Input
+                  inputMode="decimal"
+                  value={s.fuelPrice}
+                  onChange={(e) => setS({ ...s, fuelPrice: Number(e.target.value) })}
+                />
               </Field>
             </div>
             {v.type !== "electric" && (
-              <Button variant="outline" className="w-full" disabled={loadingPrice} onClick={syncFuelPrice}>
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled={loadingPrice}
+                onClick={syncFuelPrice}
+              >
                 <RefreshCw className={`h-4 w-4 ml-1 ${loadingPrice ? "animate-spin" : ""}`} />
                 {loadingPrice ? "מעדכן..." : "עדכן מחיר דלק אונליין (95)"}
               </Button>
             )}
             <p className="text-xs text-muted-foreground">
-              שינוי מחיר או צריכה נרשם עם התאריך והשעה המדויקת ויחול רק מאותו רגע והלאה — רשומות שהוזנו קודם ישמרו את המחיר והצריכה שהיו תקפים אז. המחיר האונליין הוא המחיר המרבי לצרכן בשירות עצמי.
-              {s.fuelPriceUpdatedAt && ` עודכן לאחרונה: ${new Date(s.fuelPriceUpdatedAt).toLocaleString("he-IL", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" })}.`}
+              שינוי מחיר או צריכה נרשם עם התאריך והשעה המדויקת ויחול רק מאותו רגע והלאה — רשומות
+              שהוזנו קודם ישמרו את המחיר והצריכה שהיו תקפים אז. המחיר האונליין הוא המחיר המרבי לצרכן
+              בשירות עצמי.
+              {s.fuelPriceUpdatedAt &&
+                ` עודכן לאחרונה: ${new Date(s.fuelPriceUpdatedAt).toLocaleString("he-IL", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" })}.`}
             </p>
 
-
-            <Button onClick={saveVehicle} className="w-full">שמור רכב</Button>
+            <Button onClick={saveVehicle} className="w-full">
+              שמור רכב
+            </Button>
           </CardContent>
         </Card>
+
+        <FuelPriceHistoryCard />
 
         <BackupCard />
 
@@ -167,24 +248,36 @@ function SettingsPage() {
                 <Label htmlFor="auto-detect">שאל כשמזוהה נסיעה</Label>
                 <p className="text-xs text-muted-foreground">כשהאפליקציה פתוחה ומזוהה תנועה ברכב</p>
               </div>
-              <Switch id="auto-detect" checked={data.settings.autoDetectTrip !== false} onCheckedChange={(v) => updateSettings({ autoDetectTrip: v })} />
+              <Switch
+                id="auto-detect"
+                checked={data.settings.autoDetectTrip !== false}
+                onCheckedChange={(v) => updateSettings({ autoDetectTrip: v })}
+              />
             </div>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <Label htmlFor="ask-wait">שאל על המתנה</Label>
                 <p className="text-xs text-muted-foreground">אחרי 4 דקות עמידה במקום בזמן נסיעה</p>
               </div>
-              <Switch id="ask-wait" checked={data.settings.askWaiting !== false} onCheckedChange={(v) => updateSettings({ askWaiting: v })} />
+              <Switch
+                id="ask-wait"
+                checked={data.settings.askWaiting !== false}
+                onCheckedChange={(v) => updateSettings({ askWaiting: v })}
+              />
             </div>
           </CardContent>
         </Card>
 
-
         <Card>
           <CardContent className="p-4 space-y-3">
             <h3 className="font-semibold text-destructive">אזור מסוכן</h3>
-            <p className="text-xs text-muted-foreground">מחיקה של כל ההכנסות וההוצאות. הגדרות ופרטי רכב יישמרו.</p>
-            <Button variant="destructive" onClick={resetAll} className="w-full"><Trash2 className="h-4 w-4 ml-1" />מחק את כל הנתונים</Button>
+            <p className="text-xs text-muted-foreground">
+              מחיקה של כל ההכנסות וההוצאות. הגדרות ופרטי רכב יישמרו.
+            </p>
+            <Button variant="destructive" onClick={resetAll} className="w-full">
+              <Trash2 className="h-4 w-4 ml-1" />
+              מחק את כל הנתונים
+            </Button>
             <div className="text-xs text-muted-foreground text-center pt-2">
               {data.incomes.length} הכנסות · {data.expenses.length} הוצאות
             </div>
@@ -213,7 +306,11 @@ function AccountCard() {
           <>
             <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
               {avatar ? (
-                <img src={avatar} alt={name || "תמונת פרופיל"} className="h-11 w-11 rounded-full object-cover" />
+                <img
+                  src={avatar}
+                  alt={name || "תמונת פרופיל"}
+                  className="h-11 w-11 rounded-full object-cover"
+                />
               ) : (
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-base font-bold text-primary">
                   {(name || user.email || "?").slice(0, 1).toUpperCase()}
@@ -221,14 +318,17 @@ function AccountCard() {
               )}
               <div className="min-w-0 flex-1">
                 {name && <div className="truncate text-sm font-semibold">{name}</div>}
-                <div dir="ltr" className="truncate text-right text-xs text-muted-foreground">{user.email}</div>
+                <div dir="ltr" className="truncate text-right text-xs text-muted-foreground">
+                  {user.email}
+                </div>
                 <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
                   <CloudCheck className="h-3 w-3" /> מחובר · {providerLabel}
                 </div>
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              כל שינוי נשמר אוטומטית בענן בדיוק כפי שהוא מוצג באפליקציה, וזמין בכל מכשיר שתתחבר בו לאותו חשבון.
+              כל שינוי נשמר אוטומטית בענן בדיוק כפי שהוא מוצג באפליקציה, וזמין בכל מכשיר שתתחבר בו
+              לאותו חשבון.
             </p>
             <Button
               variant="outline"
@@ -257,7 +357,6 @@ function AccountCard() {
     </Card>
   );
 }
-
 
 function navigateToAuth() {
   window.location.href = "/auth";
@@ -289,40 +388,54 @@ function BackupCard() {
   };
 
   const importJson = async (file: File) => {
+    let backup;
     try {
-      const parsed = JSON.parse(await file.text());
-      if (!Array.isArray(parsed.incomes) || !Array.isArray(parsed.expenses)) throw new Error("bad");
-      update((d) => {
-        const byId = <T extends { id: string }>(a: T[], b: T[]) => {
-          const map = new Map(a.map((x) => [x.id, x]));
-          b.forEach((x) => map.set(x.id, x));
-          return [...map.values()];
-        };
-        return {
-          ...d,
-          incomes: byId(d.incomes, parsed.incomes),
-          expenses: byId(d.expenses, parsed.expenses),
-          vehicle: { ...d.vehicle, ...(parsed.vehicle || {}) },
-          settings: { ...d.settings, ...(parsed.settings || {}) },
-        };
-      });
-      toast.success("הגיבוי שוחזר ומוזג עם הנתונים הקיימים");
+      backup = parseBackup(JSON.parse(await file.text()));
     } catch {
-      toast.error("קובץ לא תקין");
+      backup = null;
     }
+    if (!backup) {
+      toast.error("קובץ לא תקין: זה לא נראה כמו גיבוי של דרייבר");
+      return;
+    }
+    const plan = planRestore(data, backup);
+    if (plan.total === 0) {
+      toast.info("כל הרשומות שבקובץ כבר קיימות. לא נוסף דבר.");
+      return;
+    }
+    const restored = backup;
+    toast(
+      `בקובץ ${plan.incomes} הכנסות, ${plan.expenses} הוצאות ו-${plan.trips} נסיעות שאינן כאן`,
+      {
+        description: "השחזור מוסיף אותן ולא מוחק רשומות קיימות.",
+        duration: 15000,
+        action: {
+          label: "שחזר",
+          onClick: () => {
+            update((d) => applyRestore(d, restored));
+            toast.success("הגיבוי שוחזר ומוזג עם הנתונים הקיימים");
+          },
+        },
+      },
+    );
   };
 
   return (
     <Card>
       <CardContent className="p-4 space-y-3">
         <h3 className="font-semibold">גיבוי מקומי</h3>
-        <p className="text-xs text-muted-foreground">שמור עותק של כל הנתונים כקובץ, ושחזר אותו בכל זמן. השחזור ממזג ולא מוחק רשומות קיימות.</p>
+        <p className="text-xs text-muted-foreground">
+          שמור עותק של כל הנתונים כקובץ, ושחזר אותו בכל זמן. השחזור מוסיף רשומות חסרות (הכנסות,
+          הוצאות ונסיעות) ולא מוחק או משנה רשומות קיימות.
+        </p>
         <div className="grid grid-cols-2 gap-3">
           <Button variant="outline" onClick={exportJson}>
-            <Download className="h-4 w-4 ml-1" />ייצוא גיבוי
+            <Download className="h-4 w-4 ml-1" />
+            ייצוא גיבוי
           </Button>
           <Button variant="outline" onClick={() => document.getElementById(inputId)?.click()}>
-            <Upload className="h-4 w-4 ml-1" />שחזור מקובץ
+            <Upload className="h-4 w-4 ml-1" />
+            שחזור מקובץ
           </Button>
         </div>
         <input
