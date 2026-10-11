@@ -458,3 +458,95 @@
   .momentum-coach, .weekly-bar-today { animation: none !important; }
   .reward-action:not(:disabled):active { transform: none; }
 }
+
+/* ---- Caricature driver mascot (xerox-ink style, pose-to-pose) ---- */
+.mascot { --ink: oklch(0.2 0.02 60); display: block; flex: 0 0 auto; width: 5.2rem; height: 5.2rem; margin: -.6rem 0 -.4rem; overflow: visible; }
+.mascot svg { overflow: visible; }
+.m-ink path, .m-ink ellipse, .m-ink rect, .m-ink circle { stroke: var(--ink); stroke-width: 2.1; stroke-linejoin: round; stroke-linecap: round; }
+.m-shadow { fill: color-mix(in oklab, var(--foreground) 14%, transparent); transform-origin: 60px 113px; }
+.m-jacket { fill: var(--primary); }
+.mascot-grumble .m-jacket { fill: var(--warning); }
+.m-shirt, .m-eyewhite { fill: var(--card); }
+.m-line, .m-steam, .m-stubble, .m-brow, .m-mouth, .m-fx-grr path, .m-fx-win path { fill: none; }
+.m-stubble { stroke-dasharray: 1 3; stroke-width: 1.6 !important; }
+.m-skin { fill: oklch(0.86 0.06 60); }
+.m-pupil { fill: var(--ink); stroke: none !important; }
+.m-lid { fill: oklch(0.86 0.06 60); stroke-width: 1.4 !important; transform-box: fill-box; transform-origin: top; transform: scaleY(0); }
+.m-capfill { fill: var(--foreground); }
+.m-cupbody { fill: var(--card); }
+.m-cash { fill: color-mix(in oklab, var(--primary) 45%, var(--card)); }
+.m-cashtxt { font: 700 7px var(--font-display, sans-serif); fill: var(--ink); }
+.m-yawn { fill: var(--ink); opacity: 0; }
+.m-zzz { font: italic 800 13px var(--font-display, sans-serif); fill: var(--ink); opacity: 0; }
+.m-fx-grr, .m-fx-win, .m-bill { opacity: 0; }
+.m-fx-win path { stroke: var(--primary) !important; stroke-width: 3 !important; }
+.m-body, .m-head, .m-cap, .m-arm-l, .m-arm-r, .m-brow { transform-box: view-box; }
+.m-body { transform-origin: 60px 112px; animation: m-breathe 2.6s steps(6) infinite; }
+.m-head { transform-origin: 60px 66px; }
+.m-cap { transform-origin: 60px 36px; }
+.m-arm-l { transform-origin: 38px 82px; }
+.m-arm-r { transform-origin: 83px 82px; }
+.m-eyes { animation: m-blink 4.2s steps(1) infinite; transform-box: fill-box; transform-origin: center; }
+
+/* sleepy: slumped, yawning, coffee steaming */
+.mascot-sleepy .m-lid { transform: scaleY(.85); }
+.mascot-sleepy .m-mouth { opacity: 0; }
+.mascot-sleepy .m-yawn { animation: m-yawn 4s steps(8) infinite; transform-box: fill-box; transform-origin: center; }
+.mascot-sleepy .m-zzz { animation: m-zzz 2.4s steps(8) infinite; }
+.mascot-sleepy .m-head { animation: m-nod 4s cubic-bezier(.6,0,.4,1) infinite; }
+.mascot-sleepy .m-steam { stroke-dasharray: 18; animation: m-steam 1.6s steps(6) infinite; }
+.mascot-sleepy .m-arm-r { transform: rotate(-12deg); }
+
+/* grumble: scowl, palms up, scratch lines */
+.mascot-grumble .m-cup, .mascot-smirk .m-cup, .mascot-victory .m-cup { display: none; }
+.mascot-grumble .m-brow-l { transform: rotate(18deg) translateY(2px); transform-origin: 52px 39px; }
+.mascot-grumble .m-brow-r { transform: rotate(-18deg) translateY(2px); transform-origin: 68px 39px; }
+.mascot-grumble .m-mouth { d: path("M53 64 Q60 58 67 64"); }
+.mascot-grumble .m-arm-l { animation: m-shrug-l .9s cubic-bezier(.2,1.6,.4,1) both; }
+.mascot-grumble .m-arm-r { animation: m-shrug-r .9s cubic-bezier(.2,1.6,.4,1) both; }
+.mascot-grumble .m-head { animation: m-shake .5s steps(4) 2; }
+.mascot-grumble .m-fx-grr { animation: m-flicker .25s steps(2) infinite; }
+
+/* smirk: snappy cap tug, narrowed confident eyes */
+.mascot-smirk .m-lid { transform: scaleY(.5); }
+.mascot-smirk .m-mouth { d: path("M53 61 Q62 65 68 58"); }
+.mascot-smirk .m-brow-r { transform: translateY(-2px) rotate(-8deg); transform-origin: 68px 39px; }
+.mascot-smirk .m-cap { animation: m-captug .7s cubic-bezier(.2,1.8,.4,1) both; }
+.mascot-smirk .m-arm-r { animation: m-tug .7s cubic-bezier(.2,1.8,.4,1) both; }
+.mascot-smirk .m-body { animation: m-pop .55s cubic-bezier(.2,1.6,.3,1) both, m-breathe 2.6s steps(6) .6s infinite; }
+
+/* victory: squash, leap with tucked knees, bill fling, burst lines */
+.mascot-victory .m-mouth { d: path("M52 59 Q60 70 68 59 Z"); fill: var(--ink); }
+.mascot-victory .m-eyewhite { ry: 5.5; }
+.mascot-victory .m-body { animation: m-leap 1.1s cubic-bezier(.3,0,.3,1) both, m-dance .5s steps(2) 1.1s infinite alternate; }
+.mascot-victory .m-shadow { animation: m-shadow 1.1s cubic-bezier(.3,0,.3,1) both; }
+.mascot-victory .m-arm-l { transform: rotate(80deg); }
+.mascot-victory .m-arm-r { transform: rotate(-90deg); }
+.mascot-victory .m-bill { animation: m-fling 1.1s cubic-bezier(.2,.9,.3,1) .35s both; }
+.mascot-victory .m-cap { animation: m-capflip 1.1s cubic-bezier(.2,1.4,.4,1) both; }
+.mascot-victory .m-fx-win { animation: m-burst .7s steps(5) .45s 3; }
+
+@keyframes m-breathe { 50% { transform: scale(1.02, .985); } }
+@keyframes m-blink { 0%, 94%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+@keyframes m-yawn { 0%, 30%, 100% { opacity: 0; transform: scale(.3); } 45%, 70% { opacity: 1; transform: scale(1.3, 1.6); } }
+@keyframes m-zzz { 0% { opacity: 0; transform: translate(0,0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(10px,-14px); } }
+@keyframes m-nod { 0%, 100% { transform: rotate(0); } 55% { transform: rotate(7deg) translateY(2px); } 62% { transform: rotate(-3deg); } }
+@keyframes m-steam { from { stroke-dashoffset: 36; } to { stroke-dashoffset: 0; } }
+@keyframes m-shrug-l { 0% { transform: rotate(0); } 60% { transform: rotate(-60deg); } 100% { transform: rotate(-48deg); } }
+@keyframes m-shrug-r { 0% { transform: rotate(0); } 60% { transform: rotate(60deg); } 100% { transform: rotate(48deg); } }
+@keyframes m-shake { 25% { transform: translateX(-2px) rotate(-3deg); } 75% { transform: translateX(2px) rotate(3deg); } }
+@keyframes m-flicker { 50% { opacity: 1; } }
+@keyframes m-captug { 0% { transform: rotate(0); } 40% { transform: rotate(-14deg) translateY(-3px); } 100% { transform: rotate(-6deg); } }
+@keyframes m-tug { 0% { transform: rotate(0); } 40% { transform: rotate(-120deg); } 100% { transform: rotate(-10deg); } }
+@keyframes m-pop { 0% { transform: scale(1.1, .85); } 50% { transform: scale(.94, 1.1); } }
+@keyframes m-leap { 0% { transform: scale(1); } 18% { transform: scale(1.18, .78); } 45% { transform: translateY(-26px) scale(.88, 1.18) rotate(-6deg); } 70% { transform: translateY(0) scale(1.15, .82); } 85% { transform: scale(.96, 1.05); } 100% { transform: scale(1); } }
+@keyframes m-dance { from { transform: rotate(-4deg) translateY(-1px); } to { transform: rotate(4deg) translateY(1px); } }
+@keyframes m-shadow { 45% { transform: scaleX(.5); opacity: .4; } }
+@keyframes m-fling { 0% { opacity: 1; transform: translate(0,0) rotate(0); } 100% { opacity: 0; transform: translate(-40px,-50px) rotate(-260deg); } }
+@keyframes m-capflip { 0% { transform: none; } 40% { transform: translateY(-16px) rotate(-30deg); } 100% { transform: none; } }
+@keyframes m-burst { 0% { opacity: 0; transform: scale(.6); } 40% { opacity: 1; } 100% { opacity: 0; transform: scale(1.25); } }
+.m-fx-win { transform-box: view-box; transform-origin: 60px 50px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot *, .mascot { animation: none !important; }
+}
