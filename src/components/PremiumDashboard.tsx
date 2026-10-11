@@ -145,7 +145,7 @@ export function MomentumCoach({ data }: { data: AppData }) {
 
   return (
     <section key={`${state.tone}-${momentum.stage}`} className={`momentum-coach momentum-coach-${state.tone}`} aria-live="polite">
-      <span className="momentum-emoji" aria-hidden="true">{state.emoji}</span>
+      <DriverMascot mood={state.tone === "start" ? "sleepy" : state.tone === "warning" ? "grumble" : state.tone === "success" ? "victory" : "smirk"} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-display text-sm font-bold">{state.title}</h2>
