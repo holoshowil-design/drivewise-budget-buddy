@@ -306,7 +306,8 @@ export function TripTracker({ autoStart = false, driveMode = false }: { autoStar
             const nextStreak = income ? calculateWorkStreak([...data.incomes, { ...income, km: 0, tripId: "streak-preview", id: "streak-preview" }]) : calculateWorkStreak(data.incomes);
             const trigger = document.activeElement;
             saveTripWithIncome({ ...trip, endedAt: new Date().toISOString() }, income);
-            const kind = reachedGoal ? "goal" : feedback.milestone === "break-even" ? "break-even" : income && nextStreak.milestone ? "streak" : "trip";
+            const firstIncomeToday = Boolean(income) && trip.date === todayISO() && !data.incomes.some((item) => item.date === trip.date);
+            const kind = reachedGoal ? "goal" : feedback.milestone === "break-even" ? "break-even" : firstIncomeToday && nextStreak.milestone ? "streak" : "trip";
             celebrate(kind, trigger, income?.amount, data.settings.currency, { title: kind === "streak" ? `רצף של ${nextStreak.current} ימים` : feedback.title, message: feedback.message, streak: nextStreak.current });
             toast.success(income ? `נסיעה והכנסה נשמרו · ${trip.km.toFixed(1)} ק״מ` : `נסיעה נשמרה · ${trip.km.toFixed(1)} ק״מ`);
             finishEnding();

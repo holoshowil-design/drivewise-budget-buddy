@@ -17,4 +17,4 @@
 - [x] Add the start, break-even, and daily-goal journey with contextual next actions
 - [x] Connect income, expense, fuel, and trip changes to positive or corrective feedback
 - [x] Add state-driven motion to coaching, gauges, and the current weekly bar
-- [ ] Verify rule tests, live flows, reduced motion, desktop, and mobile
+- [x] Verify rule tests, live flows, reduced motion, desktop, and mobile

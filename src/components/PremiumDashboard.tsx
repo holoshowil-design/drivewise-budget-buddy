@@ -156,17 +156,19 @@ export function MomentumCoach({ data }: { data: AppData }) {
       <Link to={streak.activeToday ? "/trip" : "/add"} search={(streak.activeToday ? { action: "start_trip", mode: "drive" } : { tab: "income" }) as never} className="momentum-action" aria-label={state.cta}>
         <ArrowLeft aria-hidden="true" />
       </Link>
-      <DailyJourney stage={momentum.stage} progress={momentum.progress} />
+      <DailyJourney hasIncome={streak.activeToday} net={net} breakEven={breakEven} goal={goal} />
     </section>
   );
 }
 
-function DailyJourney({ stage, progress }: { stage: "start" | "stability" | "victory"; progress: number }) {
-  const active = stage === "start" ? 0 : stage === "stability" ? 1 : 2;
+function DailyJourney({ hasIncome, net, breakEven, goal }: { hasIncome: boolean; net: number; breakEven: number; goal: number }) {
   const steps = ["התחלה", "איזון", "יעד"];
-  return <div className="daily-journey" aria-label={`מסלול היום: ${steps[active]}`}>
-    <span className="daily-journey-line"><span style={{ width: `${active === 0 ? 0 : active === 1 ? Math.max(12, progress / 2) : 100}%` }} /></span>
-    {steps.map((label, index) => <span key={label} className={`daily-step ${index < active ? "daily-step-done" : index === active ? "daily-step-active" : ""}`}><i>{index < active ? "✓" : index + 1}</i><b>{label}</b></span>)}
+  const done = [hasIncome, hasIncome && net >= breakEven, hasIncome && net >= goal];
+  const active = done.findIndex((value) => !value);
+  const progressWidth = done[2] ? 100 : done[1] ? 67 : done[0] ? 33 : 0;
+  return <div className="daily-journey" aria-label={active >= 0 ? `התחנה הבאה: ${steps[active]}` : "כל תחנות היום הושלמו"}>
+    <span className="daily-journey-line"><span style={{ width: `${progressWidth}%` }} /></span>
+    {steps.map((label, index) => <span key={label} className={`daily-step ${done[index] ? "daily-step-done" : index === active ? "daily-step-active" : ""}`}><i>{done[index] ? "✓" : index + 1}</i><b>{label}</b></span>)}
   </div>;
 }
 

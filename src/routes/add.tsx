@@ -110,8 +110,9 @@ function IncomeForm() {
     const feedback = incomeMotivation(data, income);
     const nextStreak = calculateWorkStreak([...data.incomes, { ...income, id: "streak-preview" }]);
     const id = addIncome(income);
-    const kind = reachedGoal ? "goal" : feedback.milestone === "break-even" ? "break-even" : nextStreak.milestone ? "streak" : "income";
-    celebrate(kind, event.currentTarget, amount, c, { title: nextStreak.milestone && kind === "streak" ? `רצף של ${nextStreak.current} ימים` : feedback.title, message: feedback.message, streak: nextStreak.current });
+    const firstIncomeToday = form.date === todayISO() && dayIncomes.length === 0;
+    const kind = reachedGoal ? "goal" : feedback.milestone === "break-even" ? "break-even" : firstIncomeToday && nextStreak.milestone ? "streak" : "income";
+    if (form.date === todayISO()) celebrate(kind, event.currentTarget, amount, c, { title: nextStreak.milestone && kind === "streak" ? `רצף של ${nextStreak.current} ימים` : feedback.title, message: feedback.message, streak: nextStreak.current });
     toast.success(`נוספה הכנסה · נטו ${fmt(previewNet, c)}`, {
       action: { label: "ביטול", onClick: () => removeIncome(id) },
     });
@@ -180,7 +181,7 @@ function ExpenseForm() {
     const expense = { date: form.date, category: form.category, amount, note: form.note.trim() || undefined };
     const feedback = expenseMotivation(data, expense);
     const id = addExpense(expense);
-    celebrate("corrective", document.activeElement, Math.abs(feedback.delta), c, { title: feedback.title, message: feedback.message });
+    if (form.date === todayISO()) celebrate("corrective", document.activeElement, Math.abs(feedback.delta), c, { title: feedback.title, message: feedback.message });
     toast.success(`נוספה הוצאה · ${fmt(amount, c)}`, { action: { label: "ביטול", onClick: () => removeExpense(id) } });
     setForm({ ...form, amount: "", note: "" });
   };
@@ -237,7 +238,7 @@ function FuelForm() {
     } satisfies Omit<Expense, "id">;
     const feedback = expenseMotivation(data, expense);
     const id = addExpense(expense);
-    celebrate("corrective", document.activeElement, Math.abs(feedback.delta), c, { title: feedback.title, message: feedback.message });
+    if (form.date === todayISO()) celebrate("corrective", document.activeElement, Math.abs(feedback.delta), c, { title: feedback.title, message: feedback.message });
     toast.success(`${isElectric ? "טעינה נרשמה" : "תדלוק נרשם"} · ${fmt(amount, c)}`, {
       action: { label: "ביטול", onClick: () => removeExpense(id) },
     });
