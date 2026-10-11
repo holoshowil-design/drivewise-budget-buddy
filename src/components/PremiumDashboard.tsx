@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { DriverMascot } from "@/components/DriverMascot";
-import { CaricatureTaxi } from "@/components/CaricatureTaxi";
+import { MovieStage } from "@/components/MovieStage";
 import { ComicBubble } from "@/components/InkWorld";
 import { Award, ChevronDown, Gauge, Navigation, Sparkles, TrendingUp, Zap, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -156,8 +155,7 @@ export function MomentumCoach({ data }: { data: AppData }) {
       <div className="coach-stage" aria-hidden="true">
         <span className="coach-stage-sun" />
         <span className="page-stage-floor" />
-        <CaricatureTaxi mood={state.tone === "start" ? "tired" : state.tone === "success" ? "zoom" : "happy"} driving={state.tone === "success"} className="coach-taxi" />
-        <DriverMascot mood={state.tone === "start" ? "sleepy" : state.tone === "warning" ? "grumble" : state.tone === "success" ? "victory" : "smirk"} className="coach-mascot" />
+        <MovieStage morning base={{ mood: state.tone === "start" ? "sleepy" : state.tone === "warning" ? "grumble" : state.tone === "success" ? "victory" : "smirk", taxi: state.tone === "start" ? "tired" : state.tone === "success" ? "zoom" : "happy", driving: state.tone === "success" }} mascotClass="coach-mascot" taxiClass="coach-taxi" />
         <span className="coach-streak num">🔥 {streak.current}</span>
       </div>
       <ComicBubble tone={state.tone === "warning" ? "warn" : state.tone === "start" ? "default" : "win"} className="coach-bubble">
