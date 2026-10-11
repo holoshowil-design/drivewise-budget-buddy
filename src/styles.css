@@ -489,7 +489,7 @@ body {
 }
 
 
-.ink-world { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.ink-world { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 .ink-skyline { position: absolute; inset-inline: 0; bottom: 3.6rem; width: 100%; height: 30vh; opacity: .22; animation: sky-drift 60s linear infinite alternate; }
 .ink-sky-far path { fill: color-mix(in oklab, var(--primary) 18%, var(--paper)); stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; filter: url(#ink-boil); }
 .ink-sky-windows path, .ink-road { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }

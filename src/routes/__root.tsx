@@ -130,7 +130,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen text-foreground pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
+      <div className="relative z-[1] min-h-screen text-foreground pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
         <Outlet />
       </div>
       <DriveDetector />
