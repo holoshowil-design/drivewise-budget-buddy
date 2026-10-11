@@ -29,8 +29,10 @@ import {
   fmt,
   type AppData,
 } from "@/lib/store";
+import { buildDays, monthForecast } from "@/lib/calc";
 
-const iso = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const iso = (d: Date) =>
+  new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
 const tooltipStyle = {
   background: "var(--card)",
@@ -41,7 +43,15 @@ const tooltipStyle = {
   direction: "rtl" as const,
 };
 
-function SectionTitle({ icon, title, hint }: { icon: React.ReactNode; title: string; hint?: string }) {
+function SectionTitle({
+  icon,
+  title,
+  hint,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  hint?: string;
+}) {
   return (
     <div className="mb-3 flex items-center justify-between gap-2">
       <h3 className="flex items-center gap-1.5 text-sm font-semibold">
@@ -68,28 +78,48 @@ export function MonthPaceCard({ data }: { data: AppData }) {
     for (let d = 1; d <= daysInMonth; d++) {
       const date = iso(new Date(now.getFullYear(), now.getMonth(), d));
       if (d <= today) {
-        running += netProfit(filterByDate(data.incomes, date), filterByDate(data.expenses, date), data.vehicle, data.settings, filterByDate(data.trips ?? [], date));
+        running += netProfit(
+          filterByDate(data.incomes, date),
+          filterByDate(data.expenses, date),
+          data.vehicle,
+          data.settings,
+          filterByDate(data.trips ?? [], date),
+        );
       }
-      series.push({ day: d, cum: d <= today ? Math.round(running) : null, pace: Math.round((goalMonth / daysInMonth) * d) });
+      series.push({
+        day: d,
+        cum: d <= today ? Math.round(running) : null,
+        pace: Math.round((goalMonth / daysInMonth) * d),
+      });
     }
-    const projected = today > 0 ? Math.round((running / today) * daysInMonth) : 0;
+    // Same forecast as the dashboard summary (one definition in lib/calc).
+    const projected = Math.round(monthForecast(buildDays(data), data).forecast);
     return { series, cum: Math.round(running), target: goalMonth, projected };
   }, [data, daysInMonth, today]);
 
   const pct = target > 0 ? Math.round((cum / target) * 100) : 0;
   const paceNow = Math.round((target / daysInMonth) * today);
   const ahead = cum - paceNow;
-  void from; void to;
+  void from;
+  void to;
 
   return (
     <Card>
       <CardContent className="p-4">
-        <SectionTitle icon={<CalendarRange className="h-4 w-4" />} title="מצטבר החודש מול קצב היעד" hint={`${pct}% מהיעד`} />
+        <SectionTitle
+          icon={<CalendarRange className="h-4 w-4" />}
+          title="מצטבר החודש מול קצב היעד"
+          hint={`${pct}% מהיעד`}
+        />
         <div className="mb-3 flex items-end justify-between">
           <div>
             <div className="num text-2xl font-extrabold tracking-tight">{fmt(cum, c)}</div>
-            <div className={`text-xs font-medium ${ahead >= 0 ? "text-success" : "text-destructive"}`}>
-              {ahead >= 0 ? `מקדים את הקצב ב-${fmt(ahead, c)}` : `מפגר אחרי הקצב ב-${fmt(-ahead, c)}`}
+            <div
+              className={`text-xs font-medium ${ahead >= 0 ? "text-success" : "text-destructive"}`}
+            >
+              {ahead >= 0
+                ? `מקדים את הקצב ב-${fmt(ahead, c)}`
+                : `מפגר אחרי הקצב ב-${fmt(-ahead, c)}`}
             </div>
           </div>
           <div className="text-left">
@@ -107,14 +137,35 @@ export function MonthPaceCard({ data }: { data: AppData }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={10} tickLine={false} axisLine={false} interval={4} />
+              <XAxis
+                dataKey="day"
+                stroke="var(--muted-foreground)"
+                fontSize={10}
+                tickLine={false}
+                axisLine={false}
+                interval={4}
+              />
               <Tooltip
                 contentStyle={tooltipStyle}
                 labelFormatter={(v) => `יום ${v} בחודש`}
                 formatter={(v: number, n) => [fmt(v || 0, c), n === "cum" ? "מצטבר" : "קצב יעד"]}
               />
-              <Area type="monotone" dataKey="pace" stroke="var(--muted-foreground)" strokeDasharray="4 4" strokeWidth={1.5} fill="none" />
-              <Area type="monotone" dataKey="cum" stroke="var(--primary)" strokeWidth={2.5} fill="url(#cumFill)" connectNulls />
+              <Area
+                type="monotone"
+                dataKey="pace"
+                stroke="var(--muted-foreground)"
+                strokeDasharray="4 4"
+                strokeWidth={1.5}
+                fill="none"
+              />
+              <Area
+                type="monotone"
+                dataKey="cum"
+                stroke="var(--primary)"
+                strokeWidth={2.5}
+                fill="url(#cumFill)"
+                connectNulls
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -135,7 +186,13 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
       const inc = filterByDate(data.incomes, date);
       const exp = filterByDate(data.expenses, date);
       const income = sumIncomes(inc);
-      const expense = totalCosts(inc, exp, data.vehicle, data.settings, filterByDate(data.trips ?? [], date));
+      const expense = totalCosts(
+        inc,
+        exp,
+        data.vehicle,
+        data.settings,
+        filterByDate(data.trips ?? [], date),
+      );
       out.push({
         day: d.toLocaleDateString("he-IL", { day: "numeric", month: "numeric" }),
         income: Math.round(income),
@@ -151,22 +208,58 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
   return (
     <Card>
       <CardContent className="p-4">
-        <SectionTitle icon={<LineChartIcon className="h-4 w-4" />} title="הכנסות מול הוצאות" hint="14 ימים" />
+        <SectionTitle
+          icon={<LineChartIcon className="h-4 w-4" />}
+          title="הכנסות מול הוצאות"
+          hint="14 ימים"
+        />
         {has ? (
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={series} margin={{ top: 4, right: 4, left: 4, bottom: 0 }} stackOffset="sign">
+              <ComposedChart
+                data={series}
+                margin={{ top: 4, right: 4, left: 4, bottom: 0 }}
+                stackOffset="sign"
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={10} tickLine={false} axisLine={false} interval={2} />
+                <XAxis
+                  dataKey="day"
+                  stroke="var(--muted-foreground)"
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  interval={2}
+                />
                 <YAxis hide />
                 <ReferenceLine y={0} stroke="var(--border)" />
                 <Tooltip
                   contentStyle={tooltipStyle}
-                  formatter={(v: number, n) => [fmt(Math.abs(v), c), n === "income" ? "הכנסה" : n === "expense" ? "הוצאה" : "נטו"]}
+                  formatter={(v: number, n) => [
+                    fmt(Math.abs(v), c),
+                    n === "income" ? "הכנסה" : n === "expense" ? "הוצאה" : "נטו",
+                  ]}
                 />
-                <Bar dataKey="income" stackId="a" fill="var(--success)" radius={[4, 4, 0, 0]} maxBarSize={16} />
-                <Bar dataKey="expense" stackId="a" fill="var(--destructive)" radius={[0, 0, 4, 4]} maxBarSize={16} />
-                <Line type="monotone" dataKey="net" stroke="var(--chart-2)" strokeWidth={2} dot={false} />
+                <Bar
+                  dataKey="income"
+                  stackId="a"
+                  fill="var(--success)"
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={16}
+                />
+                <Bar
+                  dataKey="expense"
+                  stackId="a"
+                  fill="var(--destructive)"
+                  radius={[0, 0, 4, 4]}
+                  maxBarSize={16}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="net"
+                  stroke="var(--chart-2)"
+                  strokeWidth={2}
+                  dot={false}
+                />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -196,10 +289,19 @@ export function WeekdayProfitCard({ data }: { data: AppData }) {
     const dates = new Set(incomes.map((i) => i.date));
     for (const date of dates) {
       const dow = new Date(date).getDay();
-      sums[dow].total += netProfit(filterByDate(data.incomes, date), filterByDate(data.expenses, date), data.vehicle, data.settings, filterByDate(data.trips ?? [], date));
+      sums[dow].total += netProfit(
+        filterByDate(data.incomes, date),
+        filterByDate(data.expenses, date),
+        data.vehicle,
+        data.settings,
+        filterByDate(data.trips ?? [], date),
+      );
       sums[dow].days.add(date);
     }
-    return sums.map((s, i) => ({ day: names[i], avg: s.days.size ? Math.round(s.total / s.days.size) : 0 }));
+    return sums.map((s, i) => ({
+      day: names[i],
+      avg: s.days.size ? Math.round(s.total / s.days.size) : 0,
+    }));
   }, [data]);
 
   const max = Math.max(...series.map((s) => s.avg));
@@ -209,18 +311,39 @@ export function WeekdayProfitCard({ data }: { data: AppData }) {
   return (
     <Card>
       <CardContent className="p-4">
-        <SectionTitle icon={<CalendarDays className="h-4 w-4" />} title="ממוצע רווח לפי יום בשבוע" hint="8 שבועות" />
+        <SectionTitle
+          icon={<CalendarDays className="h-4 w-4" />}
+          title="ממוצע רווח לפי יום בשבוע"
+          hint="8 שבועות"
+        />
         {has ? (
           <>
             <div className="h-40">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={series} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--muted)" }} formatter={(v: number) => [fmt(v, c), "ממוצע נטו"]} />
+                  <XAxis
+                    dataKey="day"
+                    stroke="var(--muted-foreground)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    cursor={{ fill: "var(--muted)" }}
+                    formatter={(v: number) => [fmt(v, c), "ממוצע נטו"]}
+                  />
                   <Bar dataKey="avg" radius={[6, 6, 0, 0]} maxBarSize={30}>
                     {series.map((s, i) => (
-                      <Cell key={i} fill={s.avg === max && max > 0 ? "var(--primary)" : "color-mix(in oklab, var(--primary) 28%, transparent)"} />
+                      <Cell
+                        key={i}
+                        fill={
+                          s.avg === max && max > 0
+                            ? "var(--primary)"
+                            : "color-mix(in oklab, var(--primary) 28%, transparent)"
+                        }
+                      />
                     ))}
                   </Bar>
                 </BarChart>
@@ -228,7 +351,8 @@ export function WeekdayProfitCard({ data }: { data: AppData }) {
             </div>
             {best.avg > 0 && (
               <p className="mt-2 text-center text-xs text-muted-foreground">
-                יום <span className="font-semibold text-foreground">{best.day}</span> הכי משתלם — ממוצע {fmt(best.avg, c)}
+                יום <span className="font-semibold text-foreground">{best.day}</span> הכי משתלם —
+                ממוצע {fmt(best.avg, c)}
               </p>
             )}
           </>
@@ -248,27 +372,55 @@ export function ProfitabilityGauge({ data }: { data: AppData }) {
   const inc = filterByRange(data.incomes, from, to);
   const exp = filterByRange(data.expenses, from, to);
   const income = sumIncomes(inc);
-  const costs = totalCosts(inc, exp, data.vehicle, data.settings, filterByRange(data.trips ?? [], from, to));
-  const pct = income > 0 ? Math.max(0, Math.min(100, Math.round(((income - costs) / income) * 100))) : 0;
+  const costs = totalCosts(
+    inc,
+    exp,
+    data.vehicle,
+    data.settings,
+    filterByRange(data.trips ?? [], from, to),
+  );
+  const pct =
+    income > 0 ? Math.max(0, Math.min(100, Math.round(((income - costs) / income) * 100))) : 0;
   const tone = pct >= 65 ? "var(--success)" : pct >= 45 ? "var(--warning)" : "var(--destructive)";
-  const msg = pct >= 65 ? "רווחיות מצוינת" : pct >= 45 ? "רווחיות סבירה — כדאי לצמצם הוצאות" : "רווחיות נמוכה — בדוק דלק ועמלות";
+  const msg =
+    pct >= 65
+      ? "רווחיות מצוינת"
+      : pct >= 45
+        ? "רווחיות סבירה — כדאי לצמצם הוצאות"
+        : "רווחיות נמוכה — בדוק דלק ועמלות";
 
   return (
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
         <div className="relative h-28 w-28 shrink-0">
           <ResponsiveContainer width="100%" height="100%">
-            <RadialBarChart innerRadius="72%" outerRadius="100%" data={[{ value: pct }]} startAngle={90} endAngle={-270}>
+            <RadialBarChart
+              innerRadius="72%"
+              outerRadius="100%"
+              data={[{ value: pct }]}
+              startAngle={90}
+              endAngle={-270}
+            >
               <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-              <RadialBar dataKey="value" cornerRadius={12} fill={tone} background={{ fill: "var(--muted)" }} />
+              <RadialBar
+                dataKey="value"
+                cornerRadius={12}
+                fill={tone}
+                background={{ fill: "var(--muted)" }}
+              />
             </RadialBarChart>
           </ResponsiveContainer>
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <span className="num text-xl font-extrabold" style={{ color: tone }}>{pct}%</span>
+            <span className="num text-xl font-extrabold" style={{ color: tone }}>
+              {pct}%
+            </span>
           </div>
         </div>
         <div className="min-w-0">
-          <h3 className="flex items-center gap-1.5 text-sm font-semibold"><Gauge className="h-4 w-4 text-primary" />רווחיות החודש</h3>
+          <h3 className="flex items-center gap-1.5 text-sm font-semibold">
+            <Gauge className="h-4 w-4 text-primary" />
+            רווחיות החודש
+          </h3>
           <p className="mt-1 text-xs text-muted-foreground leading-snug">{msg}</p>
           <p className="mt-1.5 text-xs">
             מתוך <span className="num font-semibold">{fmt(income, c)}</span> הכנסות · עלויות{" "}

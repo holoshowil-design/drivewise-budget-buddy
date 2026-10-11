@@ -34,7 +34,14 @@ import { numberOr, parseNumber } from "@/lib/number";
 import { validateExpense, validateIncome, type FieldErrors } from "@/lib/validate";
 import { useRollingDate } from "@/hooks/use-today";
 
-const searchSchema = z.object({ tab: z.enum(["income", "expense", "fuel"]).optional() });
+const searchSchema = z.object({
+  tab: z.enum(["income", "expense", "fuel"]).optional(),
+  /** Pre-fills the form date (from the calendar "+" button). */
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+});
 
 export const Route = createFileRoute("/add")({
   validateSearch: searchSchema,
@@ -52,7 +59,7 @@ export const Route = createFileRoute("/add")({
 });
 
 function AddPage() {
-  const { tab } = Route.useSearch();
+  const { tab, date } = Route.useSearch();
   const [active, setActive] = useState<string>(tab || "income");
 
   return (
@@ -72,13 +79,13 @@ function AddPage() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="income">
-            <IncomeForm />
+            <IncomeForm initialDate={date} />
           </TabsContent>
           <TabsContent value="expense">
-            <ExpenseForm />
+            <ExpenseForm initialDate={date} />
           </TabsContent>
           <TabsContent value="fuel">
-            <FuelForm />
+            <FuelForm initialDate={date} />
           </TabsContent>
         </Tabs>
       </div>
@@ -119,13 +126,13 @@ function QuickAmounts({
   );
 }
 
-function IncomeForm() {
+function IncomeForm({ initialDate }: { initialDate?: string }) {
   const { data, ready, addIncome, removeIncome } = useAppData();
   const [showMore, setShowMore] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const commissionTouched = useRef(false);
   const [form, setForm] = useState({
-    date: todayISO(),
+    date: initialDate ?? todayISO(),
     amount: "",
     commissionPct: String(data.settings.defaultCommissionPct),
     tip: "",
@@ -340,10 +347,10 @@ const expenseCats: ExpenseCategory[] = [
   "other",
 ];
 
-function ExpenseForm() {
+function ExpenseForm({ initialDate }: { initialDate?: string }) {
   const { data, addExpense, removeExpense } = useAppData();
   const [form, setForm] = useState({
-    date: todayISO(),
+    date: initialDate ?? todayISO(),
     category: "maintenance" as ExpenseCategory,
     amount: "",
     note: "",
@@ -450,9 +457,9 @@ function ExpenseForm() {
   );
 }
 
-function FuelForm() {
+function FuelForm({ initialDate }: { initialDate?: string }) {
   const { data, addExpense, removeExpense } = useAppData();
-  const [form, setForm] = useState({ date: todayISO(), amount: "", note: "" });
+  const [form, setForm] = useState({ date: initialDate ?? todayISO(), amount: "", note: "" });
   const [errors, setErrors] = useState<FieldErrors>({});
   useRollingDate(
     form.date,
