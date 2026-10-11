@@ -149,12 +149,11 @@ export function DailyProfitGauge({
 
 export function DriveModeAction({ active }: { active: boolean }) {
   return (
-    <Link
-      to="/trip"
-      search={{ action: active ? undefined : "start_trip", mode: "drive" } as never}
-      className="block"
-    >
-      <Button className="drive-mode-button h-14 w-full justify-between rounded-2xl px-4">
+    <Button asChild className="drive-mode-button h-14 w-full justify-between rounded-2xl px-4">
+      <Link
+        to="/trip"
+        search={{ action: active ? undefined : "start_trip", mode: "drive" } as never}
+      >
         <span className="flex items-center gap-3">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-foreground/15">
             <Navigation className="h-4 w-4" />
@@ -168,13 +167,13 @@ export function DriveModeAction({ active }: { active: boolean }) {
             </span>
           </span>
         </span>
-        <span className="relative flex h-6 w-11 rounded-full bg-primary-foreground/20 p-1">
-          <span
-            className={`h-4 w-4 rounded-full bg-primary-foreground transition-transform ${active ? "-translate-x-5" : ""}`}
-          />
-        </span>
-      </Button>
-    </Link>
+        {/* Status light, not a toggle: the whole row is a link to drive mode. */}
+        <span
+          className={`h-3 w-3 shrink-0 rounded-full ${active ? "animate-pulse bg-primary-foreground" : "bg-primary-foreground/40"}`}
+          aria-hidden="true"
+        />
+      </Link>
+    </Button>
   );
 }
 

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { lazy, Suspense, useState, useMemo } from "react";
 import {
   useAppData,
   filterByRange,
@@ -18,7 +18,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { RecordsList } from "@/components/RecordsList";
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+
+// recharts loads only when the expense breakdown is shown.
+const ExpensePie = lazy(() => import("@/components/ExpensePie"));
 
 type Range = "today" | "week" | "month" | "all";
 
@@ -91,16 +93,6 @@ function Reports() {
     name: categoryLabel(k),
     value: Math.round(v),
   }));
-  const colors = [
-    "var(--chart-1)",
-    "var(--chart-2)",
-    "var(--chart-3)",
-    "var(--chart-4)",
-    "var(--chart-5)",
-    "var(--primary)",
-    "var(--warning)",
-    "var(--destructive)",
-  ];
 
   const exportCSV = () => {
     const csv = buildReportCsv(data, { incomes, expenses, trips });
@@ -189,32 +181,11 @@ function Reports() {
             <CardContent className="p-4">
               <h3 className="text-sm font-semibold mb-3">פירוט הוצאות לפי קטגוריה</h3>
               <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={45}
-                      outerRadius={80}
-                      paddingAngle={2}
-                    >
-                      {pieData.map((_, i) => (
-                        <Cell key={i} fill={colors[i % colors.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        background: "var(--card)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 8,
-                        fontSize: 12,
-                      }}
-                      formatter={(v: number) => fmt(v, c)}
-                    />
-                    <Legend wrapperStyle={{ fontSize: 11 }} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <Suspense
+                  fallback={<div className="h-full animate-pulse rounded-xl bg-muted/40" />}
+                >
+                  <ExpensePie data={[...pieData]} currency={c} />
+                </Suspense>
               </div>
               <div className="mt-3 space-y-1.5">
                 {pieData

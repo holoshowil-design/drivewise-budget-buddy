@@ -28,7 +28,21 @@ export function DriveDetector() {
   const lastRef = useRef<{ lat: number; lon: number; t: number } | null>(null);
   const fastSinceRef = useRef<number | null>(null);
 
-  const enabled = ready && data.settings.autoDetectTrip !== false;
+  // Never ask for location on first load: run only after the user turned the
+  // feature on, or (setting never touched) when location was already granted.
+  const [granted, setGranted] = useState(false);
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.permissions?.query) return;
+    navigator.permissions
+      .query({ name: "geolocation" })
+      .then((status) => {
+        setGranted(status.state === "granted");
+        status.onchange = () => setGranted(status.state === "granted");
+      })
+      .catch(() => {});
+  }, []);
+  const setting = data.settings.autoDetectTrip;
+  const enabled = ready && (setting === true || (setting === undefined && granted));
 
   useEffect(() => {
     const sync = () => setHasActive(!!readActive());
@@ -92,7 +106,12 @@ export function DriveDetector() {
   if (!prompt || hasActive) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70 p-4 pb-10 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="זיהוי נסיעה">
+    <div
+      className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70 p-4 pb-10 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label="זיהוי נסיעה"
+    >
       <div className="w-full max-w-md rounded-3xl border-2 bg-card p-6 text-center shadow-2xl">
         <Car className="mx-auto h-10 w-10 text-primary" />
         <h2 className="mt-2 text-2xl font-extrabold">מזוהה נסיעה</h2>
