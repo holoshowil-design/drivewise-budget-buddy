@@ -490,7 +490,7 @@ body {
 
 
 .ink-world { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-.ink-skyline { position: absolute; inset-inline: 0; bottom: 3.6rem; width: 100%; height: 34vh; opacity: .16; animation: sky-drift 60s linear infinite alternate; }
+.ink-skyline { position: absolute; inset-inline: 0; bottom: 3.6rem; width: 100%; height: 30vh; opacity: .22; animation: sky-drift 60s linear infinite alternate; }
 .ink-sky-far path { fill: color-mix(in oklab, var(--primary) 18%, var(--paper)); stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; filter: url(#ink-boil); }
 .ink-sky-windows path, .ink-road { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
 .ink-road { stroke-dasharray: 18 14; animation: road-run 1.4s linear infinite; }
@@ -534,7 +534,7 @@ button[class*="bg-primary"]:active, .drive-mode-button:active { transform: trans
 input, textarea, [role="combobox"] { border: 2px solid var(--ink) !important; border-radius: 12px !important; }
 
 /* typography with offset ink */
-.ink-title, h1.font-display { font-family: "Secular One", var(--font-display); letter-spacing: -.01em; color: var(--ink); text-shadow: 2px 2px 0 color-mix(in oklab, var(--primary) 45%, transparent), 3px 3px 0 var(--ink); -webkit-text-stroke: .4px var(--ink); }
+.ink-title, h1.font-display { font-family: "Secular One", var(--font-display); font-weight: 400 !important; letter-spacing: 0; color: var(--ink); text-shadow: 2px 2px 0 color-mix(in oklab, var(--primary) 55%, transparent); }
 h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 
 /* ---- comic bubble + words ---- */
@@ -545,7 +545,7 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 .comic-bubble-win { background: color-mix(in oklab, var(--primary) 16%, var(--card)); }
 .comic-bubble-warn { background: color-mix(in oklab, var(--warning) 20%, var(--card)); }
 @keyframes bubble-pop { 0% { transform: scale(.3) rotate(-8deg); opacity: 0; } 60% { transform: scale(1.08) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
-.comic-word { position: absolute; z-index: 3; top: -.4rem; inset-inline-start: 38%; font-family: var(--font-comic); font-size: 2.4rem; font-weight: 700; color: var(--gold); -webkit-text-stroke: 1.6px var(--ink); text-shadow: 3px 3px 0 var(--ink); animation: word-slam .9s cubic-bezier(.2,1.8,.4,1) both; pointer-events: none; }
+.comic-word { position: absolute; z-index: 3; top: -1.6rem; inset-inline-end: 4%; font-family: var(--font-comic); font-size: 2.1rem; font-weight: 700; color: var(--gold); -webkit-text-stroke: 1.6px var(--ink); text-shadow: 3px 3px 0 var(--ink); animation: word-slam .9s cubic-bezier(.2,1.8,.4,1) both; pointer-events: none; }
 @keyframes word-slam { 0% { transform: scale(3) rotate(-20deg); opacity: 0; } 40% { transform: scale(.9) rotate(-8deg); opacity: 1; } 70% { transform: scale(1.1) rotate(-12deg); } 100% { transform: scale(1) rotate(-10deg); } }
 
 /* ---- stages ---- */
@@ -605,7 +605,7 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 @keyframes stamp-down { from { transform: scale(2.6) rotate(-40deg); opacity: 0; } }
 
 /* comic reward burst (in the single reward overlay) */
-.comic-burst { position: absolute; width: 11rem; height: 11rem; translate: -50% -50%; display: grid; place-items: center; animation: burst-in 1.4s cubic-bezier(.2,1.8,.4,1) both; }
+.comic-burst { position: absolute; width: 11rem; height: 11rem; translate: -50% -125%; display: grid; place-items: center; animation: burst-in 1.4s cubic-bezier(.2,1.8,.4,1) both; }
 .comic-burst svg { position: absolute; inset: 0; animation: burst-spin 1.4s ease-out both; }
 .comic-burst-star { fill: var(--gold); stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; filter: url(#ink-boil); }
 .comic-burst b { position: relative; font-family: var(--font-comic); font-size: 2.6rem; color: var(--card); -webkit-text-stroke: 2px var(--ink); text-shadow: 3px 3px 0 var(--ink); transform: rotate(-10deg); }
