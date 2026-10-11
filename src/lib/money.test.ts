@@ -67,7 +67,7 @@ describe("fuel price by date and hour", () => {
     expect(effectiveFuelParams("2026-10-05", vehicle, s, "15:00").price).toBe(8);
   });
 
-  it.fails("the first price change is not retroactive (review bug 4)", () => {
+  it("the first price change is not retroactive (review bug 4)", () => {
     // Fuel was 7 ₪ when a 120 km income was logged; later the price changes to 8.
     uninstall = installBrowser(
       appData({ incomes: [income({ date: "2026-10-01", time: "09:00", km: 120 })] }),

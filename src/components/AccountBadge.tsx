@@ -1,12 +1,21 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { CloudCheck, CloudOff } from "lucide-react";
+import { CloudCheck, CloudOff, CloudUpload } from "lucide-react";
 import { useAuthUser } from "@/hooks/use-auth";
 import { saveLastAccount } from "@/lib/last-account";
+import { useSyncState } from "@/lib/sync-client";
+import { syncLabel } from "@/lib/sync-label";
 
 /** Small always-visible chip showing which account is connected. */
 export function AccountBadge() {
   const { user, loading } = useAuthUser();
+  const sync = useSyncState();
+  // Re-render every 30s so "נשמר לפני X דק׳" stays current.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 30_000);
+    return () => clearInterval(t);
+  }, []);
 
   const meta = (user?.user_metadata ?? {}) as Record<string, string>;
   const name = meta.full_name || meta.name || "";
@@ -38,7 +47,11 @@ export function AccountBadge() {
       className="inline-flex max-w-[9.5rem] items-center gap-2 rounded-full border bg-card px-2 py-1.5 pressable"
     >
       {avatar ? (
-        <img src={avatar} alt={name || "תמונת פרופיל"} className="h-6 w-6 rounded-full object-cover" />
+        <img
+          src={avatar}
+          alt={name || "תמונת פרופיל"}
+          className="h-6 w-6 rounded-full object-cover"
+        />
       ) : (
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
           {(name || email || "?").slice(0, 1).toUpperCase()}
@@ -48,9 +61,15 @@ export function AccountBadge() {
         <span dir="ltr" className="block truncate text-[11px] font-semibold">
           {email}
         </span>
-        <span className="flex items-center gap-1 text-[10px] text-primary">
-          <CloudCheck className="h-3 w-3" />
-          {provider === "google" ? "Google · מסונכרן" : "מסונכרן"}
+        <span
+          className={`flex items-center gap-1 text-[10px] ${sync.status === "synced" ? "text-primary" : "text-muted-foreground"}`}
+        >
+          {sync.status === "synced" ? (
+            <CloudCheck className="h-3 w-3" />
+          ) : (
+            <CloudUpload className="h-3 w-3" />
+          )}
+          {syncLabel(sync)}
         </span>
       </span>
     </Link>
