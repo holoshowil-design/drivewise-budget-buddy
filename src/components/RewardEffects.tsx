@@ -8,7 +8,7 @@ import { type RewardDetail } from "@/lib/rewards";
 type Particle = {
   x: number; y: number; vx: number; vy: number; z: number; vz: number;
   spin: number; spinSpeed: number; tilt: number; size: number; color: string;
-  shape: "ribbon" | "foil" | "spark"; life: number;
+  shape: "ribbon" | "foil" | "spark" | "coin"; life: number;
 };
 type Flash = RewardDetail & { id: number; x: number; y: number };
 
@@ -34,6 +34,9 @@ export function RewardEffects() {
       const css = getComputedStyle(document.documentElement);
       return ["--primary", "--hud-accent", "--warning", "--chart-2", "--card"].map((token) => css.getPropertyValue(token).trim());
     };
+    const rootCss = getComputedStyle(document.documentElement);
+    const gold = rootCss.getPropertyValue("--gold").trim() || "gold";
+    const ink = rootCss.getPropertyValue("--ink").trim() || "black";
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(window.innerWidth * dpr);
@@ -67,7 +70,18 @@ export function RewardEffects() {
         ctx.rotate(p.tilt + Math.sin(p.spin) * 0.3);
         ctx.globalAlpha = fade * (0.68 + Math.abs(turn) * 0.32);
         ctx.fillStyle = p.color;
-        if (p.shape === "spark") {
+        if (p.shape === "coin") {
+          const w = Math.max(1.2, p.size * 1.25 * perspective * Math.abs(turn));
+          const h = p.size * 1.25 * perspective;
+          ctx.fillStyle = gold;
+          ctx.strokeStyle = ink;
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, w, h, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          if (Math.abs(turn) > 0.45) { ctx.beginPath(); ctx.ellipse(0, 0, w * 0.6, h * 0.6, 0, 0, Math.PI * 2); ctx.stroke(); }
+        } else if (p.shape === "spark") {
           ctx.shadowColor = p.color;
           ctx.shadowBlur = 12;
           ctx.beginPath();
@@ -100,7 +114,7 @@ export function RewardEffects() {
           spin: Math.random() * Math.PI * 2, spinSpeed: (Math.random() - 0.5) * 0.23,
           tilt: Math.random() * Math.PI * 2, size: 3 + Math.random() * 7,
           color: colors[Math.floor(Math.random() * colors.length)],
-          shape: i % 7 === 0 ? "ribbon" : i % 5 === 0 ? "spark" : "foil",
+          shape: i % 4 === 0 ? "coin" : i % 7 === 0 ? "ribbon" : i % 5 === 0 ? "spark" : "foil",
           life: 58 + Math.random() * 65,
         });
       }
@@ -148,6 +162,11 @@ export function RewardEffects() {
       </div>
     </div>}
     <canvas ref={canvasRef} aria-hidden="true" />
+    {flash && flash.kind !== "corrective" && <div key={`burst-${flash.id}`} className="comic-burst" style={{ left: flash.x, top: flash.y }} aria-hidden="true">
+      <svg viewBox="-100 -100 200 200"><path className="comic-burst-star" d="M0 -92 L18 -40 L70 -62 L40 -16 L94 6 L38 22 L60 74 L12 40 L-6 96 L-20 42 L-72 68 L-40 18 L-96 -6 L-42 -22 L-66 -70 L-16 -40 Z" /></svg>
+      <b>{flash.kind === "goal" ? "יֶעַד!" : flash.kind === "streak" ? "רֶצֶף!" : flash.kind === "trip" ? "וְרוּם!" : flash.kind === "break-even" ? "רֶוַח!" : "צ׳ינג!"}</b>
+    </div>}
+    {flash && flash.kind === "corrective" && <div key={`oof-${flash.id}`} className="comic-burst comic-burst-oof" style={{ left: flash.x, top: flash.y }} aria-hidden="true"><b>אוּף!</b></div>}
     {flash && flash.kind !== "goal" && flash.kind !== "streak" && <div key={flash.id} className={`reward-flash reward-flash-${flash.kind}`} style={{ left: flash.x, top: flash.y }}>
       <span className="reward-halo" aria-hidden="true" />
       <span className="reward-ring" aria-hidden="true" />

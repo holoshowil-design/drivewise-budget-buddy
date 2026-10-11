@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ChevronDown } from "lucide-react";
+import { LiveReaction } from "@/components/LiveReaction";
 import { celebrate, crossedDailyGoal } from "@/lib/rewards";
 import { calculateWorkStreak, expenseMotivation, incomeMotivation } from "@/lib/motivation";
 
@@ -121,6 +122,7 @@ function IncomeForm() {
 
   return (
     <Card className="mt-4"><CardContent className="p-4 space-y-3">
+      <LiveReaction kind="income" amount={amountNum} />
       <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
       <Field label="סכום ברוטו ₪">
         <Input className="num text-xl font-bold" style={{ height: "3.25rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" />
@@ -188,6 +190,7 @@ function ExpenseForm() {
 
   return (
     <Card className="mt-4"><CardContent className="p-4 space-y-3">
+      <LiveReaction kind="expense" amount={parseFloat(form.amount) || 0} />
       <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
       <Field label="קטגוריה">
         <div className="grid grid-cols-4 gap-2">
@@ -249,6 +252,7 @@ function FuelForm() {
 
   return (
     <Card className="mt-4"><CardContent className="p-4 space-y-3">
+      <LiveReaction kind="fuel" amount={amountNum} />
       <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
       <Field label={label}>
         <Input className="num text-2xl font-bold text-center" style={{ height: "3.75rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" />

@@ -16,6 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/BottomNav";
 import { DriveDetector } from "@/components/DriveDetector";
 import { RewardEffects } from "@/components/RewardEffects";
+import { InkWorld } from "@/components/InkWorld";
 import { useCloudSync } from "@/hooks/use-auth";
 
 function NotFoundComponent() {
@@ -97,7 +98,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&family=Karantina:wght@400;700&family=Secular+One&display=swap" },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
@@ -129,10 +130,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background text-foreground pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
+      <div className="relative z-[1] min-h-screen text-foreground pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
         <Outlet />
       </div>
       <DriveDetector />
+      <InkWorld />
       <RewardEffects />
       <BottomNav />
       <Toaster position="top-center" richColors />

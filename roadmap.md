@@ -18,3 +18,12 @@
 - [x] Connect income, expense, fuel, and trip changes to positive or corrective feedback
 - [x] Add state-driven motion to coaching, gauges, and the current weekly bar
 - [x] Verify rule tests, live flows, reduced motion, desktop, and mobile
+
+# Xerox caricature overhaul
+
+- [x] Global ink-paper world: paper grain, city skyline, shared line-boil filter, inked cards/buttons/inputs/nav
+- [x] Full-body "הקפטן" driver with 5 moods, props and squash-and-stretch acting; "טורבו" taxi character
+- [x] Dashboard stage (driver + taxi + speech bubble), retro speedometer needle, inked journey
+- [x] /add live character reactions while typing, comic words
+- [x] Character scenes on trip, reports, calendar (ink stamps, page flip), settings
+- [x] Comic bursts and gold coins in the single reward overlay; reduced-motion support
