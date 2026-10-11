@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
-import { DriverMascot, type MascotMood, type MascotProp } from "@/components/DriverMascot";
-import { CaricatureTaxi } from "@/components/CaricatureTaxi";
+import type { MascotMood, MascotProp } from "@/components/DriverMascot";
+import type { TaxiMood } from "@/components/CaricatureTaxi";
 import { ComicBubble } from "@/components/InkWorld";
+import { MovieStage } from "@/components/MovieStage";
 
-export type PageScene = { mood: MascotMood; prop?: MascotProp; line: string; taxi?: "happy" | "tired" | "zoom"; driving?: boolean };
+export type PageScene = { mood: MascotMood; prop?: MascotProp; line: string; taxi?: TaxiMood; driving?: boolean };
 
 export function PageHeader({ title, subtitle, action, scene }: { title: string; subtitle?: string; action?: ReactNode; scene?: PageScene }) {
   return (
@@ -18,8 +19,7 @@ export function PageHeader({ title, subtitle, action, scene }: { title: string; 
       {scene && (
         <div className="page-stage" aria-hidden="true">
           <span className="page-stage-floor" />
-          {scene.taxi && <CaricatureTaxi mood={scene.taxi} driving={scene.driving} className="page-stage-taxi" />}
-          <DriverMascot mood={scene.mood} prop={scene.prop} className="page-stage-mascot" />
+          <MovieStage base={{ mood: scene.mood, prop: scene.prop, taxi: scene.taxi, driving: scene.driving }} mascotClass="page-stage-mascot" taxiClass="page-stage-taxi" />
           <ComicBubble side="end" className="page-stage-bubble">{scene.line}</ComicBubble>
         </div>
       )}
