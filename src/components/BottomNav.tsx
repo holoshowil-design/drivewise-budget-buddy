@@ -16,7 +16,7 @@ export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/90 backdrop-blur-xl pb-[env(safe-area-inset-bottom,0px)]">
+    <nav className="ink-nav fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/90 backdrop-blur-xl pb-[env(safe-area-inset-bottom,0px)]">
       <ul className="mx-auto flex max-w-xl items-stretch justify-around px-2">
         {items.map((it) => {
           const active = pathname === it.to;

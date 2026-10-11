@@ -63,7 +63,7 @@ function CalendarPage() {
       <PageHeader title="לוח שנה" subtitle={`רווח חודשי: ${fmt(monthNet, c)}`} scene={{ mood: monthNet >= 0 ? "smirk" : "grumble", prop: "stamp", line: monthNet >= 0 ? "כל יום יעד מקבל חותמת! 🟢" : "החודש עוד ניתן להציל 💪" }} />
 
       <div className="px-4 space-y-4">
-        <Card>
+        <Card key={monthLabel} className="calendar-flip">
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-3">
               <Button variant="ghost" size="icon" aria-label="החודש הבא" onClick={next}><ChevronLeft className="h-4 w-4" /></Button>
@@ -97,7 +97,7 @@ function CalendarPage() {
                     onClick={() => setSelected(cell.iso!)}
                     aria-pressed={isSelected}
                     className={cn(
-                      "aspect-square rounded-xl flex flex-col items-center justify-center text-[10px] font-medium transition-all",
+                      "cal-cell relative aspect-square rounded-xl flex flex-col items-center justify-center text-[10px] font-medium transition-all",
                       tone,
                       isToday && !isSelected && "ring-1 ring-primary/50",
                       isSelected && "ring-2 ring-primary ring-offset-1 ring-offset-card",
@@ -105,6 +105,7 @@ function CalendarPage() {
                   >
                     <span className={cn("num text-[11px]", isToday && "font-extrabold text-primary")}>{cell.day}</span>
                     {hasData && <span className="num text-[9px] font-bold leading-none mt-0.5">{net}</span>}
+                    {hasData && net >= goal && <span className="ink-stamp" aria-hidden="true">✓</span>}
                   </button>
                 );
               })}
