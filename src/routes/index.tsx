@@ -4,11 +4,7 @@ import { dayOf, monthForecast, sumDays, useDays } from "@/lib/calc";
 import { Card, CardContent } from "@/components/ui/card";
 import { InsightsCard } from "@/components/InsightsCard";
 import { KmCostCard } from "@/components/KmCostCard";
-import {
-  MonthPaceCard,
-  IncomeVsExpenseCard,
-  ProfitabilityGauge,
-} from "@/components/DashboardCharts";
+import { lazy, Suspense } from "react";
 import {
   DailyProfitGauge,
   DriveModeAction,
@@ -21,6 +17,22 @@ import { Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccountBadge } from "@/components/AccountBadge";
 import { useEffect, useState } from "react";
+
+// recharts is heavy: load the chart cards only when the dashboard renders them.
+const charts = () => import("@/components/DashboardCharts");
+const MonthPaceCard = lazy(() => charts().then((m) => ({ default: m.MonthPaceCard })));
+const IncomeVsExpenseCard = lazy(() => charts().then((m) => ({ default: m.IncomeVsExpenseCard })));
+const ProfitabilityGauge = lazy(() => charts().then((m) => ({ default: m.ProfitabilityGauge })));
+
+function ChartSlot({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense
+      fallback={<div className="h-56 animate-pulse rounded-2xl bg-muted/40" aria-hidden="true" />}
+    >
+      {children}
+    </Suspense>
+  );
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -128,11 +140,17 @@ function Dashboard() {
         />
         <InteractiveWeeklyEarnings data={data} />
 
-        <ProfitabilityGauge data={data} />
+        <ChartSlot>
+          <ProfitabilityGauge data={data} />
+        </ChartSlot>
 
-        <MonthPaceCard data={data} />
+        <ChartSlot>
+          <MonthPaceCard data={data} />
+        </ChartSlot>
 
-        <IncomeVsExpenseCard data={data} />
+        <ChartSlot>
+          <IncomeVsExpenseCard data={data} />
+        </ChartSlot>
 
         <KmCostCard data={data} />
 
@@ -140,24 +158,36 @@ function Dashboard() {
 
         {/* Quick actions */}
         <div className="grid grid-cols-3 gap-2">
-          <Link to={"/add" as never} search={{ tab: "income" } as never}>
-            <Button variant="secondary" className="w-full h-auto py-3 flex-col gap-1 rounded-xl">
+          <Button
+            asChild
+            variant="secondary"
+            className="w-full h-auto py-3 flex-col gap-1 rounded-xl"
+          >
+            <Link to="/add" search={{ tab: "income" }}>
               <Plus className="h-4 w-4 text-success" />
               <span className="text-xs font-medium">הכנסה</span>
-            </Button>
-          </Link>
-          <Link to={"/add" as never} search={{ tab: "expense" } as never}>
-            <Button variant="secondary" className="w-full h-auto py-3 flex-col gap-1 rounded-xl">
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="secondary"
+            className="w-full h-auto py-3 flex-col gap-1 rounded-xl"
+          >
+            <Link to="/add" search={{ tab: "expense" }}>
               <Plus className="h-4 w-4 text-destructive" />
               <span className="text-xs font-medium">הוצאה</span>
-            </Button>
-          </Link>
-          <Link to={"/add" as never} search={{ tab: "fuel" } as never}>
-            <Button variant="secondary" className="w-full h-auto py-3 flex-col gap-1 rounded-xl">
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="secondary"
+            className="w-full h-auto py-3 flex-col gap-1 rounded-xl"
+          >
+            <Link to="/add" search={{ tab: "fuel" }}>
               <Zap className="h-4 w-4 text-warning" />
               <span className="text-xs font-medium">תדלוק</span>
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* Month summary */}

@@ -7,7 +7,6 @@ import {
   ComposedChart,
   Bar,
   Line,
-  BarChart,
   XAxis,
   YAxis,
   Tooltip,
@@ -16,9 +15,8 @@ import {
   RadialBarChart,
   RadialBar,
   PolarAngleAxis,
-  Cell,
 } from "recharts";
-import { CalendarRange, LineChart as LineChartIcon, Gauge, CalendarDays } from "lucide-react";
+import { CalendarRange, LineChart as LineChartIcon, Gauge } from "lucide-react";
 import {
   filterByDate,
   filterByRange,
@@ -271,94 +269,6 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
           <Dot color="var(--destructive)" label="הוצאות" />
           <Dot color="var(--chart-2)" label="נטו" />
         </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-/** ממוצע רווח לפי יום בשבוע – איזה ימים משתלמים */
-export function WeekdayProfitCard({ data }: { data: AppData }) {
-  const c = data.settings.currency;
-  const names = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"];
-
-  const series = useMemo(() => {
-    const sums = Array.from({ length: 7 }, () => ({ total: 0, days: new Set<string>() }));
-    const from = iso(new Date(Date.now() - 55 * 86400000));
-    const to = iso(new Date());
-    const incomes = filterByRange(data.incomes, from, to);
-    const dates = new Set(incomes.map((i) => i.date));
-    for (const date of dates) {
-      const dow = new Date(date).getDay();
-      sums[dow].total += netProfit(
-        filterByDate(data.incomes, date),
-        filterByDate(data.expenses, date),
-        data.vehicle,
-        data.settings,
-        filterByDate(data.trips ?? [], date),
-      );
-      sums[dow].days.add(date);
-    }
-    return sums.map((s, i) => ({
-      day: names[i],
-      avg: s.days.size ? Math.round(s.total / s.days.size) : 0,
-    }));
-  }, [data]);
-
-  const max = Math.max(...series.map((s) => s.avg));
-  const has = series.some((s) => s.avg !== 0);
-  const best = series.reduce((a, b) => (b.avg > a.avg ? b : a), series[0]);
-
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <SectionTitle
-          icon={<CalendarDays className="h-4 w-4" />}
-          title="ממוצע רווח לפי יום בשבוע"
-          hint="8 שבועות"
-        />
-        {has ? (
-          <>
-            <div className="h-40">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={series} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis
-                    dataKey="day"
-                    stroke="var(--muted-foreground)"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={tooltipStyle}
-                    cursor={{ fill: "var(--muted)" }}
-                    formatter={(v: number) => [fmt(v, c), "ממוצע נטו"]}
-                  />
-                  <Bar dataKey="avg" radius={[6, 6, 0, 0]} maxBarSize={30}>
-                    {series.map((s, i) => (
-                      <Cell
-                        key={i}
-                        fill={
-                          s.avg === max && max > 0
-                            ? "var(--primary)"
-                            : "color-mix(in oklab, var(--primary) 28%, transparent)"
-                        }
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            {best.avg > 0 && (
-              <p className="mt-2 text-center text-xs text-muted-foreground">
-                יום <span className="font-semibold text-foreground">{best.day}</span> הכי משתלם —
-                ממוצע {fmt(best.avg, c)}
-              </p>
-            )}
-          </>
-        ) : (
-          <Empty />
-        )}
       </CardContent>
     </Card>
   );

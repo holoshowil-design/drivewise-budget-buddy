@@ -77,20 +77,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-title", content: "דרייבר" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { title: "דרייבר - ניהול הכנסות והוצאות" },
       { name: "description", content: "אפליקציה אישית לנהג: מעקב הכנסות, הוצאות, רווחיות ויעדים." },
-      { name: "theme-color", content: "#ffffff" },
+      { name: "theme-color", content: "#00a651" },
       { property: "og:title", content: "דרייבר - ניהול הכנסות והוצאות" },
       { name: "twitter:title", content: "דרייבר - ניהול הכנסות והוצאות" },
-      { property: "og:description", content: "אפליקציה אישית לנהג: מעקב הכנסות, הוצאות, רווחיות ויעדים." },
-      { name: "twitter:description", content: "אפליקציה אישית לנהג: מעקב הכנסות, הוצאות, רווחיות ויעדים." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e397d361-fa3c-4d13-9cc0-5bea876e2119/id-preview-d55009be--9e7d4022-af91-480e-b8bd-078f9e2f11cf.lovable.app-1781112958267.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e397d361-fa3c-4d13-9cc0-5bea876e2119/id-preview-d55009be--9e7d4022-af91-480e-b8bd-078f9e2f11cf.lovable.app-1781112958267.png" },
+      {
+        property: "og:description",
+        content: "אפליקציה אישית לנהג: מעקב הכנסות, הוצאות, רווחיות ויעדים.",
+      },
+      {
+        name: "twitter:description",
+        content: "אפליקציה אישית לנהג: מעקב הכנסות, הוצאות, רווחיות ויעדים.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e397d361-fa3c-4d13-9cc0-5bea876e2119/id-preview-d55009be--9e7d4022-af91-480e-b8bd-078f9e2f11cf.lovable.app-1781112958267.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e397d361-fa3c-4d13-9cc0-5bea876e2119/id-preview-d55009be--9e7d4022-af91-480e-b8bd-078f9e2f11cf.lovable.app-1781112958267.png",
+      },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
@@ -98,7 +112,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&family=Karantina:wght@400;700&family=Secular+One&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&family=Karantina:wght@400;700&family=Secular+One&display=swap",
+      },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },

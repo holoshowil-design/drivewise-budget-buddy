@@ -105,7 +105,10 @@ function CalendarPage() {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-medium text-muted-foreground mb-1.5">
+            <div
+              className="grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-muted-foreground mb-1.5"
+              aria-hidden="true"
+            >
               {weekDays.map((w) => (
                 <div key={w}>{w}</div>
               ))}
@@ -131,20 +134,31 @@ function CalendarPage() {
                     key={cell.iso}
                     onClick={() => setSelected(cell.iso!)}
                     aria-pressed={isSelected}
+                    aria-label={`${new Date(`${cell.iso}T12:00:00`).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}${
+                      hasData
+                        ? `, נטו ${fmt(net, c)}${net >= goal ? ", יעד הושג" : ""}`
+                        : ", אין רשומות"
+                    }`}
                     className={cn(
-                      "cal-cell relative aspect-square rounded-xl flex flex-col items-center justify-center text-[10px] font-medium transition-all",
+                      "cal-cell relative aspect-square rounded-xl flex flex-col items-center justify-center text-[11px] font-medium transition-all",
                       tone,
                       isToday && !isSelected && "ring-1 ring-primary/50",
                       isSelected && "ring-2 ring-primary ring-offset-1 ring-offset-card",
                     )}
                   >
                     <span
-                      className={cn("num text-[11px]", isToday && "font-extrabold text-primary")}
+                      className={cn("num text-xs", isToday && "font-extrabold text-primary")}
+                      aria-hidden="true"
                     >
                       {cell.day}
                     </span>
                     {hasData && (
-                      <span className="num text-[9px] font-bold leading-none mt-0.5">{net}</span>
+                      <span
+                        className="num mt-0.5 text-[11px] font-bold leading-none"
+                        aria-hidden="true"
+                      >
+                        {net}
+                      </span>
                     )}
                     {hasData && net >= goal && (
                       <span className="ink-stamp" aria-hidden="true">
@@ -155,7 +169,7 @@ function CalendarPage() {
                 );
               })}
             </div>
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-t pt-2.5 text-[10px] text-muted-foreground">
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-t pt-2.5 text-[11px] text-muted-foreground">
               <LegendDot className="bg-success/60" label={`יעד הושג (${fmt(goal, c)}+)`} />
               <LegendDot className="bg-warning/70" label="מתחת ליעד" />
               <LegendDot className="bg-destructive/60" label="הפסד" />

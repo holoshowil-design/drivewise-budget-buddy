@@ -300,8 +300,16 @@ function SettingsPage() {
               </div>
               <Switch
                 id="auto-detect"
-                checked={data.settings.autoDetectTrip !== false}
-                onCheckedChange={(v) => updateSettings({ autoDetectTrip: v })}
+                checked={data.settings.autoDetectTrip === true}
+                onCheckedChange={(v) => {
+                  updateSettings({ autoDetectTrip: v });
+                  // Turning it on is the explicit moment to ask for location.
+                  if (v)
+                    navigator.geolocation?.getCurrentPosition(
+                      () => {},
+                      () => {},
+                    );
+                }}
               />
             </div>
             <div className="flex items-center justify-between gap-3">
