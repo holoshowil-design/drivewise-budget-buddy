@@ -88,7 +88,7 @@ function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <PageHeader title="הגדרות" subtitle="יעדים, רכב, ונתונים" />
+      <PageHeader title="הגדרות" subtitle="יעדים, רכב, ונתונים" scene={{ mood: "smirk", prop: "wrench", line: "המוסך פתוח. מכוונים את המכונה 🔧", taxi: "tired" }} />
 
       <div className="px-4 space-y-4">
         <AccountCard />

@@ -60,7 +60,7 @@ function CalendarPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <PageHeader title="לוח שנה" subtitle={`רווח חודשי: ${fmt(monthNet, c)}`} />
+      <PageHeader title="לוח שנה" subtitle={`רווח חודשי: ${fmt(monthNet, c)}`} scene={{ mood: monthNet >= 0 ? "smirk" : "grumble", prop: "stamp", line: monthNet >= 0 ? "כל יום יעד מקבל חותמת! 🟢" : "החודש עוד ניתן להציל 💪" }} />
 
       <div className="px-4 space-y-4">
         <Card>

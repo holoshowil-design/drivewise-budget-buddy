@@ -27,7 +27,7 @@ function TripPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <PageHeader title="נסיעת עבודה" subtitle="מדידת ק״מ וזמן בזמן אמת" />
+      <PageHeader title="נסיעת עבודה" subtitle="מדידת ק״מ וזמן בזמן אמת" scene={{ mood: "excited", prop: "wheel", line: "חגורות! טורבו מתניע 🏁", taxi: "zoom", driving: true }} />
       <div className="px-4">
         <TripTracker autoStart={action === "start_trip"} driveMode={mode === "drive"} />
       </div>
