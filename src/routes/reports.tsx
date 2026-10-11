@@ -88,6 +88,7 @@ function Reports() {
         title="דוחות"
         subtitle={range === "all" ? "כל הרשומות" : `${fmtDateShort(from)} – ${fmtDateShort(to)}`}
         action={<Button size="sm" variant="outline" onClick={exportCSV}><Download className="h-4 w-4 ml-1" />ייצוא</Button>}
+        scene={{ mood: "smirk", prop: "chart", line: "בוא נראה לאן הלך כל שקל 🧐" }}
       />
 
       <div className="px-4 space-y-4">
