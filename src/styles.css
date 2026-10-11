@@ -820,8 +820,8 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 .taxi-signtxt { font-size: 9px; }
 .taxi-dust { opacity: 0; }
 .taxi-dust path { fill: none; stroke-width: 2.4 !important; }
-.taxi-honk { font: 900 16px var(--font-comic); fill: var(--destructive); stroke: none !important; opacity: 0; }
-.taxi-honk .taxi-honk { opacity: 1; animation: taxi-beep .5s cubic-bezier(.2,1.8,.4,1) infinite alternate; }
+.taxi-beeptxt { font: 900 16px var(--font-comic); fill: var(--destructive); stroke: none !important; opacity: 0; }
+.taxi-honk .taxi-beeptxt { opacity: 1; animation: taxi-beep .5s cubic-bezier(.2,1.8,.4,1) infinite alternate; }
 .taxi-honk .taxi-body { animation: taxi-hop .5s cubic-bezier(.3,1.6,.4,1) infinite alternate; }
 .taxi-honk .taxi-wiper, .taxi-zoom .taxi-wiper { animation: taxi-wipe .6s ease-in-out infinite alternate; }
 .taxi-cough .taxi-puff { fill: var(--ink); animation-duration: .7s; }

@@ -46,7 +46,7 @@ export function CaricatureTaxi({ mood = "happy", driving = false, className = ""
         </g>
         <Wheel cx={62} />
         <Wheel cx={178} />
-        <text x="4" y="40" className="taxi-honk">בִּיפּ!</text>
+        <text x="4" y="40" className="taxi-beeptxt">בִּיפּ!</text>
       </svg>
     </span>
   );
