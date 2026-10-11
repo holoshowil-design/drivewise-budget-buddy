@@ -1,67 +1,43 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Route as GaugeIcon, Fuel } from "lucide-react";
+import { toast } from "sonner";
 import {
-  filterByDate,
-  filterByRange,
   monthRange,
-  sumKm,
-  sumTripKm,
-  estimateTripEnergyCost,
-  sumIncomes,
-  sumExpenses,
-  estimateEnergyCostByDate,
-  fuelCostFor,
   energyUnitLabel,
   todayISO,
   fmt,
+  fmtPrecise,
+  useAppData,
   type AppData,
 } from "@/lib/store";
+import { dayOf, fuelComparison, sumDays, useDays } from "@/lib/calc";
 
 export function KmCostCard({ data }: { data: AppData }) {
+  const { recordFuelPriceChange } = useAppData();
+  const days = useDays(data);
   const c = data.settings.currency;
   const unit = energyUnitLabel(data.vehicle);
 
   const today = todayISO();
   const now = new Date();
   const { from, to } = monthRange(now.getFullYear(), now.getMonth());
+  const day = dayOf(days, today, data);
+  const month = sumDays(days, from, to);
+  const units = (cost: number) =>
+    data.settings.fuelPrice > 0 ? cost / data.settings.fuelPrice : 0;
+  const costPerKm =
+    month.km > 0
+      ? month.fuelEstimated / month.km
+      : data.settings.fuelPrice / (data.vehicle.consumption || 1);
+  const cmp = fuelComparison(month, data);
 
-  const todayIncomes = filterByDate(data.incomes, today);
-  const todayExpenses = filterByDate(data.expenses, today);
-  const monthIncomes = filterByRange(data.incomes, from, to);
-  const monthExpenses = filterByRange(data.expenses, from, to);
+  const applyConsumption = (consumption: number) => {
+    recordFuelPriceChange(data.settings.fuelPrice, consumption);
+    toast.success(`הצריכה עודכנה ל-${consumption} ק״מ/${unit}, מהיום והלאה`);
+  };
 
-  const todayTrips = filterByDate(data.trips ?? [], today);
-  const monthTrips = filterByRange(data.trips ?? [], from, to);
-
-  const tripKmToday = sumTripKm(todayTrips);
-  const tripKmMonth = sumTripKm(monthTrips);
-  const tripEstToday = estimateTripEnergyCost(todayTrips, data.vehicle, data.settings);
-  const tripEstMonth = estimateTripEnergyCost(monthTrips, data.vehicle, data.settings);
-
-  const manualKmToday = sumKm(todayIncomes);
-  const manualKmMonth = sumKm(monthIncomes);
-  const kmToday = tripKmToday > 0 ? tripKmToday : manualKmToday;
-  const kmMonth = tripKmMonth > 0 ? tripKmMonth : manualKmMonth;
-
-  const estIncomeToday = estimateEnergyCostByDate(todayIncomes, data.vehicle, data.settings);
-  const estIncomeMonth = estimateEnergyCostByDate(monthIncomes, data.vehicle, data.settings);
-  const estToday = tripKmToday > 0
-    ? { ...tripEstToday, costPerKm: tripKmToday > 0 ? tripEstToday.cost / tripKmToday : estIncomeToday.costPerKm }
-    : estIncomeToday;
-  const estMonth = tripKmMonth > 0
-    ? { ...tripEstMonth, costPerKm: tripKmMonth > 0 ? tripEstMonth.cost / tripKmMonth : estIncomeMonth.costPerKm }
-    : estIncomeMonth;
-
-  const fuelToday = fuelCostFor(todayIncomes, todayExpenses, data.vehicle, data.settings, todayTrips);
-  const fuelMonth = fuelCostFor(monthIncomes, monthExpenses, data.vehicle, data.settings, monthTrips);
-
-  const netAfterFuelToday = sumIncomes(todayIncomes) - fuelToday.charged;
-  const netAfterFuelMonth = sumIncomes(monthIncomes) - fuelMonth.charged;
-
-  const actualMonth = sumExpenses(monthExpenses.filter((e) => e.category === "fuel"));
-  const diff = actualMonth - estMonth.cost;
-
-  if (kmMonth === 0 && kmToday === 0) {
+  if (month.km === 0 && day.km === 0) {
     return (
       <Card className="card-lift animate-fade-in-up">
         <CardContent className="p-4">
@@ -69,7 +45,7 @@ export function KmCostCard({ data }: { data: AppData }) {
             <GaugeIcon className="h-4 w-4 text-primary" /> קילומטרים ועלות דלק
           </h3>
           <p className="text-xs text-muted-foreground">
-              הפעל מעקב נסיעה או הוסף ק״מ בהזנת ההכנסה כדי לראות כמה נסעת וכמה זה עלה לך באנרגיה.
+            הפעל מעקב נסיעה או הוסף ק״מ בהזנת ההכנסה כדי לראות כמה נסעת וכמה זה עלה לך באנרגיה.
           </p>
         </CardContent>
       </Card>
@@ -84,16 +60,30 @@ export function KmCostCard({ data }: { data: AppData }) {
             <GaugeIcon className="h-4 w-4 text-primary" /> קילומטרים ועלות דלק
           </h3>
           <span className="num text-[11px] text-muted-foreground">
-            {data.vehicle.consumption} ק״מ/{unit} · {data.settings.fuelPrice}{c}/{unit}
+            {data.vehicle.consumption} ק״מ/{unit} · {data.settings.fuelPrice}
+            {c}/{unit}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Block title="היום" km={kmToday} cost={estToday.cost} units={estToday.units} unit={unit} currency={c} />
-          <Block title="החודש" km={kmMonth} cost={estMonth.cost} units={estMonth.units} unit={unit} currency={c} />
+          <Block
+            title="היום"
+            km={day.km}
+            cost={day.fuelEstimated}
+            units={units(day.fuelEstimated)}
+            unit={unit}
+            currency={c}
+          />
+          <Block
+            title="החודש"
+            km={month.km}
+            cost={month.fuelEstimated}
+            units={units(month.fuelEstimated)}
+            unit={unit}
+            currency={c}
+          />
         </div>
 
-        {/* Net after fuel — shown even on days without an actual refuel */}
         <div className="mt-3 rounded-xl border bg-muted/40 p-3">
           <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold">
             <Fuel className="h-3.5 w-3.5 text-warning" /> נטו אחרי דלק
@@ -101,46 +91,56 @@ export function KmCostCard({ data }: { data: AppData }) {
           <div className="grid grid-cols-2 gap-3">
             <NetBlock
               label="היום"
-              net={netAfterFuelToday}
-              fuel={fuelToday.charged}
-              estimated={fuelToday.actual === 0}
+              net={day.incomeNet - day.fuelEstimated}
+              fuel={day.fuelEstimated}
               currency={c}
             />
             <NetBlock
               label="החודש"
-              net={netAfterFuelMonth}
-              fuel={fuelMonth.charged}
-              estimated={fuelMonth.actual === 0}
+              net={month.incomeNet - month.fuelEstimated}
+              fuel={month.fuelEstimated}
               currency={c}
             />
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-            גם בימים שלא תדלקת, הדלק יורד מהנטו לפי הק״מ שנסעת — כך תמיד רואים את הרווח האמיתי.
+            הדלק יורד מהנטו לפי הק״מ שנסעת (GPS וידני), גם בימים שלא תדלקת. התדלוקים עצמם משמשים
+            להשוואה.
           </p>
         </div>
-
-        {tripKmMonth > 0 && (
-          <div className="num mt-2 flex justify-between rounded-lg bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground">
-            <span>ידני {Math.round(manualKmMonth).toLocaleString("he-IL")} ק״מ</span>
-            <span>מעקב GPS קובע {tripKmMonth.toFixed(1)} ק״מ</span>
-          </div>
-        )}
 
         <div className="mt-3 space-y-1 border-t pt-3 text-xs text-muted-foreground">
           <div className="flex justify-between">
             <span>עלות אנרגיה משוערת לק״מ</span>
-            <span className="num font-semibold text-foreground">{estMonth.costPerKm.toFixed(2)}{c}</span>
+            <span className="num font-semibold text-foreground">{fmtPrecise(costPerKm, c)}</span>
           </div>
           <div className="flex justify-between">
             <span>תדלוקים בפועל החודש</span>
-            <span className="num font-semibold text-foreground">{fmt(actualMonth, c)}</span>
+            <span className="num font-semibold text-foreground">{fmt(cmp.actual, c)}</span>
           </div>
-          {actualMonth > 0 && kmMonth > 0 && (
+          {cmp.actual > 0 && month.km > 0 && (
             <div className="flex justify-between">
-              <span>{diff >= 0 ? "שילמת יותר מהמשוער" : "שילמת פחות מהמשוער"}</span>
-              <span className={`num font-semibold ${diff >= 0 ? "text-destructive" : "text-success"}`}>
-                {fmt(Math.abs(Math.round(diff)), c)}
+              <span>{cmp.diff >= 0 ? "תדלקת יותר מהמשוער" : "תדלקת פחות מהמשוער"}</span>
+              <span
+                className={`num font-semibold ${cmp.diff >= 0 ? "text-destructive" : "text-success"}`}
+              >
+                {fmt(Math.abs(Math.round(cmp.diff)), c)}
               </span>
+            </div>
+          )}
+          {cmp.suggestedConsumption !== null && (
+            <div className="mt-2 rounded-lg bg-warning/10 p-2.5 text-foreground">
+              <p className="text-[11px] leading-relaxed">
+                לפי התדלוקים החודש הרכב עושה בערך {cmp.suggestedConsumption} ק״מ ל{unit} (מוגדר{" "}
+                {data.vehicle.consumption}). אם רשמת את כל הק״מ, כדאי לעדכן.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-2 h-8 w-full"
+                onClick={() => applyConsumption(cmp.suggestedConsumption!)}
+              >
+                עדכן צריכה ל-{cmp.suggestedConsumption}
+              </Button>
             </div>
           )}
         </div>
@@ -153,24 +153,22 @@ function NetBlock({
   label,
   net,
   fuel,
-  estimated,
   currency,
 }: {
   label: string;
   net: number;
   fuel: number;
-  estimated: boolean;
   currency: string;
 }) {
   return (
     <div>
       <div className="text-[11px] text-muted-foreground">{label}</div>
-      <div className={`num text-lg font-bold tracking-tight ${net >= 0 ? "text-success" : "text-destructive"}`}>
+      <div
+        className={`num text-lg font-bold tracking-tight ${net >= 0 ? "text-success" : "text-destructive"}`}
+      >
         {fmt(net, currency)}
       </div>
-      <div className="num text-[11px] text-muted-foreground">
-        {estimated ? "דלק משוער" : "דלק בפועל"} −{fmt(fuel, currency)}
-      </div>
+      <div className="num text-[11px] text-muted-foreground">דלק משוער −{fmt(fuel, currency)}</div>
     </div>
   );
 }

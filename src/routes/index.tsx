@@ -1,17 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useAppData, todayISO, filterByDate, filterByRange, sumIncomes, fmt, monthRange, totalCosts, sumHours } from "@/lib/store";
+import { useAppData, todayISO, fmt, monthRange } from "@/lib/store";
+import { dayOf, monthForecast, sumDays, useDays } from "@/lib/calc";
 import { Card, CardContent } from "@/components/ui/card";
 import { InsightsCard } from "@/components/InsightsCard";
 import { KmCostCard } from "@/components/KmCostCard";
-import { MonthPaceCard, IncomeVsExpenseCard, ProfitabilityGauge } from "@/components/DashboardCharts";
-import { DailyProfitGauge, DriveModeAction, InteractiveWeeklyEarnings, MomentumCoach, PremiumStats } from "@/components/PremiumDashboard";
+import {
+  MonthPaceCard,
+  IncomeVsExpenseCard,
+  ProfitabilityGauge,
+} from "@/components/DashboardCharts";
+import {
+  DailyProfitGauge,
+  DriveModeAction,
+  InteractiveWeeklyEarnings,
+  MomentumCoach,
+  PremiumStats,
+} from "@/components/PremiumDashboard";
 
 import { Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccountBadge } from "@/components/AccountBadge";
 import { useEffect, useState } from "react";
-
-
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,7 +28,10 @@ export const Route = createFileRoute("/")({
       { title: "דרייבר - דשבורד" },
       { name: "description", content: "סיכום ההכנסות וההוצאות שלך, יעדים יומיים ומצב רווחיות." },
       { property: "og:title", content: "דרייבר - דשבורד" },
-      { property: "og:description", content: "סיכום ההכנסות וההוצאות שלך, יעדים יומיים ומצב רווחיות." },
+      {
+        property: "og:description",
+        content: "סיכום ההכנסות וההוצאות שלך, יעדים יומיים ומצב רווחיות.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -29,6 +41,7 @@ export const Route = createFileRoute("/")({
 
 function Dashboard() {
   const { data, ready } = useAppData();
+  const days = useDays(data);
   const [tripActive, setTripActive] = useState(false);
   useEffect(() => {
     const check = () => setTripActive(Boolean(localStorage.getItem("driver-active-trip")));
@@ -42,50 +55,77 @@ function Dashboard() {
   const { settings } = data;
   const c = settings.currency;
 
-  const todayIncomes = filterByDate(data.incomes, today);
-  const todayExpenses = filterByDate(data.expenses, today);
-  const todayTrips = filterByDate(data.trips ?? [], today);
-  const incomeToday = sumIncomes(todayIncomes);
-  const expenseToday = totalCosts(todayIncomes, todayExpenses, data.vehicle, settings, todayTrips);
-  const netToday = incomeToday - expenseToday;
-  const hoursToday = sumHours(todayIncomes);
+  const day = dayOf(days, today, data);
+  const incomeToday = day.incomeNet;
+  const expenseToday = day.costs;
+  const netToday = day.net;
+  const hoursToday = day.hours;
   const profitabilityPct = incomeToday > 0 ? Math.round((netToday / incomeToday) * 100) : 0;
-  const goalPct = settings.dailyGoal > 0 ? Math.min(100, Math.round((netToday / settings.dailyGoal) * 100)) : 0;
+  const goalPct =
+    settings.dailyGoal > 0 ? Math.min(100, Math.round((netToday / settings.dailyGoal) * 100)) : 0;
 
   // breakeven daily = (fixed monthly / workdays) + today's variable expenses
-  const breakeven = Math.round(settings.fixedMonthlyExpenses / Math.max(1, settings.workDaysPerMonth) + expenseToday);
+  const breakeven = Math.round(
+    settings.fixedMonthlyExpenses / Math.max(1, settings.workDaysPerMonth) + expenseToday,
+  );
 
   // month
   const now = new Date();
   const { from, to } = monthRange(now.getFullYear(), now.getMonth());
-  const monthIncomes = filterByRange(data.incomes, from, to);
-  const monthExpenses = filterByRange(data.expenses, from, to);
-  const monthTrips = filterByRange(data.trips ?? [], from, to);
-  const monthIncome = sumIncomes(monthIncomes);
-  const monthExpense = totalCosts(monthIncomes, monthExpenses, data.vehicle, settings, monthTrips);
-  const monthNet = monthIncome - monthExpense;
-  const daysWorked = new Set(monthIncomes.map((i) => i.date)).size;
+  const month = sumDays(days, from, to);
+  const monthIncome = month.incomeNet;
+  const monthExpense = month.costs;
+  const monthNet = month.net;
+  const daysWorked = month.daysWorked;
   const dayOfMonth = now.getDate();
-  const forecast = daysWorked > 0 ? Math.round((monthNet / daysWorked) * 30) : 0;
+  const forecast = Math.round(monthForecast(days, data, today).forecast);
 
   const hour = now.getHours();
-  const greeting = hour < 5 ? "לילה טוב" : hour < 12 ? "בוקר טוב" : hour < 17 ? "צהריים טובים" : hour < 21 ? "ערב טוב" : "לילה טוב";
+  const greeting =
+    hour < 5
+      ? "לילה טוב"
+      : hour < 12
+        ? "בוקר טוב"
+        : hour < 17
+          ? "צהריים טובים"
+          : hour < 21
+            ? "ערב טוב"
+            : "לילה טוב";
 
   return (
     <div className="mx-auto max-w-xl">
       <header className="flex items-center justify-between gap-3 px-4 pb-4 pt-[calc(1.5rem+env(safe-area-inset-top,0px))]">
         <div>
-          <p className="text-xs font-semibold text-primary">{new Date().toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}</p>
+          <p className="text-xs font-semibold text-primary">
+            {new Date().toLocaleDateString("he-IL", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
+          </p>
           <h1 className="font-display mt-1 text-2xl font-bold">{greeting}</h1>
         </div>
         <AccountBadge />
       </header>
 
       <div className="stagger space-y-4 px-4">
-        <DailyProfitGauge net={netToday} goal={settings.dailyGoal} breakEven={breakeven} currency={c} profitability={profitabilityPct} hourly={hoursToday > 0 ? netToday / hoursToday : 0} />
+        <DailyProfitGauge
+          net={netToday}
+          goal={settings.dailyGoal}
+          breakEven={breakeven}
+          currency={c}
+          profitability={profitabilityPct}
+          hourly={hoursToday > 0 ? netToday / hoursToday : 0}
+        />
         <MomentumCoach data={data} />
         <DriveModeAction active={tripActive} />
-        <PremiumStats data={data} income={incomeToday} expense={expenseToday} breakEven={breakeven} forecast={forecast} />
+        <PremiumStats
+          data={data}
+          income={incomeToday}
+          expense={expenseToday}
+          breakEven={breakeven}
+          forecast={forecast}
+        />
         <InteractiveWeeklyEarnings data={data} />
 
         <ProfitabilityGauge data={data} />
@@ -132,7 +172,10 @@ function Dashboard() {
               <MiniStat label="הוצאות" value={fmt(monthExpense, c)} />
               <MiniStat label="נטו" value={fmt(monthNet, c)} accent />
             </div>
-            <div className="text-xs text-muted-foreground text-center">{daysWorked} ימי עבודה · ממוצע יומי {fmt(daysWorked ? Math.round(monthNet / daysWorked) : 0, c)}</div>
+            <div className="text-xs text-muted-foreground text-center">
+              {daysWorked} ימי עבודה · ממוצע יומי{" "}
+              {fmt(daysWorked ? Math.round(monthNet / daysWorked) : 0, c)}
+            </div>
           </CardContent>
         </Card>
       </div>

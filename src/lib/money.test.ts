@@ -3,6 +3,7 @@ import {
   effectiveFuelParams,
   filterByDate,
   fmt,
+  fmtPrecise,
   fuelCostFor,
   load,
   netFromIncome,
@@ -21,8 +22,8 @@ import {
   vehicle,
 } from "@/test/fixtures";
 
-// Tests marked `it.fails` document bugs verified in the review. They pass while
-// the bug exists; the stage that fixes the bug flips them to a plain `it`.
+// Tests tagged "(review bug N)" pin bugs verified in the review: they were
+// `it.fails` until the stage that fixed them.
 
 let uninstall: (() => void) | undefined;
 afterEach(() => {
@@ -96,7 +97,7 @@ describe("fuel cost for a period", () => {
     ).toBeCloseTo(70);
   });
 
-  it.fails("a GPS trip does not erase manual km from other incomes (review bug 8)", () => {
+  it("a GPS trip does not erase manual km from other incomes (review bug 8)", () => {
     // 120 manual km on day 1 + 6 GPS km on day 2 = 126 km = 73.5 ₪.
     const d = appData({
       incomes: [income({ date: "2026-10-01", km: 120 })],
@@ -107,7 +108,7 @@ describe("fuel cost for a period", () => {
     ).toBeCloseTo(73.5);
   });
 
-  it.fails("the sum of daily profits equals the monthly profit (review bug 8)", () => {
+  it("the sum of daily profits equals the monthly profit (review bug 8)", () => {
     // Day 1: drove 120 km (≈70 ₪ fuel), no refuel. Day 2: refuelled 300 ₪, no driving.
     const d = appData({
       incomes: [income({ date: "2026-10-01", amount: 500, km: 120 })],
@@ -127,7 +128,7 @@ describe("fuel cost for a period", () => {
 });
 
 describe("per-km figures", () => {
-  it.fails("insights include GPS km in the cost per km (review bug 9)", () => {
+  it("insights include GPS km in the cost per km (review bug 9)", () => {
     const today = todayISO();
     const t = trip({ date: today, km: 100 });
     const d = appData({
@@ -138,10 +139,10 @@ describe("per-km figures", () => {
     expect(buildInsights(d).find((i) => i.id === "perkm")).toBeDefined();
   });
 
-  it.fails("small per-km amounts keep their agorot (review bug 9)", () => {
-    // Reports show "ממוצע לק״מ" through fmt, so 0.85 ₪ is displayed as "1 ₪".
-    // Stage 3 may route this through a dedicated per-km formatter instead.
-    expect(fmt(0.85)).toContain("0.85");
+  it("small per-km amounts keep their agorot (review bug 9)", () => {
+    // Per-km figures go through fmtPrecise; fmt stays whole shekels.
+    expect(fmtPrecise(0.85)).toContain("0.85");
+    expect(fmt(0.85)).toBe("1 ₪");
   });
 
   it("whole-shekel amounts stay readable in RTL", () => {

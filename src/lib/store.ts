@@ -490,6 +490,15 @@ export function fmt(n: number, currency = "₪") {
   return `${rounded < 0 ? "-" : ""}${abs} ${currency}`;
 }
 
+/** Precise amount with agorot, for per-km figures: "0.85 ₪". */
+export function fmtPrecise(n: number, currency = "₪") {
+  const abs = Math.abs(n).toLocaleString("he-IL", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return `${n < 0 ? "-" : ""}${abs} ${currency}`;
+}
+
 /** Short human date, e.g. "6 באוג׳". */
 export function fmtDateShort(iso: string) {
   return new Date(iso).toLocaleDateString("he-IL", { day: "numeric", month: "short" });
@@ -618,11 +627,11 @@ export function energyUnitLabel(v: Vehicle) {
 }
 
 /**
- * Fuel cost that should be charged for a period.
- * Fuel is treated as a certain cost: we take the higher of the actual refuels
- * logged and the estimated energy cost derived from the km driven,
- * so it is never counted twice and never ignored.
- * Uses date-aware estimation so price changes don't apply retroactively.
+ * Fuel cost for a period, by distance: GPS trips + manual km of incomes that
+ * are not linked to a trip, each priced at the fuel price and consumption in
+ * effect at its own moment. Because it is a sum per record, the sum of days
+ * always equals the month. Actual refuels (`actual`) are not charged: they are
+ * used to compare with the estimate and to suggest a consumption update.
  */
 export function fuelCostFor(
   incomes: Income[],
@@ -631,14 +640,20 @@ export function fuelCostFor(
   settings: Settings,
   trips: Trip[] = [],
 ) {
-  // GPS is authoritative when a tracked trip exists for the period. Manual km
-  // remains the fallback for older/untracked records, preventing overlap from
-  // charging the same driven distance twice.
-  const manualEstimate = estimateEnergyCostByDate(incomes, vehicle, settings).cost;
-  const trackedEstimate = estimateTripEnergyCost(trips, vehicle, settings).cost;
-  const estimated = trips.length > 0 ? trackedEstimate : manualEstimate;
+  const manual = estimateEnergyCostByDate(
+    incomes.filter((i) => !i.tripId),
+    vehicle,
+    settings,
+  ).cost;
+  const tracked = estimateTripEnergyCost(trips, vehicle, settings).cost;
+  const estimated = manual + tracked;
   const actual = expenses.filter((e) => e.category === "fuel").reduce((s, e) => s + e.amount, 0);
-  return { estimated, actual, charged: Math.max(estimated, actual) };
+  return { estimated, actual, charged: estimated };
+}
+
+/** Driven km for a period: GPS trips + manual km of incomes not linked to a trip. */
+export function drivenKm(incomes: Income[], trips: Trip[] = []) {
+  return sumTripKm(trips) + sumKm(incomes.filter((i) => !i.tripId));
 }
 
 /** Total costs for a period: non-fuel expenses + certain fuel cost. */

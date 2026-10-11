@@ -1,4 +1,4 @@
-import { filterByRange, netProfit, fmt, type AppData } from "./store";
+import { drivenKm, filterByRange, netProfit, fmt, fmtPrecise, type AppData } from "./store";
 
 export type Insight = {
   id: string;
@@ -21,7 +21,13 @@ export function buildInsights(data: AppData): Insight[] {
   const lastWeek = { from: isoOffset(13), to: isoOffset(7) };
 
   const netIn = (r: { from: string; to: string }) =>
-    netProfit(filterByRange(data.incomes, r.from, r.to), filterByRange(data.expenses, r.from, r.to), data.vehicle, data.settings, filterByRange(data.trips ?? [], r.from, r.to));
+    netProfit(
+      filterByRange(data.incomes, r.from, r.to),
+      filterByRange(data.expenses, r.from, r.to),
+      data.vehicle,
+      data.settings,
+      filterByRange(data.trips ?? [], r.from, r.to),
+    );
 
   const cur = netIn(thisWeek);
   const prev = netIn(lastWeek);
@@ -32,7 +38,10 @@ export function buildInsights(data: AppData): Insight[] {
     out.push({
       id: "weekcmp",
       tone: diff >= 0 ? "good" : "warn",
-      title: diff >= 0 ? `השבוע טוב ב-${Math.abs(pct)}% מהשבוע שעבר` : `השבוע נמוך ב-${Math.abs(pct)}% מהשבוע שעבר`,
+      title:
+        diff >= 0
+          ? `השבוע טוב ב-${Math.abs(pct)}% מהשבוע שעבר`
+          : `השבוע נמוך ב-${Math.abs(pct)}% מהשבוע שעבר`,
       detail: `${fmt(cur, c)} מול ${fmt(prev, c)}`,
     });
   }
@@ -44,7 +53,7 @@ export function buildInsights(data: AppData): Insight[] {
   const trips30 = filterByRange(data.trips ?? [], from30, isoOffset(0));
   const net30 = netProfit(inc30, exp30, data.vehicle, data.settings, trips30);
   const hours30 = inc30.reduce((s, i) => s + (i.hours || 0), 0);
-  const km30 = inc30.reduce((s, i) => s + (i.km || 0), 0);
+  const km30 = drivenKm(inc30, trips30); // GPS + manual km
 
   if (hours30 > 0) {
     const perHour = Math.round(net30 / hours30);
@@ -58,12 +67,11 @@ export function buildInsights(data: AppData): Insight[] {
 
   if (km30 > 0) {
     const fuel30 = exp30.filter((e) => e.category === "fuel").reduce((s, e) => s + e.amount, 0);
-    const costPerKm = Math.round((fuel30 / km30) * 100) / 100;
     if (fuel30 > 0) {
       out.push({
         id: "perkm",
         tone: "info",
-        title: `${costPerKm}${c} אנרגיה לכל ק״מ`,
+        title: `${fmtPrecise(fuel30 / km30, c)} אנרגיה לכל ק״מ`,
         detail: `${Math.round(km30)} ק״מ · ${fmt(fuel30, c)} דלק/חשמל`,
       });
     }
@@ -89,15 +97,26 @@ export function buildInsights(data: AppData): Insight[] {
   // breakeven status this month
   const now = new Date();
   const monthFrom = new Date(now.getFullYear(), now.getMonth(), 1);
-  const mFrom = new Date(monthFrom.getTime() - monthFrom.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-  const monthNet = netProfit(filterByRange(data.incomes, mFrom, isoOffset(0)), filterByRange(data.expenses, mFrom, isoOffset(0)), data.vehicle, data.settings, filterByRange(data.trips ?? [], mFrom, isoOffset(0)));
+  const mFrom = new Date(monthFrom.getTime() - monthFrom.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10);
+  const monthNet = netProfit(
+    filterByRange(data.incomes, mFrom, isoOffset(0)),
+    filterByRange(data.expenses, mFrom, isoOffset(0)),
+    data.vehicle,
+    data.settings,
+    filterByRange(data.trips ?? [], mFrom, isoOffset(0)),
+  );
   const fixed = data.settings.fixedMonthlyExpenses;
   if (fixed > 0) {
     const remaining = fixed - monthNet;
     out.push({
       id: "breakeven",
       tone: remaining <= 0 ? "good" : "info",
-      title: remaining <= 0 ? "כיסית את ההוצאות הקבועות החודש" : `נשאר ${fmt(remaining, c)} עד כיסוי ההוצאות הקבועות`,
+      title:
+        remaining <= 0
+          ? "כיסית את ההוצאות הקבועות החודש"
+          : `נשאר ${fmt(remaining, c)} עד כיסוי ההוצאות הקבועות`,
       detail: `הוצאות קבועות ${fmt(fixed, c)} · נטו עד כה ${fmt(monthNet, c)}`,
     });
   }
@@ -106,12 +125,23 @@ export function buildInsights(data: AppData): Insight[] {
   let streak = 0;
   for (let i = 0; i < 30; i++) {
     const day = isoOffset(i);
-    const n = netProfit(data.incomes.filter((x) => x.date === day), data.expenses.filter((x) => x.date === day), data.vehicle, data.settings, (data.trips ?? []).filter((x) => x.date === day));
+    const n = netProfit(
+      data.incomes.filter((x) => x.date === day),
+      data.expenses.filter((x) => x.date === day),
+      data.vehicle,
+      data.settings,
+      (data.trips ?? []).filter((x) => x.date === day),
+    );
     if (n >= data.settings.dailyGoal && data.settings.dailyGoal > 0) streak++;
     else break;
   }
   if (streak >= 2) {
-    out.push({ id: "streak", tone: "good", title: `${streak} ימים ברצף מעל היעד`, detail: "תמשיך ככה" });
+    out.push({
+      id: "streak",
+      tone: "good",
+      title: `${streak} ימים ברצף מעל היעד`,
+      detail: "תמשיך ככה",
+    });
   }
 
   // spending spike
