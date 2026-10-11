@@ -39,6 +39,7 @@ import { TripEndDialog, type TripFormValues } from "@/components/TripEndDialog";
 import { celebrate, crossedDailyGoal } from "@/lib/rewards";
 import { calculateWorkStreak, tripMotivation } from "@/lib/motivation";
 import { classifyStep, looksForgotten, MAX_ACCURACY_M } from "@/lib/gps";
+import { hasBackgroundTracking, watchLocation } from "@/lib/location";
 
 const WAIT_ASK_MS = 4 * 60 * 1000;
 const WAIT_SNOOZE_MS = 15 * 60 * 1000;
@@ -64,7 +65,8 @@ export function TripTracker({
   const [askForgot, setAskForgot] = useState(false);
   const [ending, setEnding] = useState<TripFormValues | null>(null);
   const [editing, setEditing] = useState<Trip | null>(null);
-  const watchRef = useRef<number | null>(null);
+  /** Stops the running location watch (null when not watching). */
+  const watchRef = useRef<(() => void) | null>(null);
   const wakeRef = useRef<{ release: () => Promise<void> } | null>(null);
   const activeRef = useRef<ActiveTrip | null>(null);
 
@@ -107,31 +109,22 @@ export function TripTracker({
 
   const stopWatch = useCallback(() => {
     if (watchRef.current !== null) {
-      navigator.geolocation.clearWatch(watchRef.current);
+      watchRef.current();
       watchRef.current = null;
     }
     releaseWakeLock();
   }, [releaseWakeLock]);
 
   const startWatch = useCallback(() => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setError("המכשיר או הדפדפן לא תומכים באיתור מיקום.");
-      return;
-    }
     if (watchRef.current !== null) return;
-    watchRef.current = navigator.geolocation.watchPosition(
-      (pos) => {
+    watchRef.current = watchLocation(
+      (fix) => {
         setError(null);
         const cur = activeRef.current;
         if (!cur) return;
-        const acc = pos.coords.accuracy ?? 999;
+        const acc = fix.accuracy;
         if (acc > MAX_ACCURACY_M) return; // ignore very inaccurate fixes
-        const point = {
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
-          t: pos.timestamp,
-          acc,
-        };
+        const point = { lat: fix.lat, lon: fix.lon, t: fix.time, acc };
         if (cur.last) {
           const d = haversine(cur.last, point);
           const step = classifyStep(d, (point.t - cur.last.t) / 1000, cur.last.acc, acc);
@@ -151,12 +144,20 @@ export function TripTracker({
       },
       (err) => {
         setError(
-          err.code === err.PERMISSION_DENIED
-            ? "אין הרשאת מיקום. אשר מיקום בדפדפן, או הזן את הק״מ ידנית בהזנת הכנסה."
-            : "לא הצלחנו לקבל מיקום כרגע. בדוק שה-GPS דלוק.",
+          err.message === "no-geolocation"
+            ? "המכשיר או הדפדפן לא תומכים באיתור מיקום."
+            : err.kind === "denied"
+              ? "אין הרשאת מיקום. אשר מיקום, או הזן את הק״מ ידנית בהזנת הכנסה."
+              : "לא הצלחנו לקבל מיקום כרגע. בדוק שה-GPS דלוק.",
         );
       },
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
+      {
+        // Installed app: keeps measuring with the screen locked.
+        background: {
+          title: "נסיעה פעילה",
+          message: "דרייבר מודד ק״מ. פתח את האפליקציה כדי לסיים.",
+        },
+      },
     );
     acquireWakeLock();
   }, [persist, acquireWakeLock]);
@@ -327,7 +328,11 @@ export function TripTracker({
               <span
                 className={`h-2.5 w-2.5 rounded-full ${active ? "animate-pulse bg-hud-accent" : "bg-hud-muted"}`}
               />
-              {active ? "GPS פעיל · המסך נשאר דלוק" : "מוכן לנסיעה"}
+              {active
+                ? hasBackgroundTracking()
+                  ? "GPS פעיל · ממשיך גם כשהמסך נעול"
+                  : "GPS פעיל · המסך נשאר דלוק"
+                : "מוכן לנסיעה"}
             </div>
             <Link to="/trip" search={{}} aria-label="צא ממצב נהיגה" className="hud-icon-button">
               <Minimize2 className="h-5 w-5" />
