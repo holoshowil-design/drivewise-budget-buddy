@@ -899,3 +899,5 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 @media (prefers-reduced-motion: reduce) {
   .movie-stage *, .ms-quip, .stagger > * { animation: none !important; }
 }
+.momentum-coach { overflow: visible; }
+.coach-stage .ms-quip { top: 3.2rem; inset-inline-start: 38%; }

@@ -27,3 +27,10 @@
 - [x] /add live character reactions while typing, comic words
 - [x] Character scenes on trip, reports, calendar (ink stamps, page flip), settings
 - [x] Comic bursts and gold coins in the single reward overlay; reduced-motion support
+
+# Epic micro-film
+
+- [x] Redraw "הקפטן" in Milt Kahl style with elbows, hands and expanded expressions
+- [x] Redraw "טורבו" taxi: lidded eyes, grille teeth, mirrors, wipers, spoked wheels, honk/cough/shock moods
+- [x] Multi-beat scenes (morning, heist, splash, parade, idle wipe/count/phone/snooze)
+- [x] Unique entrance per card and stalling speedometer needle

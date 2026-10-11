@@ -1,3 +1,4 @@
 - Keep achievement visuals in a single client-only overlay driven by custom reward events; this separates ephemeral animation from persisted financial data and preserves the existing layout.
 - Derive motivation state from financial records rather than storing duplicate counters; this keeps streaks and milestones consistent across local data and cloud sync.
 - Render all caricature art as inline SVG components that share one global boil filter mounted in the root, with page scenes passed through PageHeader; this keeps the hand-drawn look consistent and free of image assets.
+- Character scenes run through MovieStage (timed pose beats + CSS travel per scene class); pages pass a base scene and never animate the mascot directly, so reactions stay centralized.
