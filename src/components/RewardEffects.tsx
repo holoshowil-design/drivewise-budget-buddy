@@ -34,6 +34,9 @@ export function RewardEffects() {
       const css = getComputedStyle(document.documentElement);
       return ["--primary", "--hud-accent", "--warning", "--chart-2", "--card"].map((token) => css.getPropertyValue(token).trim());
     };
+    const rootCss = getComputedStyle(document.documentElement);
+    const gold = rootCss.getPropertyValue("--gold").trim() || "gold";
+    const ink = rootCss.getPropertyValue("--ink").trim() || "black";
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(window.innerWidth * dpr);
