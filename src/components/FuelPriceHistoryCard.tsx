@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { nowHHMM, todayISO, useAppData, type FuelPriceEntry } from "@/lib/store";
+import { parseNumber } from "@/lib/number";
 
 /** Date used for the "before the first change" baseline entry. */
 const BASELINE_DATE = "0000-01-01";
@@ -12,7 +13,7 @@ const BASELINE_DATE = "0000-01-01";
 type Row = { key: string; date: string; time: string; price: string; consumption: string };
 
 const entryKey = (h: FuelPriceEntry) => `${h.date} ${h.time ?? "00:00"}`;
-const toNumber = (s: string) => Number(s.trim().replace(",", "."));
+const toNumber = (s: string) => parseNumber(s) ?? NaN;
 
 /** Price & consumption history: every change, editable by hand. */
 export function FuelPriceHistoryCard() {

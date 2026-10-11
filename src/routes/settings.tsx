@@ -22,6 +22,18 @@ import { useServerFn } from "@tanstack/react-start";
 import { getOnlineFuelPrice } from "@/lib/fuel-price.functions";
 import { FuelPriceHistoryCard } from "@/components/FuelPriceHistoryCard";
 import { parseBackup, planRestore, applyRestore } from "@/lib/backup";
+import { NumberField } from "@/components/NumberField";
+import { parseNumber } from "@/lib/number";
+import { checkNumber } from "@/lib/validate";
+
+type NumText = {
+  dailyGoal: string;
+  fixedMonthlyExpenses: string;
+  workDaysPerMonth: string;
+  defaultCommissionPct: string;
+  consumption: string;
+  fuelPrice: string;
+};
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -46,14 +58,41 @@ function SettingsPage() {
   const fetchPrice = useServerFn(getOnlineFuelPrice);
   const [origFuelPrice, setOrigFuelPrice] = useState(data.settings.fuelPrice);
   const [origConsumption, setOrigConsumption] = useState(data.vehicle.consumption);
+  // Numeric fields are edited as text ("7." / "7,45") and parsed only on save.
+  const toText = (st: typeof data.settings, ve: typeof data.vehicle): NumText => ({
+    dailyGoal: String(st.dailyGoal),
+    fixedMonthlyExpenses: String(st.fixedMonthlyExpenses),
+    workDaysPerMonth: String(st.workDaysPerMonth),
+    defaultCommissionPct: String(st.defaultCommissionPct),
+    consumption: String(ve.consumption),
+    fuelPrice: String(st.fuelPrice),
+  });
+  const [t, setT] = useState<NumText>(() => toText(data.settings, data.vehicle));
+  const [showErrors, setShowErrors] = useState<{ goals?: boolean; vehicle?: boolean }>({});
+  const setNum = (patch: Partial<NumText>) => setT((x) => ({ ...x, ...patch }));
+  const goalErrors = {
+    dailyGoal: checkNumber(t.dailyGoal, { required: true, min: 0 }),
+    fixedMonthlyExpenses: checkNumber(t.fixedMonthlyExpenses, { required: true, min: 0 }),
+    workDaysPerMonth: checkNumber(t.workDaysPerMonth, { required: true, min: 1, max: 31 }),
+    defaultCommissionPct: checkNumber(t.defaultCommissionPct, { required: true, min: 0, max: 100 }),
+  };
+  const vehicleErrors = {
+    consumption: checkNumber(t.consumption, { required: true, positive: true, max: 100 }),
+    fuelPrice: checkNumber(t.fuelPrice, { required: true, positive: true, max: 50 }),
+  };
+  const gErr = (k: keyof typeof goalErrors) => (showErrors.goals ? goalErrors[k] : undefined);
+  const vErr = (k: keyof typeof vehicleErrors) =>
+    showErrors.vehicle ? vehicleErrors[k] : undefined;
 
   useEffect(() => {
     if (ready) {
       setS(data.settings);
       setV(data.vehicle);
+      setT(toText(data.settings, data.vehicle));
       setOrigFuelPrice(data.settings.fuelPrice);
       setOrigConsumption(data.vehicle.consumption);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- toText is a pure helper
   }, [ready, data.settings, data.vehicle]);
 
   const syncFuelPrice = async () => {
@@ -63,7 +102,8 @@ function SettingsPage() {
       if (res.ok) {
         const stamp = new Date().toISOString();
         setS((prev) => ({ ...prev, fuelPrice: res.price, fuelPriceUpdatedAt: stamp }));
-        recordFuelPriceChange(res.price, Number(v.consumption) || 0);
+        setNum({ fuelPrice: String(res.price) });
+        recordFuelPriceChange(res.price, parseNumber(t.consumption) ?? origConsumption);
         setOrigFuelPrice(res.price);
         toast.success(`מחיר עודכן: ₪${res.price} לליטר — יחול מהיום ואילך`);
       } else {
@@ -77,11 +117,16 @@ function SettingsPage() {
   };
 
   const saveSettings = () => {
+    if (Object.values(goalErrors).some(Boolean)) {
+      setShowErrors((x) => ({ ...x, goals: true }));
+      return toast.error("יש שדה שצריך לתקן");
+    }
+    setShowErrors((x) => ({ ...x, goals: false }));
     updateSettings({
-      dailyGoal: Number(s.dailyGoal) || 0,
-      fixedMonthlyExpenses: Number(s.fixedMonthlyExpenses) || 0,
-      workDaysPerMonth: Number(s.workDaysPerMonth) || 1,
-      defaultCommissionPct: Number(s.defaultCommissionPct) || 0,
+      dailyGoal: parseNumber(t.dailyGoal)!,
+      fixedMonthlyExpenses: parseNumber(t.fixedMonthlyExpenses)!,
+      workDaysPerMonth: parseNumber(t.workDaysPerMonth)!,
+      defaultCommissionPct: parseNumber(t.defaultCommissionPct)!,
       // fuelPrice is saved only through the price history ("שמור רכב").
       currency: s.currency || "₪",
     });
@@ -89,8 +134,13 @@ function SettingsPage() {
   };
 
   const saveVehicle = () => {
-    const newConsumption = Number(v.consumption) || 0;
-    const newPrice = Number(s.fuelPrice) || 0;
+    if (Object.values(vehicleErrors).some(Boolean)) {
+      setShowErrors((x) => ({ ...x, vehicle: true }));
+      return toast.error("יש שדה שצריך לתקן");
+    }
+    setShowErrors((x) => ({ ...x, vehicle: false }));
+    const newConsumption = parseNumber(t.consumption)!;
+    const newPrice = parseNumber(t.fuelPrice)!;
     updateVehicle({ make: v.make, model: v.model, year: v.year, plate: v.plate, type: v.type });
     if (newConsumption !== origConsumption || newPrice !== origFuelPrice) {
       recordFuelPriceChange(newPrice, newConsumption);
@@ -128,31 +178,31 @@ function SettingsPage() {
           <CardContent className="p-4 space-y-3">
             <h3 className="font-semibold">יעדים ותקציב</h3>
             <Field label="יעד רווח יומי (₪)">
-              <Input
-                inputMode="decimal"
-                value={s.dailyGoal}
-                onChange={(e) => setS({ ...s, dailyGoal: Number(e.target.value) })}
+              <NumberField
+                value={t.dailyGoal}
+                onValueChange={(dailyGoal) => setNum({ dailyGoal })}
+                error={gErr("dailyGoal")}
               />
             </Field>
             <Field label="הוצאות קבועות חודשיות (ביטוח, רישוי, ליסינג וכו׳)">
-              <Input
-                inputMode="decimal"
-                value={s.fixedMonthlyExpenses}
-                onChange={(e) => setS({ ...s, fixedMonthlyExpenses: Number(e.target.value) })}
+              <NumberField
+                value={t.fixedMonthlyExpenses}
+                onValueChange={(fixedMonthlyExpenses) => setNum({ fixedMonthlyExpenses })}
+                error={gErr("fixedMonthlyExpenses")}
               />
             </Field>
             <Field label="ימי עבודה בחודש (ממוצע)">
-              <Input
-                inputMode="decimal"
-                value={s.workDaysPerMonth}
-                onChange={(e) => setS({ ...s, workDaysPerMonth: Number(e.target.value) })}
+              <NumberField
+                value={t.workDaysPerMonth}
+                onValueChange={(workDaysPerMonth) => setNum({ workDaysPerMonth })}
+                error={gErr("workDaysPerMonth")}
               />
             </Field>
             <Field label="עמלת חברה ברירת מחדל (%)">
-              <Input
-                inputMode="decimal"
-                value={s.defaultCommissionPct}
-                onChange={(e) => setS({ ...s, defaultCommissionPct: Number(e.target.value) })}
+              <NumberField
+                value={t.defaultCommissionPct}
+                onValueChange={(defaultCommissionPct) => setNum({ defaultCommissionPct })}
+                error={gErr("defaultCommissionPct")}
               />
             </Field>
             <Button onClick={saveSettings} className="w-full">
@@ -197,17 +247,17 @@ function SettingsPage() {
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label={v.type === "electric" ? "צריכה (ק״מ ל-kWh)" : "צריכה (ק״מ לליטר)"}>
-                <Input
-                  inputMode="decimal"
-                  value={v.consumption}
-                  onChange={(e) => setV({ ...v, consumption: Number(e.target.value) })}
+                <NumberField
+                  value={t.consumption}
+                  onValueChange={(consumption) => setNum({ consumption })}
+                  error={vErr("consumption")}
                 />
               </Field>
               <Field label={v.type === "electric" ? "מחיר kWh (₪)" : "מחיר ליטר (₪)"}>
-                <Input
-                  inputMode="decimal"
-                  value={s.fuelPrice}
-                  onChange={(e) => setS({ ...s, fuelPrice: Number(e.target.value) })}
+                <NumberField
+                  value={t.fuelPrice}
+                  onValueChange={(fuelPrice) => setNum({ fuelPrice })}
+                  error={vErr("fuelPrice")}
                 />
               </Field>
             </div>
