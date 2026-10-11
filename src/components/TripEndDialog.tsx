@@ -1,9 +1,18 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useAppData, effectiveFuelParams, fmt, type Income } from "@/lib/store";
+import { NumberField } from "@/components/NumberField";
+import { numberOr } from "@/lib/number";
+import { checkDate, checkNumber } from "@/lib/validate";
 
 export type TripFormValues = {
   date: string;
@@ -23,8 +32,16 @@ type Props = {
   onDiscard?: () => void;
 };
 
-export function TripEndDialog({ open, onOpenChange, mode, initial, initialIncome, onSave, onDiscard }: Props) {
-  const { data } = useAppData();
+export function TripEndDialog({
+  open,
+  onOpenChange,
+  mode,
+  initial,
+  initialIncome,
+  onSave,
+  onDiscard,
+}: Props) {
+  const { data, ready } = useAppData();
   const c = data.settings.currency;
   const [date, setDate] = useState(initial.date);
   const [time, setTime] = useState(initial.time);
@@ -34,9 +51,19 @@ export function TripEndDialog({ open, onOpenChange, mode, initial, initialIncome
   const [amount, setAmount] = useState("");
   const [tip, setTip] = useState("");
   const [commission, setCommission] = useState("");
+  const [showErrors, setShowErrors] = useState(false);
 
+  // Reset the form only when the dialog opens for another trip — not on every
+  // parent render (the parent passes `initial` as a fresh object each time).
+  const initKey = JSON.stringify([
+    initial,
+    initialIncome?.id ?? null,
+    initialIncome?.updatedAt ?? null,
+  ]);
+  const defaultCommission = data.settings.defaultCommissionPct;
   useEffect(() => {
-    if (!open) return;
+    if (!open || !ready) return;
+    setShowErrors(false);
     setDate(initial.date);
     setTime(initial.time);
     setKm(initial.km ? initial.km.toFixed(1) : "0");
@@ -44,22 +71,44 @@ export function TripEndDialog({ open, onOpenChange, mode, initial, initialIncome
     setWaitMin(String(Math.round(initial.waitSeconds / 60)));
     setAmount(initialIncome ? String(initialIncome.amount) : "");
     setTip(initialIncome?.tip ? String(initialIncome.tip) : "");
-    setCommission(String(initialIncome?.commissionPct ?? 0));
-  }, [open, initial, initialIncome]);
+    setCommission(String(initialIncome?.commissionPct ?? defaultCommission));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initKey stands for initial/initialIncome
+  }, [open, ready, initKey]);
 
-  const kmN = Math.max(0, Number(km) || 0);
-  const amountN = Math.max(0, Number(amount) || 0);
-  const tipN = Math.max(0, Number(tip) || 0);
-  const comN = Math.min(100, Math.max(0, Number(commission) || 0));
+  const kmN = Math.max(0, numberOr(km, 0));
+  const amountN = Math.max(0, numberOr(amount, 0));
+  const tipN = Math.max(0, numberOr(tip, 0));
+  const comN = Math.min(100, Math.max(0, numberOr(commission, 0)));
+  const errors = {
+    date: checkDate(date),
+    km: checkNumber(km, { min: 0, max: 2000 }),
+    driveMin: checkNumber(driveMin, { min: 0, max: 24 * 60 }),
+    waitMin: checkNumber(waitMin, { min: 0, max: 24 * 60 }),
+    commission: checkNumber(commission, { min: 0, max: 100 }),
+    amount: checkNumber(amount, { min: 0 }),
+    tip: checkNumber(tip, { min: 0 }),
+  };
+  const hasErrors = Object.values(errors).some(Boolean);
+  const err = (k: keyof typeof errors) => (showErrors ? errors[k] : undefined);
   const p = effectiveFuelParams(date, data.vehicle, data.settings, time);
   const fuel = (kmN / (p.consumption || 1)) * p.price;
   const net = amountN * (1 - comN / 100) + tipN - fuel;
-  const waitS = Math.max(0, (Number(waitMin) || 0) * 60);
-  const totalS = Math.max(0, (Number(driveMin) || 0) * 60) + waitS;
+  const waitS = Math.max(0, numberOr(waitMin, 0) * 60);
+  const totalS = Math.max(0, numberOr(driveMin, 0) * 60) + waitS;
 
-  const tripValues = (): TripFormValues => ({ date, time, km: Math.round(kmN * 100) / 100, seconds: totalS, waitSeconds: waitS });
+  const tripValues = (): TripFormValues => ({
+    date,
+    time,
+    km: Math.round(kmN * 100) / 100,
+    seconds: totalS,
+    waitSeconds: waitS,
+  });
 
   const save = (withIncome: boolean) => {
+    if (hasErrors) {
+      setShowErrors(true);
+      return;
+    }
     const income =
       withIncome && amountN > 0
         ? {
@@ -80,35 +129,94 @@ export function TripEndDialog({ open, onOpenChange, mode, initial, initialIncome
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-md" dir="rtl">
         <DialogHeader className="text-right">
-          <DialogTitle className="text-xl font-extrabold">{mode === "end" ? "הנסיעה הסתיימה" : "עריכת נסיעה"}</DialogTitle>
+          <DialogTitle className="text-xl font-extrabold">
+            {mode === "end" ? "הנסיעה הסתיימה" : "עריכת נסיעה"}
+          </DialogTitle>
           <DialogDescription>הנתונים מולאו אוטומטית. נשאר רק להוסיף סכום.</DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-3">
-          <F label="תאריך"><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></F>
-          <F label="שעת התחלה"><Input type="time" value={time} onChange={(e) => setTime(e.target.value)} /></F>
-          <F label="ק״מ"><Input inputMode="decimal" value={km} onChange={(e) => setKm(e.target.value)} /></F>
-          <F label="דקות נהיגה"><Input inputMode="numeric" value={driveMin} onChange={(e) => setDriveMin(e.target.value)} /></F>
-          <F label="דקות המתנה"><Input inputMode="numeric" value={waitMin} onChange={(e) => setWaitMin(e.target.value)} /></F>
-          <F label="עמלה %"><Input inputMode="decimal" value={commission} onChange={(e) => setCommission(e.target.value)} /></F>
+          <F label="תאריך">
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              aria-invalid={err("date") ? true : undefined}
+            />
+            {err("date") && (
+              <p className="text-[11px] font-medium text-destructive" role="alert">
+                {err("date")}
+              </p>
+            )}
+          </F>
+          <F label="שעת התחלה">
+            <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+          </F>
+          <F label="ק״מ">
+            <NumberField value={km} onValueChange={setKm} error={err("km")} />
+          </F>
+          <F label="דקות נהיגה">
+            <NumberField
+              inputMode="numeric"
+              value={driveMin}
+              onValueChange={setDriveMin}
+              error={err("driveMin")}
+            />
+          </F>
+          <F label="דקות המתנה">
+            <NumberField
+              inputMode="numeric"
+              value={waitMin}
+              onValueChange={setWaitMin}
+              error={err("waitMin")}
+            />
+          </F>
+          <F label="עמלה %">
+            <NumberField
+              value={commission}
+              onValueChange={setCommission}
+              error={err("commission")}
+            />
+          </F>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <F label={`סכום שקיבלת (${c})`}>
-            <Input inputMode="decimal" autoFocus={mode === "end"} placeholder="0" className="h-14 text-2xl font-bold" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            <NumberField
+              autoFocus={mode === "end"}
+              placeholder="0"
+              className="h-14 text-2xl font-bold"
+              value={amount}
+              onValueChange={setAmount}
+              error={err("amount")}
+            />
           </F>
           <F label={`טיפ (${c})`}>
-            <Input inputMode="decimal" placeholder="0" className="h-14 text-xl" value={tip} onChange={(e) => setTip(e.target.value)} />
+            <NumberField
+              placeholder="0"
+              className="h-14 text-xl"
+              value={tip}
+              onValueChange={setTip}
+              error={err("tip")}
+            />
           </F>
         </div>
 
         <div className="num flex items-center justify-between rounded-2xl bg-muted/60 px-4 py-3 text-sm">
           <span className="text-muted-foreground">דלק משוער {fmt(fuel, c)}</span>
-          <span className={`text-lg font-extrabold ${net >= 0 ? "text-success" : "text-destructive"}`}>נטו {fmt(net, c)}</span>
+          <span
+            className={`text-lg font-extrabold ${net >= 0 ? "text-success" : "text-destructive"}`}
+          >
+            נטו {fmt(net, c)}
+          </span>
         </div>
 
         <div className="grid gap-2">
-          <Button className="reward-action h-14 text-lg font-bold" onClick={() => save(true)} disabled={amountN <= 0}>
+          <Button
+            className="reward-action h-14 text-lg font-bold"
+            onClick={() => save(true)}
+            disabled={amountN <= 0}
+          >
             שמור עם הסכום
           </Button>
           <Button variant="outline" className="reward-action h-12" onClick={() => save(false)}>

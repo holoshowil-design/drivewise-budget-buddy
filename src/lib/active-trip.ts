@@ -10,7 +10,8 @@ export type ActiveTrip = {
   waitSeconds?: number;
   lastMoveAt?: number; // epoch ms of last real movement
   waitSnoozeUntil?: number; // don't ask about waiting before this time
-  last?: { lat: number; lon: number; t: number };
+  forgotSnoozeUntil?: number; // don't ask "forgot to end?" before this time
+  last?: { lat: number; lon: number; t: number; acc?: number }; // acc = accuracy in meters
 };
 
 export function readActive(): ActiveTrip | null {

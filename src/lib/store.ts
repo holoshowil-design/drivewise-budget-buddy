@@ -297,6 +297,23 @@ export function useAppData() {
     [update],
   );
 
+  /** Puts deleted records back (undo). Same ids, so the deletion is undone everywhere. */
+  const restoreRecords = useCallback(
+    (r: { incomes?: Income[]; expenses?: Expense[]; trips?: Trip[] }) => {
+      const add = <T extends { id: string }>(list: T[], back: T[] = []) => {
+        const ids = new Set(list.map((x) => x.id));
+        return [...list, ...back.filter((x) => !ids.has(x.id))];
+      };
+      update((d) => ({
+        ...d,
+        incomes: add(d.incomes, r.incomes),
+        expenses: add(d.expenses, r.expenses),
+        trips: add(d.trips || [], r.trips),
+      }));
+    },
+    [update],
+  );
+
   const removeIncome = useCallback(
     (id: string) => {
       update((d) => ({ ...d, incomes: d.incomes.filter((x) => x.id !== id) }));
@@ -403,6 +420,7 @@ export function useAppData() {
     updateSettings,
     updateVehicle,
     recordFuelPriceChange,
+    restoreRecords,
     update,
   };
 }

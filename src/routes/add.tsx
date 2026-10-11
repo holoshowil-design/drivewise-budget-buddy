@@ -1,13 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, type MouseEvent } from "react";
-import { useAppData, todayISO, sumIncomes, fmt, type Expense, type ExpenseCategory, categoryLabel } from "@/lib/store";
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
+import {
+  useAppData,
+  todayISO,
+  sumIncomes,
+  fmt,
+  type Expense,
+  type ExpenseCategory,
+  categoryLabel,
+} from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -15,12 +29,25 @@ import { ChevronDown } from "lucide-react";
 import { LiveReaction } from "@/components/LiveReaction";
 import { celebrate, crossedDailyGoal } from "@/lib/rewards";
 import { calculateWorkStreak, expenseMotivation, incomeMotivation } from "@/lib/motivation";
+import { NumberField } from "@/components/NumberField";
+import { numberOr, parseNumber } from "@/lib/number";
+import { validateExpense, validateIncome, type FieldErrors } from "@/lib/validate";
+import { useRollingDate } from "@/hooks/use-today";
 
 const searchSchema = z.object({ tab: z.enum(["income", "expense", "fuel"]).optional() });
 
 export const Route = createFileRoute("/add")({
   validateSearch: searchSchema,
-  head: () => ({ meta: [{ title: "הוספת רשומה - דרייבר" }, { name: "description", content: "הוסף הכנסה, הוצאה או תדלוק." }, { property: "og:title", content: "הוספת רשומה - דרייבר" }, { property: "og:description", content: "הוסף הכנסה, הוצאה או תדלוק." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({
+    meta: [
+      { title: "הוספת רשומה - דרייבר" },
+      { name: "description", content: "הוסף הכנסה, הוצאה או תדלוק." },
+      { property: "og:title", content: "הוספת רשומה - דרייבר" },
+      { property: "og:description", content: "הוסף הכנסה, הוצאה או תדלוק." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AddPage,
 });
 
@@ -34,13 +61,25 @@ function AddPage() {
       <div className="px-4">
         <Tabs value={active} onValueChange={setActive}>
           <TabsList className="grid w-full grid-cols-3 h-11">
-            <TabsTrigger value="income" className="text-sm font-semibold">הכנסה</TabsTrigger>
-            <TabsTrigger value="expense" className="text-sm font-semibold">הוצאה</TabsTrigger>
-            <TabsTrigger value="fuel" className="text-sm font-semibold">תדלוק</TabsTrigger>
+            <TabsTrigger value="income" className="text-sm font-semibold">
+              הכנסה
+            </TabsTrigger>
+            <TabsTrigger value="expense" className="text-sm font-semibold">
+              הוצאה
+            </TabsTrigger>
+            <TabsTrigger value="fuel" className="text-sm font-semibold">
+              תדלוק
+            </TabsTrigger>
           </TabsList>
-          <TabsContent value="income"><IncomeForm /></TabsContent>
-          <TabsContent value="expense"><ExpenseForm /></TabsContent>
-          <TabsContent value="fuel"><FuelForm /></TabsContent>
+          <TabsContent value="income">
+            <IncomeForm />
+          </TabsContent>
+          <TabsContent value="expense">
+            <ExpenseForm />
+          </TabsContent>
+          <TabsContent value="fuel">
+            <FuelForm />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
@@ -48,7 +87,15 @@ function AddPage() {
 }
 
 /** Quick "+amount" chips so a value can be entered without typing. */
-function QuickAmounts({ steps, onPick, onClear }: { steps: number[]; onPick: (v: number) => void; onClear: () => void }) {
+function QuickAmounts({
+  steps,
+  onPick,
+  onClear,
+}: {
+  steps: number[];
+  onPick: (v: number) => void;
+  onClear: () => void;
+}) {
   return (
     <div className="flex flex-wrap gap-2">
       {steps.map((s) => (
@@ -61,7 +108,11 @@ function QuickAmounts({ steps, onPick, onClear }: { steps: number[]; onPick: (v:
           +{s}
         </button>
       ))}
-      <button type="button" onClick={onClear} className="rounded-full px-3 py-1.5 text-sm text-muted-foreground">
+      <button
+        type="button"
+        onClick={onClear}
+        className="rounded-full px-3 py-1.5 text-sm text-muted-foreground"
+      >
         נקה
       </button>
     </div>
@@ -69,8 +120,10 @@ function QuickAmounts({ steps, onPick, onClear }: { steps: number[]; onPick: (v:
 }
 
 function IncomeForm() {
-  const { data, addIncome, removeIncome } = useAppData();
+  const { data, ready, addIncome, removeIncome } = useAppData();
   const [showMore, setShowMore] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const commissionTouched = useRef(false);
   const [form, setForm] = useState({
     date: todayISO(),
     amount: "",
@@ -81,6 +134,26 @@ function IncomeForm() {
     note: "",
   });
 
+  // The settings load after the first render: take the default commission
+  // from them unless the user already changed the field.
+  useEffect(() => {
+    if (ready && !commissionTouched.current) {
+      setForm((f) => ({ ...f, commissionPct: String(data.settings.defaultCommissionPct) }));
+    }
+  }, [ready, data.settings.defaultCommissionPct]);
+  useRollingDate(
+    form.date,
+    useCallback((date) => setForm((f) => ({ ...f, date })), []),
+  );
+  const set = (patch: Partial<typeof form>) => {
+    setForm((f) => ({ ...f, ...patch }));
+    setErrors((e) => {
+      const next = { ...e };
+      for (const k of Object.keys(patch)) delete next[k];
+      return next;
+    });
+  };
+
   const c = data.settings.currency;
   const dayIncomes = data.incomes.filter((i) => i.date === form.date);
   const dayNet = sumIncomes(dayIncomes);
@@ -88,23 +161,28 @@ function IncomeForm() {
   const dayHours = dayIncomes.reduce((s, i) => s + (i.hours || 0), 0);
   const dayKm = dayIncomes.reduce((s, i) => s + (i.km || 0), 0);
 
-  const amountNum = parseFloat(form.amount) || 0;
-  const commission = parseFloat(form.commissionPct) || 0;
-  const previewNet = amountNum > 0 ? amountNum * (1 - commission / 100) + (parseFloat(form.tip) || 0) : 0;
+  const amountNum = numberOr(form.amount, 0);
+  const commission = numberOr(form.commissionPct, 0);
+  const previewNet = amountNum > 0 ? amountNum * (1 - commission / 100) + numberOr(form.tip, 0) : 0;
 
-  const bump = (v: number) => setForm((f) => ({ ...f, amount: String((parseFloat(f.amount) || 0) + v) }));
+  const bump = (v: number) => set({ amount: String(numberOr(form.amount, 0) + v) });
 
   const submit = (event: MouseEvent<HTMLButtonElement>) => {
-    const amount = parseFloat(form.amount);
-    if (!amount || amount <= 0) return toast.error("הכנס סכום תקין");
+    const errs = validateIncome(form);
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      if (errs.tip) setShowMore(true);
+      return toast.error("יש שדה שצריך לתקן");
+    }
+    const amount = parseNumber(form.amount)!;
     const income = {
       date: form.date,
       amount,
       platform: "פרטי",
       commissionPct: commission,
-      tip: parseFloat(form.tip) || 0,
-      hours: parseFloat(form.hours) || 0,
-      km: parseFloat(form.km) || 0,
+      tip: numberOr(form.tip, 0),
+      hours: numberOr(form.hours, 0),
+      km: numberOr(form.km, 0),
       note: form.note.trim() || undefined,
     };
     const reachedGoal = crossedDailyGoal(data, income);
@@ -112,126 +190,292 @@ function IncomeForm() {
     const nextStreak = calculateWorkStreak([...data.incomes, { ...income, id: "streak-preview" }]);
     const id = addIncome(income);
     const firstIncomeToday = form.date === todayISO() && dayIncomes.length === 0;
-    const kind = reachedGoal ? "goal" : feedback.milestone === "break-even" ? "break-even" : firstIncomeToday && nextStreak.milestone ? "streak" : "income";
-    if (form.date === todayISO()) celebrate(kind, event.currentTarget, amount, c, { title: nextStreak.milestone && kind === "streak" ? `רצף של ${nextStreak.current} ימים` : feedback.title, message: feedback.message, streak: nextStreak.current });
+    const kind = reachedGoal
+      ? "goal"
+      : feedback.milestone === "break-even"
+        ? "break-even"
+        : firstIncomeToday && nextStreak.milestone
+          ? "streak"
+          : "income";
+    if (form.date === todayISO())
+      celebrate(kind, event.currentTarget, amount, c, {
+        title:
+          nextStreak.milestone && kind === "streak"
+            ? `רצף של ${nextStreak.current} ימים`
+            : feedback.title,
+        message: feedback.message,
+        streak: nextStreak.current,
+      });
     toast.success(`נוספה הכנסה · נטו ${fmt(previewNet, c)}`, {
       action: { label: "ביטול", onClick: () => removeIncome(id) },
     });
-    setForm({ ...form, amount: "", tip: "", hours: "", km: "", note: "" });
+    setForm((f) => ({ ...f, amount: "", tip: "", hours: "", km: "", note: "" }));
   };
 
   return (
-    <Card className="mt-4"><CardContent className="p-4 space-y-3">
-      <LiveReaction kind="income" amount={amountNum} />
-      <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
-      <Field label="סכום ברוטו ₪">
-        <Input className="num text-xl font-bold" style={{ height: "3.25rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" />
-      </Field>
-      <QuickAmounts steps={[20, 50, 100, 200]} onPick={bump} onClear={() => setForm({ ...form, amount: "" })} />
-      {amountNum > 0 && (
-        <div className="num text-sm font-medium text-primary">נטו אחרי עמלה: {fmt(previewNet, c)}</div>
-      )}
-      <div className="grid grid-cols-3 gap-3">
-        <Field label="עמלה %"><Input inputMode="decimal" value={form.commissionPct} onChange={(e) => setForm({ ...form, commissionPct: e.target.value })} /></Field>
-        <Field label="שעות"><Input inputMode="decimal" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} placeholder="0" /></Field>
-        <Field label="ק״מ"><Input inputMode="decimal" value={form.km} onChange={(e) => setForm({ ...form, km: e.target.value })} placeholder="0" /></Field>
-      </div>
-
-      <button type="button" onClick={() => setShowMore((v) => !v)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showMore ? "rotate-180" : ""}`} />
-        פרטים נוספים
-      </button>
-      {showMore && (
-        <div className="space-y-3 pt-1">
-          <Field label="תשר ₪"><Input inputMode="decimal" value={form.tip} onChange={(e) => setForm({ ...form, tip: e.target.value })} placeholder="0" /></Field>
-          <Field label="הערה"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
-        </div>
-      )}
-
-      <Button onClick={submit} className="reward-action w-full h-12 text-base font-semibold" size="lg">
-        {dayIncomes.length > 0 ? "הוסף לסכום היום" : "שמירת הכנסה"}
-      </Button>
-
-      {dayIncomes.length > 0 && (
-        <div className="rounded-xl border border-primary/15 bg-primary/5 p-3 text-center">
-          <div className="text-xs text-muted-foreground">סה״כ מצטבר לתאריך זה ({dayIncomes.length} רשומות)</div>
-          <div className="num mt-0.5 text-2xl font-extrabold text-primary">{fmt(dayNet, c)}</div>
-          <div className="text-xs text-muted-foreground">
-            ברוטו {fmt(dayGross, c)}
-            {dayHours > 0 && ` · ${dayHours} שעות · ${fmt(Math.round(dayNet / dayHours), c)} לשעה`}
-            {dayKm > 0 && ` · ${dayKm} ק״מ`}
+    <Card className="mt-4">
+      <CardContent className="p-4 space-y-3">
+        <LiveReaction kind="income" amount={amountNum} />
+        <Field label="תאריך">
+          <DateInput value={form.date} onChange={(date) => set({ date })} error={errors.date} />
+        </Field>
+        <Field label="סכום ברוטו ₪">
+          <NumberField
+            id="income-amount"
+            className="num text-xl font-bold"
+            style={{ height: "3.25rem" }}
+            value={form.amount}
+            onValueChange={(amount) => set({ amount })}
+            error={errors.amount}
+            placeholder="0"
+          />
+        </Field>
+        <QuickAmounts
+          steps={[20, 50, 100, 200]}
+          onPick={bump}
+          onClear={() => set({ amount: "" })}
+        />
+        {amountNum > 0 && (
+          <div className="num text-sm font-medium text-primary">
+            נטו אחרי עמלה: {fmt(previewNet, c)}
           </div>
+        )}
+        <div className="grid grid-cols-3 gap-3">
+          <Field label="עמלה %">
+            <NumberField
+              id="income-commission"
+              value={form.commissionPct}
+              onValueChange={(commissionPct) => {
+                commissionTouched.current = true;
+                set({ commissionPct });
+              }}
+              error={errors.commissionPct}
+            />
+          </Field>
+          <Field label="שעות">
+            <NumberField
+              id="income-hours"
+              value={form.hours}
+              onValueChange={(hours) => set({ hours })}
+              error={errors.hours}
+              placeholder="0"
+            />
+          </Field>
+          <Field label="ק״מ">
+            <NumberField
+              id="income-km"
+              value={form.km}
+              onValueChange={(km) => set({ km })}
+              error={errors.km}
+              placeholder="0"
+            />
+          </Field>
         </div>
-      )}
-    </CardContent></Card>
+
+        <button
+          type="button"
+          onClick={() => setShowMore((v) => !v)}
+          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <ChevronDown
+            className={`h-3.5 w-3.5 transition-transform ${showMore ? "rotate-180" : ""}`}
+          />
+          פרטים נוספים
+        </button>
+        {showMore && (
+          <div className="space-y-3 pt-1">
+            <Field label="תשר ₪">
+              <NumberField
+                id="income-tip"
+                value={form.tip}
+                onValueChange={(tip) => set({ tip })}
+                error={errors.tip}
+                placeholder="0"
+              />
+            </Field>
+            <Field label="הערה">
+              <Textarea
+                value={form.note}
+                onChange={(e) => setForm({ ...form, note: e.target.value })}
+                rows={2}
+              />
+            </Field>
+          </div>
+        )}
+
+        <Button
+          onClick={submit}
+          className="reward-action w-full h-12 text-base font-semibold"
+          size="lg"
+        >
+          {dayIncomes.length > 0 ? "הוסף לסכום היום" : "שמירת הכנסה"}
+        </Button>
+
+        {dayIncomes.length > 0 && (
+          <div className="rounded-xl border border-primary/15 bg-primary/5 p-3 text-center">
+            <div className="text-xs text-muted-foreground">
+              סה״כ מצטבר לתאריך זה ({dayIncomes.length} רשומות)
+            </div>
+            <div className="num mt-0.5 text-2xl font-extrabold text-primary">{fmt(dayNet, c)}</div>
+            <div className="text-xs text-muted-foreground">
+              ברוטו {fmt(dayGross, c)}
+              {dayHours > 0 &&
+                ` · ${dayHours} שעות · ${fmt(Math.round(dayNet / dayHours), c)} לשעה`}
+              {dayKm > 0 && ` · ${dayKm} ק״מ`}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
-
-const expenseCats: ExpenseCategory[] = ["insurance", "license", "maintenance", "parking", "food", "wash", "other"];
+const expenseCats: ExpenseCategory[] = [
+  "insurance",
+  "license",
+  "maintenance",
+  "parking",
+  "food",
+  "wash",
+  "other",
+];
 
 function ExpenseForm() {
   const { data, addExpense, removeExpense } = useAppData();
-  const [form, setForm] = useState({ date: todayISO(), category: "maintenance" as ExpenseCategory, amount: "", note: "" });
+  const [form, setForm] = useState({
+    date: todayISO(),
+    category: "maintenance" as ExpenseCategory,
+    amount: "",
+    note: "",
+  });
+  const [errors, setErrors] = useState<FieldErrors>({});
+  useRollingDate(
+    form.date,
+    useCallback((date) => setForm((f) => ({ ...f, date })), []),
+  );
   const c = data.settings.currency;
 
-  const bump = (v: number) => setForm((f) => ({ ...f, amount: String((parseFloat(f.amount) || 0) + v) }));
+  const bump = (v: number) => {
+    setForm((f) => ({ ...f, amount: String(numberOr(f.amount, 0) + v) }));
+    setErrors({});
+  };
 
   const submit = () => {
-    const amount = parseFloat(form.amount);
-    if (!amount || amount <= 0) return toast.error("הכנס סכום תקין");
-    const expense = { date: form.date, category: form.category, amount, note: form.note.trim() || undefined };
+    const errs = validateExpense(form);
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return toast.error("יש שדה שצריך לתקן");
+    const amount = parseNumber(form.amount)!;
+    const expense = {
+      date: form.date,
+      category: form.category,
+      amount,
+      note: form.note.trim() || undefined,
+    };
     const feedback = expenseMotivation(data, expense);
     const id = addExpense(expense);
-    if (form.date === todayISO()) celebrate("corrective", document.activeElement, Math.abs(feedback.delta), c, { title: feedback.title, message: feedback.message });
-    toast.success(`נוספה הוצאה · ${fmt(amount, c)}`, { action: { label: "ביטול", onClick: () => removeExpense(id) } });
-    setForm({ ...form, amount: "", note: "" });
+    if (form.date === todayISO())
+      celebrate("corrective", document.activeElement, Math.abs(feedback.delta), c, {
+        title: feedback.title,
+        message: feedback.message,
+      });
+    toast.success(`נוספה הוצאה · ${fmt(amount, c)}`, {
+      action: { label: "ביטול", onClick: () => removeExpense(id) },
+    });
+    setForm((f) => ({ ...f, amount: "", note: "" }));
   };
 
   return (
-    <Card className="mt-4"><CardContent className="p-4 space-y-3">
-      <LiveReaction kind="expense" amount={parseFloat(form.amount) || 0} />
-      <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
-      <Field label="קטגוריה">
-        <div className="grid grid-cols-4 gap-2">
-          {expenseCats.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setForm({ ...form, category: cat })}
-              className={`rounded-xl border px-2 py-2 text-[11px] font-medium leading-tight transition-colors ${
-                form.category === cat ? "border-primary bg-primary/10 text-primary" : "border-border bg-muted/40 text-muted-foreground"
-              }`}
-            >
-              {categoryLabel(cat)}
-            </button>
-          ))}
-        </div>
-      </Field>
-      <Field label="סכום ₪"><Input className="num text-xl font-bold" style={{ height: "3.25rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" /></Field>
-      <QuickAmounts steps={[10, 20, 50, 100]} onPick={bump} onClear={() => setForm({ ...form, amount: "" })} />
-      <Field label="הערה (אופציונלי)"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
-      <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">שמירת הוצאה</Button>
-    </CardContent></Card>
+    <Card className="mt-4">
+      <CardContent className="p-4 space-y-3">
+        <LiveReaction kind="expense" amount={numberOr(form.amount, 0)} />
+        <Field label="תאריך">
+          <DateInput
+            value={form.date}
+            onChange={(date) => {
+              setForm({ ...form, date });
+              setErrors({});
+            }}
+            error={errors.date}
+          />
+        </Field>
+        <Field label="קטגוריה">
+          <div className="grid grid-cols-4 gap-2">
+            {expenseCats.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setForm({ ...form, category: cat })}
+                className={`rounded-xl border px-2 py-2 text-[11px] font-medium leading-tight transition-colors ${
+                  form.category === cat
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-muted/40 text-muted-foreground"
+                }`}
+              >
+                {categoryLabel(cat)}
+              </button>
+            ))}
+          </div>
+        </Field>
+        <Field label="סכום ₪">
+          <NumberField
+            id="expense-amount"
+            className="num text-xl font-bold"
+            style={{ height: "3.25rem" }}
+            value={form.amount}
+            onValueChange={(amount) => {
+              setForm({ ...form, amount });
+              setErrors({});
+            }}
+            error={errors.amount}
+            placeholder="0"
+          />
+        </Field>
+        <QuickAmounts
+          steps={[10, 20, 50, 100]}
+          onPick={bump}
+          onClear={() => setForm({ ...form, amount: "" })}
+        />
+        <Field label="הערה (אופציונלי)">
+          <Textarea
+            value={form.note}
+            onChange={(e) => setForm({ ...form, note: e.target.value })}
+            rows={2}
+          />
+        </Field>
+        <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">
+          שמירת הוצאה
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
 function FuelForm() {
   const { data, addExpense, removeExpense } = useAppData();
   const [form, setForm] = useState({ date: todayISO(), amount: "", note: "" });
+  const [errors, setErrors] = useState<FieldErrors>({});
+  useRollingDate(
+    form.date,
+    useCallback((date) => setForm((f) => ({ ...f, date })), []),
+  );
   const c = data.settings.currency;
 
-  const amountNum = parseFloat(form.amount) || 0;
+  const amountNum = numberOr(form.amount, 0);
   const price = data.settings.fuelPrice || 0;
   const units = price > 0 ? amountNum / price : 0;
   const isElectric = data.vehicle.type === "electric";
   const unitLabel = isElectric ? "kWh" : "ליטר";
 
-  const bump = (v: number) => setForm((f) => ({ ...f, amount: String((parseFloat(f.amount) || 0) + v) }));
+  const bump = (v: number) => {
+    setForm((f) => ({ ...f, amount: String(numberOr(f.amount, 0) + v) }));
+    setErrors({});
+  };
 
   const submit = () => {
-    const amount = parseFloat(form.amount);
-    if (!amount || amount <= 0) return toast.error("הכנס סכום תקין");
+    const errs = validateExpense(form);
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return toast.error("יש שדה שצריך לתקן");
+    const amount = parseNumber(form.amount)!;
     const expense = {
       date: form.date,
       category: "fuel" as const,
@@ -241,31 +485,97 @@ function FuelForm() {
     } satisfies Omit<Expense, "id">;
     const feedback = expenseMotivation(data, expense);
     const id = addExpense(expense);
-    if (form.date === todayISO()) celebrate("corrective", document.activeElement, Math.abs(feedback.delta), c, { title: feedback.title, message: feedback.message });
+    if (form.date === todayISO())
+      celebrate("corrective", document.activeElement, Math.abs(feedback.delta), c, {
+        title: feedback.title,
+        message: feedback.message,
+      });
     toast.success(`${isElectric ? "טעינה נרשמה" : "תדלוק נרשם"} · ${fmt(amount, c)}`, {
       action: { label: "ביטול", onClick: () => removeExpense(id) },
     });
-    setForm({ ...form, amount: "", note: "" });
+    setForm((f) => ({ ...f, amount: "", note: "" }));
   };
 
   const label = isElectric ? "כמה עלתה הטעינה?" : "כמה עלה התדלוק?";
 
   return (
-    <Card className="mt-4"><CardContent className="p-4 space-y-3">
-      <LiveReaction kind="fuel" amount={amountNum} />
-      <Field label="תאריך"><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></Field>
-      <Field label={label}>
-        <Input className="num text-2xl font-bold text-center" style={{ height: "3.75rem" }} inputMode="decimal" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" />
-      </Field>
-      <QuickAmounts steps={[50, 100, 200, 300]} onPick={bump} onClear={() => setForm({ ...form, amount: "" })} />
-      {amountNum > 0 && price > 0 && (
-        <div className="num text-center text-sm text-muted-foreground">
-          ≈ {units.toFixed(1)} {unitLabel} לפי {price} ₪ ל{unitLabel}
-        </div>
+    <Card className="mt-4">
+      <CardContent className="p-4 space-y-3">
+        <LiveReaction kind="fuel" amount={amountNum} />
+        <Field label="תאריך">
+          <DateInput
+            value={form.date}
+            onChange={(date) => {
+              setForm({ ...form, date });
+              setErrors({});
+            }}
+            error={errors.date}
+          />
+        </Field>
+        <Field label={label}>
+          <NumberField
+            id="fuel-amount"
+            className="num text-2xl font-bold text-center"
+            style={{ height: "3.75rem" }}
+            value={form.amount}
+            onValueChange={(amount) => {
+              setForm({ ...form, amount });
+              setErrors({});
+            }}
+            error={errors.amount}
+            placeholder="0"
+          />
+        </Field>
+        <QuickAmounts
+          steps={[50, 100, 200, 300]}
+          onPick={bump}
+          onClear={() => setForm({ ...form, amount: "" })}
+        />
+        {amountNum > 0 && price > 0 && (
+          <div className="num text-center text-sm text-muted-foreground">
+            ≈ {units.toFixed(1)} {unitLabel} לפי {price} ₪ ל{unitLabel}
+          </div>
+        )}
+        <Field label="הערה (אופציונלי)">
+          <Textarea
+            value={form.note}
+            onChange={(e) => setForm({ ...form, note: e.target.value })}
+            rows={2}
+          />
+        </Field>
+        <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">
+          שמירה
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Date picker with a required-field message. */
+function DateInput({
+  value,
+  onChange,
+  error,
+}: {
+  value: string;
+  onChange: (d: string) => void;
+  error?: string;
+}) {
+  return (
+    <>
+      <Input
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-invalid={error ? true : undefined}
+        className={error ? "border-destructive" : undefined}
+      />
+      {error && (
+        <p className="text-[11px] font-medium text-destructive" role="alert">
+          {error}
+        </p>
       )}
-      <Field label="הערה (אופציונלי)"><Textarea value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} /></Field>
-      <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">שמירה</Button>
-    </CardContent></Card>
+    </>
   );
 }
 
