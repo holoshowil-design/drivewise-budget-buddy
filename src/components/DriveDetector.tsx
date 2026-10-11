@@ -11,6 +11,7 @@ import {
   notifyIfHidden,
   requestNotifyPermission,
 } from "@/lib/active-trip";
+import { watchLocation } from "@/lib/location";
 
 const SNOOZE_KEY = "driver-detect-snooze";
 const MIN_SPEED_KMH = 15;
@@ -57,14 +58,14 @@ export function DriveDetector() {
 
   useEffect(() => {
     if (!enabled || hasActive || prompt) return;
-    if (typeof navigator === "undefined" || !navigator.geolocation) return;
-    const id = navigator.geolocation.watchPosition(
-      (pos) => {
+    // Foreground only, also in the installed app (no background notification).
+    return watchLocation(
+      (fix) => {
         const snooze = Number(localStorage.getItem(SNOOZE_KEY) || 0);
         if (Date.now() < snooze) return;
-        if ((pos.coords.accuracy ?? 999) > 80) return;
-        const point = { lat: pos.coords.latitude, lon: pos.coords.longitude, t: pos.timestamp };
-        let speed = pos.coords.speed != null ? pos.coords.speed * 3.6 : null;
+        if (fix.accuracy > 80) return;
+        const point = { lat: fix.lat, lon: fix.lon, t: fix.time };
+        let speed = fix.speedKmh;
         const prev = lastRef.current;
         if (speed == null && prev) {
           const dt = (point.t - prev.t) / 1000;
@@ -85,9 +86,8 @@ export function DriveDetector() {
         }
       },
       () => {},
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 },
+      { maximumAge: 5000, timeout: 30000 },
     );
-    return () => navigator.geolocation.clearWatch(id);
   }, [enabled, hasActive, prompt]);
 
   const yes = () => {
