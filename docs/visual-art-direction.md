@@ -241,6 +241,8 @@ vector, anime, pixar style, photo.
 | `src/components/DriverMascot.tsx`, `CaricatureTaxi.tsx` | מחיקה | רק אחרי שאַרי מאשר את הסט החדש בטלפון |
 | `public/anim/` (חדש) | הנכסים | |
 
+**כבר נבנה (12 באוקטובר, לפני שיש ציורים, עדיין לא מחובר לאפליקציה):** `src/lib/anim/timing.ts`, `src/lib/anim/motion.ts` (מתי מותר לנגן), `src/components/anim/FrameStrip.tsx` ו-`src/lib/humor/lines.ts`, עם טסטים ב-`src/lib/humor.test.ts`.
+
 **לא נוגעים ב:** חישובי כסף, מבנה `AppData` (מלבד השדה האופציונלי), וקבצים של Lovable.
 
 ---
@@ -264,6 +266,8 @@ vector, anime, pixar style, photo.
 ### 9ב. ספריית דיאלוג מקורית
 
 ק = הקפטן, ט = טורבו. `{amount}` = סכום, `{name}` = שם, `{km}` = קילומטרים, `{n}` = מספר ימים.
+
+**הנוסח הסופי נמצא בקוד, ב-`src/lib/humor/lines.ts`.** שם השורות קוצרו לעד 40 תווים בבועה, וטסט בודק את זה. הטבלה כאן מתארת את הכוונה.
 
 | אירוע | שורה | מנגנון |
 | --- | --- | --- |

@@ -1,0 +1,57 @@
+# פרומפטים לסבב חקר הדמויות (שלב ב)
+
+**מטרה:** 6 גרסאות לקפטן ו-6 לטורבו. אַרי בוחר אחת מכל דמות, והיא הופכת לתמונת הייחוס של כל השלבים הבאים.
+**מודל:** `nano_banana_pro` ב-Higgsfield, 2 קרדיטים לתמונה, 24 קרדיטים לכל הסבב.
+**כלל:** הפרומפטים מתארים את תכונות הסגנון, ולא מזכירים את הסרט, את דיסני או אמנים בשמם. אחרת המודל נוטה להחזיר את הדמויות המקוריות.
+
+כל פרומפט מורכב מ**בסיס הסגנון** ומ**תיאור הגרסה**.
+
+## בסיס הסגנון (משותף לכל 12)
+
+```text
+Original cartoon character design, not based on any existing character.
+STYLE: early-1960s hand-drawn feature animation printed by xerography.
+THIN, nervous graphite pencil line (about 1% of the head height) transferred
+straight to cel: scratchy, subtle variable line weight, tapered ends, small
+breaks, small interior lines for wrinkles, folds and knuckles, a few
+construction lines left in. Flat gouache colour fills, slightly misregistered
+from the line (2-4 px), no gradients, no highlights, no soft shading.
+Economical British-style caricature with believable anatomy, fleshy shapes
+and clear joints. Expressive hands with articulated knuckles.
+PALETTE ONLY: warm ink #231F1C, cream paper #F3EAD3, muted green #4E8C5E,
+mustard #E8B43A, slate #4A5B70, vermilion accent #D8553A.
+FRAMING: single character, full body, centred, plain cream paper background,
+no text, no logo, no frame.
+AVOID: thick marker outline, uniform bold stroke, clean vector line, brown flat
+cap, green flat cap, orange scarf, bald head with spiky tufts, turtleneck
+sweater, dalmatians, spotted dogs, stubble, 3D render, glossy vector, anime,
+pixar style, photo.
+```
+
+## הקפטן (יחס 2:3, מבט 3/4 שמאלה, ידיים על המותניים)
+
+| # | הכיוון | תיאור הגרסה (נוסף לבסיס) |
+| --- | --- | --- |
+| C1 | הבסיס מהמפרט | `CHARACTER: a tall, lanky Israeli taxi driver, about 4.5 heads tall, narrow sloping shoulders, long arms. Long face with an angular jaw and a big hooked nose, small heavy-lidded eyes under thick eyebrows, a thick broad moustache. Peaked driver's cap in slate with a small mustard steering-wheel badge. Muted green jacket, thin vermilion tie, slate trousers, long pointed black shoes. POSE: three-quarter view facing left, both fists on hips, chin raised, smug quiet confidence.` |
+| C2 | גבוה וכפוף | `CHARACTER: an extremely tall, stooped taxi driver with a long neck pushed forward like a heron, peaked slate driver's cap pushed back on the head, big hooked nose, moustache with curled-up ends, tiny eyes, muted green jacket hanging loosely, thin vermilion tie, slate trousers, huge pointed shoes. POSE: three-quarter view facing left, one hand on hip, the other pointing up with a raised index finger, as if announcing a plan.` |
+| C3 | פנים אגס | `CHARACTER: a tall thin taxi driver with a pear-shaped head: narrow forehead, heavy drooping jowls, droopy walrus moustache, heavy-lidded sleepy eyes, big fleshy nose. Peaked slate driver's cap slightly too small for his head, mustard badge. Muted green jacket, thin vermilion tie, slate trousers. POSE: three-quarter view facing left, hands on hips, eyes glancing sideways at the viewer.` |
+| C4 | ראש טריז | `CHARACTER: a lanky taxi driver with a wedge-shaped head, sharp angular cheekbones, big hooked nose, very bushy eyebrows that hide most of his small eyes, a wide bristly moustache that hides his mouth. Peaked slate driver's cap tilted forward over the brows, mustard steering-wheel badge. Muted green jacket with sharp lapels, thin vermilion tie, slate trousers, long pointed shoes. POSE: three-quarter view facing left, arms crossed, one eyebrow raised.` |
+| C5 | ראש קטן על גוף ארוך | `CHARACTER: a taxi driver with a small head on a very long thin body and long thin legs, big hooked nose, thick moustache, smug half-smile, small eyes. Tall peaked slate driver's cap with a mustard badge. Muted green driver's jacket buttoned high, thin vermilion tie, slate trousers. POSE: three-quarter view facing left, one hand on hip, the other holding a folded banknote between two fingers.` |
+| C6 | אפוד וז'קט פתוח | `CHARACTER: a tall lanky taxi driver, long angular face, big hooked nose, thick broad moustache, heavy-lidded eyes, deep smile lines. Peaked slate driver's cap with a mustard badge. Open muted green jacket over a cream waistcoat, thin vermilion tie, slate trousers, long pointed shoes. POSE: three-quarter view facing left, thumbs hooked in the waistcoat pockets, leaning back with pride.` |
+
+## טורבו (יחס 3:2, מהצד, החזית פונה שמאלה)
+
+| # | הכיוון | תיאור הגרסה (נוסף לבסיס) |
+| --- | --- | --- |
+| T1 | בועה עגולה | `CHARACTER: a small round 1950s-style taxi car with a face, body almost fits inside a circle, mustard paint with a black-and-cream checker band along the side, a small cream roof sign, slate-blue windows. The headlights are big round eyes with chrome eyelids, the grille is a wide smiling mouth with chrome teeth, the side mirrors are ears. Generic invented car, no real brand, no badge. POSE: side view facing left, face turned slightly toward the viewer, happy and eager, slight bounce on its suspension.` |
+| T2 | ביצה גבוהה | `CHARACTER: a tall egg-shaped little taxi car with a face, big chrome bumper like a jutting chin, mustard paint, checker band, small roof sign, round headlight eyes with chrome eyelids, grille mouth with teeth, mirror ears. Generic invented car, no real brand. POSE: side view facing left, leaning forward eagerly on its front wheels.` |
+| T3 | נמוך ורחב | `CHARACTER: a squat, wide, low little taxi car with a bulldog stance and fat tyres, mustard paint, checker band, small roof sign, heavy-lidded round headlight eyes, wide grille mouth, mirror ears. Generic invented car, no real brand. POSE: side view facing left, chest out, determined.` |
+| T4 | לחיים בכנפיים | `CHARACTER: a rounded little taxi car whose front fenders bulge like chubby cheeks, mustard paint, checker band, small roof sign, round headlight eyes set in the cheeks, small grille mouth, mirror ears, windshield wipers like eyebrows. Generic invented car, no real brand. POSE: side view facing left, cheeks puffed, about to honk.` |
+| T5 | גלגלים גדולים | `CHARACTER: a small round taxi car with oversized cartoon wheels like big feet, mustard paint, checker band, small roof sign, round headlight eyes, grille mouth with teeth, mirror ears. Generic invented car, no real brand. POSE: side view facing left, mid-hop with all four wheels off the ground, joyful.` |
+| T6 | מצח שמשה | `CHARACTER: a rounded little taxi car with a tall curved windshield like a big forehead, wipers as expressive eyebrows, mustard paint, checker band, small roof sign, round headlight eyes, grille mouth, mirror ears. Generic invented car, no real brand. POSE: side view facing left, wipers raised in surprise.` |
+
+## אחרי הסבב
+
+1. מציגים לאַרי את 12 התמונות.
+2. כל תמונה עוברת את רשימת הבדיקה בסעיף 10 של `visual-art-direction.md`.
+3. התמונה שנבחרת נשמרת כתמונת ייחוס, ומשם מייצרים את דף הדמויות (שלב ג).
