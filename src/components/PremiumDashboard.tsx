@@ -66,23 +66,6 @@ export function DailyProfitGauge({
           role="img"
           aria-label={`${Math.round(targetPct)} אחוז מהיעד`}
         >
-          <defs>
-            <linearGradient id="profitGaugeBefore" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stopColor="var(--warning)" />
-              <stop offset="1" stopColor="var(--hud-neutral)" />
-            </linearGradient>
-            <linearGradient id="profitGaugeAfter" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stopColor="var(--primary)" />
-              <stop offset="1" stopColor="var(--hud-accent)" />
-            </linearGradient>
-            <filter id="gaugeGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
           <path
             d="M 30 108 A 80 80 0 0 1 190 108"
             className="gauge-track"
@@ -92,10 +75,9 @@ export function DailyProfitGauge({
             d="M 30 108 A 80 80 0 0 1 190 108"
             className="gauge-value"
             pathLength={pathLength}
-            stroke={passedBreakEven ? "url(#profitGaugeAfter)" : "url(#profitGaugeBefore)"}
+            stroke={passedBreakEven ? "var(--hud-good)" : "var(--hud-accent)"}
             strokeDasharray={pathLength}
             strokeDashoffset={dashOffset}
-            filter={passedBreakEven ? "url(#gaugeGlow)" : undefined}
           />
           <g className="gauge-ticks">
             {Array.from({ length: 11 }, (_, i) => {
@@ -116,8 +98,8 @@ export function DailyProfitGauge({
             <path d="M107 108 L110 46 L113 108 Z" />
             <circle cx="110" cy="108" r="7" />
           </g>
-          <circle cx="30" cy="108" r="3" fill="var(--warning)" />
-          <circle cx="190" cy="108" r="3" fill="var(--hud-accent)" />
+          <circle cx="30" cy="108" r="3" fill="var(--hud-accent)" />
+          <circle cx="190" cy="108" r="3" fill="var(--hud-good)" />
         </svg>
         <div className="absolute inset-x-0 bottom-0 text-center">
           <CountUp
@@ -240,9 +222,7 @@ export function MomentumCoach({ data }: { data: AppData }) {
       className={`momentum-coach momentum-coach-${state.tone}`}
       aria-live="polite"
     >
-      <div className="coach-stage" aria-hidden="true">
-        <span className="coach-stage-sun" />
-        <span className="page-stage-floor" />
+      <div className="coach-stage stage-bg stage-street" aria-hidden="true">
         <MovieStage
           morning
           base={{

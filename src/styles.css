@@ -50,48 +50,49 @@
 
 :root {
   --radius: 0.75rem;
-  /* Clean light theme */
-  --background: oklch(0.982 0.008 155);
-  --foreground: oklch(0.235 0.025 155);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0 0);
-  --primary: oklch(0.66 0.19 153);
-  --primary-foreground: oklch(1 0 0);
-  --primary-glow: oklch(0.72 0.2 152);
-  --secondary: oklch(0.96 0 0);
-  --secondary-foreground: oklch(0.2 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.48 0 0);
-  --accent: oklch(0.62 0.18 152);
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.6 0.22 25);
-  --destructive-foreground: oklch(1 0 0);
-  --success: oklch(0.62 0.18 152);
-  --success-foreground: oklch(1 0 0);
-  --warning: oklch(0.72 0.17 75);
-  --warning-foreground: oklch(0.2 0 0);
-  --border: oklch(0.92 0 0);
-  --input: oklch(0.94 0 0);
-  --ring: oklch(0.62 0.18 152);
-  --chart-1: oklch(0.62 0.18 152);
-  --chart-2: oklch(0.6 0.18 230);
-  --chart-3: oklch(0.72 0.17 75);
-  --chart-4: oklch(0.6 0.22 25);
-  --chart-5: oklch(0.6 0.2 310);
+  /* 1961 paper palette (docs/visual-art-direction.md): warm ink, cream paper, flat muted fills.
+     Text colours keep at least 4.5:1 on paper and on cards. */
+  --background: #f3ead3;
+  --foreground: #231f1c;
+  --card: #fbf6e9;
+  --card-foreground: #231f1c;
+  --popover: #fbf6e9;
+  --popover-foreground: #231f1c;
+  --primary: #3b7049;
+  --primary-foreground: #fffbf0;
+  --primary-glow: #4e8c5e;
+  --secondary: #eadfc6;
+  --secondary-foreground: #231f1c;
+  --muted: #eadfc6;
+  --muted-foreground: #6b6155;
+  --accent: #e8dcbf;
+  --accent-foreground: #231f1c;
+  --destructive: #b4412a;
+  --destructive-foreground: #fffbf0;
+  --success: #3b7049;
+  --success-foreground: #fffbf0;
+  --warning: #8a6410;
+  --warning-foreground: #231f1c;
+  --border: #d6c9ab;
+  --input: #cfc0a0;
+  --ring: #3b7049;
+  --chart-1: #4e8c5e;
+  --chart-2: #4a5b70;
+  --chart-3: #e8b43a;
+  --chart-4: #d8553a;
+  --chart-5: #7fa3b5;
 
-  --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-glow));
-  --shadow-glow: 0 10px 30px -10px color-mix(in oklab, var(--primary) 40%, transparent);
-  --shadow-card: 0 1px 2px color-mix(in oklab, black 4%, transparent), 0 4px 12px color-mix(in oklab, black 4%, transparent);
-  --shadow-premium: 0 18px 45px -26px color-mix(in oklab, var(--foreground) 28%, transparent);
-  --hud-background: oklch(0.16 0.025 155);
-  --hud-surface: oklch(0.22 0.035 155);
-  --hud-foreground: oklch(0.98 0.01 155);
-  --hud-muted: oklch(0.76 0.025 155);
-  --hud-accent: oklch(0.82 0.22 151);
-  --hud-neutral: oklch(0.72 0.03 155);
-  --hud-border: oklch(0.42 0.05 155 / 0.5);
+  --gradient-primary: linear-gradient(var(--primary), var(--primary));
+  --shadow-glow: 0 0 0 transparent;
+  --shadow-card: 2px 2px 0 color-mix(in oklab, var(--foreground) 14%, transparent);
+  --shadow-premium: 3px 3px 0 color-mix(in oklab, var(--foreground) 14%, transparent);
+  --hud-background: #34414f;
+  --hud-surface: #435266;
+  --hud-foreground: #f6efdc;
+  --hud-muted: #c5c0b0;
+  --hud-accent: #e8b43a;
+  --hud-neutral: #8d98a5;
+  --hud-border: rgb(246 239 220 / 0.22);
 }
 
 @layer base {
@@ -182,11 +183,10 @@
 
 /* Card hover lift */
 .card-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease;
 }
 .card-lift:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-card), 0 8px 24px -8px color-mix(in oklab, black 8%, transparent);
 }
 
 /* Stagger delays for children */
@@ -284,83 +284,188 @@
   transform: scale(0.97);
 }
 
+/* =====================================================================
+   1961 PAPER WORLD — cream paper, a thin pencil line, and flat colour
+   that slips a few pixels off the line, like a xerox cel printed out of
+   register. Rules: docs/visual-art-direction.md. No glows, no colour
+   gradients, no live filters.
+   ===================================================================== */
+:root {
+  --ink: #231f1c;
+  --paper: #f3ead3;
+  --paper-shade: #e8dbbb;
+  --mustard: #e8b43a;
+  --slate: #4a5b70;
+  --vermilion: #d8553a;
+  --green-tint: #dde8d2;
+  --mustard-tint: #f6e4b3;
+  --vermilion-tint: #f3d2c5;
+  --slate-tint: #dfe2df;
+  --hud-good: #a8d29c;
+  /* the line, how far the fill slips off it, and the hand-cut corners */
+  --line: 1.5px;
+  --slip: 3px;
+  --wobble: 15px 18px 14px 17px / 17px 14px 18px 15px;
+  --wobble-sm: 10px 12px 9px 11px / 11px 9px 12px 10px;
+  /* paints of the older SVG cast */
+  --skin: oklch(0.83 0.07 55);
+  --skin-shade: oklch(0.72 0.08 45);
+  --cap: oklch(0.38 0.04 60);
+  --pants: oklch(0.33 0.03 250);
+  --gold: var(--mustard);
+  --taxi: var(--mustard);
+  --ink-shadow: var(--slip) var(--slip) 0 color-mix(in oklab, var(--ink) 18%, transparent);
+  --ink-shadow-sm: 2px 2px 0 color-mix(in oklab, var(--ink) 18%, transparent);
+  --font-comic: "Karantina", "Secular One", "Sora", sans-serif;
+}
+
+body {
+  background: var(--paper) url("/textures/paper.webp") 0 0 / 256px 256px;
+}
+
+/* ---- cels: one recipe for every inked surface ----
+   The fill is painted 3px down and to the side of the line: inside the box as a
+   shifted background, outside it as a hard shadow of the same colour. Each kind
+   of surface only picks its --fill (and sometimes --slip or the corners). */
+.ink-card, .premium-panel, .premium-stat, .momentum-coach, .weekly-detail, .profit-hero,
+.comic-bubble, .ms-quip, .coach-streak, .reward-ceremony-card, .reward-message, .reward-continue,
+[role="tablist"], [role="tab"][data-state="active"],
+:is(button, a)[class~="bg-primary"], :is(button, a)[class~="bg-destructive"],
+:is(button, a)[class~="bg-secondary"], :is(button, a)[class~="border-input"]:not([role="combobox"]) {
+  --fill: var(--card);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--wobble);
+  background: linear-gradient(var(--fill), var(--fill)) var(--slip) var(--slip) / 100% 100% no-repeat border-box;
+  box-shadow: var(--slip) var(--slip) 0 var(--fill);
+}
+.ink-card, .premium-panel, .premium-stat, .momentum-coach, .weekly-detail { position: relative; }
+
+/* buttons: the colour snaps back into register while pressed */
+:is(button, a)[class~="bg-primary"] { --fill: var(--primary); border-radius: var(--wobble-sm); color: var(--primary-foreground); font-weight: 800; }
+:is(button, a)[class~="bg-destructive"] { --fill: var(--destructive); border-radius: var(--wobble-sm); color: var(--destructive-foreground); }
+:is(button, a)[class~="bg-secondary"] { --fill: var(--secondary); --slip: 2px; border-radius: var(--wobble-sm); }
+:is(button, a)[class~="border-input"]:not([role="combobox"]) { --slip: 2px; border-radius: var(--wobble-sm); }
+:is(button, a):is([class~="bg-primary"], [class~="bg-destructive"], [class~="bg-secondary"], [class~="border-input"]):not(:disabled):active,
+.reward-continue:active {
+  background-position: 0 0;
+  box-shadow: 0 0 0 transparent;
+}
+:is(button, a):is([class~="bg-primary"], [class~="bg-destructive"], [class~="bg-secondary"], [class~="border-input"]):focus-visible,
+[role="tab"]:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* tabs: a paper-shade strip, the chosen tab is a small card on it */
+[role="tablist"] { --fill: var(--paper-shade); --slip: 2px; border-radius: 12px 14px 11px 13px / 13px 11px 14px 12px; }
+[role="tab"][data-state="active"] { --slip: 2px; border-radius: var(--wobble-sm); color: var(--ink); }
+
+/* fields stay in register, so typing never looks off; focus slips a mustard edge */
+input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), textarea, [role="combobox"] {
+  border: var(--line) solid var(--ink);
+  border-radius: 10px 12px 9px 11px / 11px 9px 12px 10px;
+  background-color: var(--card);
+}
+:is(input, textarea, [role="combobox"]):focus-visible {
+  outline: none;
+  box-shadow: 3px 3px 0 var(--mustard);
+}
+[role="switch"] { border: var(--line) solid var(--ink); }
+[role="switch"] > span { border: 1px solid var(--ink); box-shadow: none; }
+[role="checkbox"] { border-color: var(--ink); }
+[role="dialog"], [role="alertdialog"] { border-color: var(--ink); box-shadow: var(--shadow-premium); }
+
+/* bottom navigation: paper strip with a pencil top edge; the add button is Turbo's mustard */
+.ink-nav { border-top: var(--line) solid var(--ink); background: var(--paper) url("/textures/paper.webp") 0 0 / 256px 256px; }
+.ink-nav [aria-current="page"] svg { animation: nav-hop .5s cubic-bezier(.3,1.8,.4,1); }
+@keyframes nav-hop { 0% { transform: translateY(0) scale(1,1); } 30% { transform: translateY(2px) scale(1.25,.75); } 60% { transform: translateY(-7px) scale(.85,1.2); } 100% { transform: none; } }
+.nav-fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin-top: -1.5rem;
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  color: var(--ink);
+  background: radial-gradient(circle 1.625rem at calc(50% + 3px) calc(50% + 3px), var(--mustard) 98%, transparent 100%);
+  box-shadow: 3px 3px 0 var(--mustard);
+}
+a:active > .nav-fab { background: var(--mustard); box-shadow: 0 0 0 transparent; }
+
+/* typography: ink letters with a mustard print slipped behind them */
+.ink-title, h1.font-display { font-family: "Secular One", var(--font-display); font-weight: 400; letter-spacing: 0; color: var(--ink); text-shadow: 2px 2px 0 var(--mustard); }
+h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
+
 /* ---- Premium dashboard ---- */
 .profit-hero {
-  position: relative;
+  --fill: var(--hud-background);
   overflow: hidden;
-  border: 1px solid var(--hud-border);
-  border-radius: 1.75rem;
-  background: var(--hud-background);
-  box-shadow: 0 24px 50px -28px color-mix(in oklab, var(--primary) 55%, transparent);
   padding: 1.25rem;
-}
-.profit-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(145deg, color-mix(in oklab, var(--primary) 15%, transparent), transparent 42%);
-  pointer-events: none;
+  border-radius: 20px 24px 18px 22px / 22px 18px 24px 20px;
+  color: var(--hud-foreground);
 }
 .gauge-track,
 .gauge-value {
   fill: none;
-  stroke-width: 13;
+  stroke-width: 12;
   stroke-linecap: round;
 }
 .gauge-track { stroke: var(--hud-surface); }
 .gauge-value { transition: stroke-dashoffset 1s cubic-bezier(.22, 1, .36, 1); }
+.gauge-ticks line { stroke: var(--hud-foreground); stroke-width: 1.6; stroke-linecap: round; opacity: .55; }
+.gauge-needle { transform-origin: 110px 108px; transform-box: view-box; transition: transform 1.6s cubic-bezier(.25,1.8,.35,1); }
+.gauge-needle path { fill: var(--vermilion); stroke: var(--ink); stroke-width: 1.4; }
+.gauge-needle circle { fill: var(--hud-foreground); stroke: var(--ink); stroke-width: 1.6; }
+.profit-hero-achieved .gauge-needle path { fill: var(--hud-good); }
 .status-chip {
   display: inline-flex;
   max-width: 10rem;
   align-items: center;
   border-radius: 999px;
-  padding: .3rem .55rem;
+  padding: .28rem .6rem;
   font-size: .625rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.2;
+  color: var(--ink);
 }
-.status-chip-success { background: color-mix(in oklab, var(--success) 13%, transparent); color: var(--success); }
-.status-chip-neutral { background: color-mix(in oklab, var(--warning) 14%, transparent); color: var(--warning); }
-.status-chip-danger { background: color-mix(in oklab, var(--destructive) 11%, transparent); color: var(--destructive); }
-.premium-stat,
-.premium-panel {
-  border: 1px solid var(--border);
-  background: color-mix(in oklab, var(--card) 94%, transparent);
-  box-shadow: var(--shadow-premium);
-}
-.premium-stat { min-height: 7.5rem; border-radius: 1rem; padding: 1rem; transition: transform .2s ease, box-shadow .2s ease; }
-.premium-stat:hover { transform: translateY(-2px); box-shadow: 0 20px 46px -28px color-mix(in oklab, var(--foreground) 38%, transparent); }
-.premium-panel { border-radius: 1.25rem; padding: 1rem; }
-.drive-mode-button { box-shadow: 0 14px 34px -20px color-mix(in oklab, var(--primary) 75%, transparent); }
+.status-chip-success { background: var(--hud-good); }
+.status-chip-neutral { background: var(--mustard); }
+.status-chip-danger { background: var(--vermilion-tint); }
+.premium-stat { min-height: 7.5rem; padding: 1rem; }
+.premium-stat::after { content: ""; position: absolute; inset-inline-end: 10px; bottom: 10px; width: 24px; height: 12px; background: repeating-linear-gradient(-45deg, var(--ink) 0 1px, transparent 1px 4px); opacity: .16; }
+.premium-panel { padding: 1rem; }
 .weekly-bar {
   width: 100%;
   min-height: .5rem;
   max-width: 2rem;
-  border-radius: .5rem .5rem .18rem .18rem;
-  background: color-mix(in oklab, var(--primary) 22%, var(--muted));
-  transition: height .55s cubic-bezier(.22, 1, .36, 1), background-color .2s ease, box-shadow .2s ease, transform .2s ease;
+  border: 1.2px solid var(--ink);
+  border-radius: 6px 7px 2px 2px;
+  background: var(--green-tint);
+  transform-origin: bottom;
+  transition: height .55s cubic-bezier(.22, 1, .36, 1), background-color .2s ease;
+  animation: bar-grow .8s cubic-bezier(.3,1.7,.4,1) both;
 }
-.weekly-bar-active { background: var(--primary); box-shadow: 0 0 18px color-mix(in oklab, var(--primary) 45%, transparent); transform: scaleX(1.08); }
-.weekly-bar-negative { background: color-mix(in oklab, var(--destructive) 35%, var(--muted)); }
+.weekly-bar-active { background: var(--primary); box-shadow: 2px 2px 0 var(--mustard); }
+.weekly-bar-negative { background: var(--vermilion-tint); }
 .weekly-bar-negative.weekly-bar-active { background: var(--destructive); }
+/* today is hatched in pencil until it is picked */
+.weekly-bar-today:not(.weekly-bar-active) { background-image: repeating-linear-gradient(-45deg, transparent 0 3px, color-mix(in oklab, var(--primary) 45%, transparent) 3px 4.5px); }
+@keyframes bar-grow { from { transform: scaleY(0); } }
 .weekly-detail {
+  --fill: var(--paper);
   margin-top: 1rem;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   gap: .6rem;
-  border-top: 1px solid var(--border);
-  padding-top: .8rem;
+  padding: .7rem .8rem;
+  border-radius: var(--wobble-sm);
 }
-.drive-hud { background: var(--hud-background); color: var(--hud-foreground); }
-.drive-hud::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, color-mix(in oklab, var(--primary) 11%, transparent), transparent 30%);
-  pointer-events: none;
-}
+/* full screen while driving: above the bottom navigation, and no list spacing at its foot */
+.drive-hud { margin: 0; background: var(--hud-background); color: var(--hud-foreground); }
 .drive-hud > * { position: relative; z-index: 1; }
-.hud-metric { display: flex; min-height: 9rem; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--hud-border); border-radius: 1rem; background: var(--hud-surface); }
+.hud-metric { display: flex; min-height: 9rem; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--hud-border); border-radius: var(--wobble-sm); background: var(--hud-surface); }
 .hud-icon-button { display: flex; height: 2.75rem; width: 2.75rem; align-items: center; justify-content: center; border: 1px solid var(--hud-border); border-radius: .75rem; color: var(--hud-foreground); }
 .goal-sparkles { position: absolute; inset: 0; pointer-events: none; }
 .goal-sparkles span {
@@ -381,37 +486,35 @@
   100% { opacity: 0; transform: rotate(var(--angle)) translateX(150px) scale(1.2); }
 }
 
-/* Visual-only reward choreography; the chosen glass composition exists only during a milestone. */
+/* Visual-only reward choreography; the ceremony exists only during a milestone. */
 .reward-layer { position: fixed; inset: 0; z-index: 100; pointer-events: none; overflow: hidden; }
 .reward-layer canvas { position: absolute; inset: 0; }
-.reward-ceremony { position: absolute; inset: 0; display: grid; place-items: center; padding: 1.25rem; background: color-mix(in oklab, var(--card) 42%, transparent); backdrop-filter: blur(12px); animation: ceremony-veil .4s ease-out both; }
-.reward-ceremony-card { pointer-events: auto; position: relative; width: min(100%, 320px); max-height: calc(100dvh - 2.5rem); overflow: auto; border-radius: 32px; padding: 2rem; border: 1px solid color-mix(in oklab, var(--primary) 9%, var(--card)); background: var(--card); text-align: center; box-shadow: 0 32px 64px -16px color-mix(in oklab, var(--primary) 20%, transparent); animation: ceremony-land .75s cubic-bezier(.17,1.2,.25,1) both; }
-.reward-ceremony-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 10% 4%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 45%), radial-gradient(circle at 92% 96%, color-mix(in oklab, var(--primary) 9%, transparent), transparent 42%); }
-.reward-medal { position: relative; display: grid; place-items: center; width: 6rem; height: 6rem; margin: 0 auto 1.5rem; border: 4px solid var(--primary); border-radius: 50%; box-shadow: 0 0 0 6px color-mix(in oklab, var(--primary) 12%, transparent); animation: medal-arrive .85s cubic-bezier(.14,1.5,.28,1) both; }
-.reward-medal-orbit { position: absolute; inset: -1rem; border: 1px solid color-mix(in oklab, var(--primary) 40%, transparent); border-radius: 50%; animation: medal-orbit 1.8s ease-out both; }
-.reward-medal-core { display: grid; place-items: center; width: 4.75rem; height: 4.75rem; border-radius: 50%; color: var(--primary-foreground); background: var(--primary); box-shadow: 0 10px 26px color-mix(in oklab, var(--primary) 35%, transparent); }
-.reward-medal-core svg { width: 2.5rem; height: 2.5rem; stroke-width: 2.4; }
-.reward-ceremony h2 { position: relative; font-size: 1.5rem; font-weight: 800; line-height: 1.25; color: var(--foreground); }
+.reward-ceremony { position: absolute; inset: 0; display: grid; place-items: center; padding: 1.25rem; background: color-mix(in oklab, var(--paper) 82%, transparent); animation: ceremony-veil .4s ease-out both; }
+.reward-ceremony-card { pointer-events: auto; position: relative; width: min(100%, 320px); max-height: calc(100dvh - 2.5rem); overflow: auto; padding: 2rem; border-radius: 22px 26px 20px 24px / 24px 20px 26px 22px; text-align: center; animation: ceremony-land .75s cubic-bezier(.17,1.2,.25,1) both; }
+.reward-medal { position: relative; display: grid; place-items: center; width: 6rem; height: 6rem; margin: 0 auto 1.5rem; border: var(--line) solid var(--ink); border-radius: 50%; background: var(--card); animation: medal-arrive .85s cubic-bezier(.14,1.5,.28,1) both; }
+.reward-medal-orbit { position: absolute; inset: -1rem; border: 1px dashed color-mix(in oklab, var(--ink) 45%, transparent); border-radius: 50%; animation: medal-orbit 1.8s ease-out both; }
+.reward-medal-core { display: grid; place-items: center; width: 4.75rem; height: 4.75rem; border: var(--line) solid var(--ink); border-radius: 50%; color: var(--ink); background: radial-gradient(circle 2.375rem at calc(50% + 3px) calc(50% + 3px), var(--mustard) 98%, transparent 100%); box-shadow: 3px 3px 0 var(--mustard); }
+.reward-medal-core svg { width: 2.5rem; height: 2.5rem; stroke-width: 2.2; }
+.reward-ceremony h2 { position: relative; font-family: "Secular One", var(--font-display); font-size: 1.5rem; font-weight: 400; line-height: 1.25; color: var(--ink); }
 .reward-ceremony p { position: relative; margin-top: .5rem; font-size: .875rem; line-height: 1.6; font-weight: 600; color: var(--muted-foreground); }
-.reward-amount { position: relative; display: inline-flex; flex-direction: column; gap: .1rem; margin-top: 1.5rem; padding: .6rem 1.5rem; border-radius: 1rem; background: color-mix(in oklab, var(--primary) 8%, var(--card)); }
+.reward-amount { position: relative; display: inline-flex; flex-direction: column; gap: .1rem; margin-top: 1.5rem; padding: .6rem 1.5rem; border-radius: var(--wobble-sm); background: var(--green-tint); }
 .reward-amount-label { font-size: .65rem; font-weight: 700; color: var(--muted-foreground); }
 .reward-amount strong { font-family: var(--font-display); font-size: 1.75rem; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
 .reward-progress { position: relative; margin-top: 1.75rem; }
 .reward-progress > div { display: flex; justify-content: space-between; font-size: .7rem; font-weight: 800; color: var(--muted-foreground); }
-.reward-progress-track { display: block; overflow: hidden; height: .625rem; margin-top: .75rem; border-radius: 999px; background: var(--muted); }
-.reward-progress-track span { display: block; width: 100%; height: 100%; border-radius: inherit; background: var(--gradient-primary); box-shadow: 0 0 12px var(--primary); transform-origin: right; animation: reward-fill 1.2s .3s ease-out both; }
-.reward-continue { position: relative; width: 100%; height: 3rem; margin-top: 2rem; border-radius: 1rem; background: var(--hud-background); color: var(--hud-foreground); font-weight: 800; box-shadow: var(--shadow-premium); }
-.reward-continue:hover { background: var(--hud-surface); }
+.reward-progress-track { display: block; overflow: hidden; height: .625rem; margin-top: .75rem; border: 1px solid var(--ink); border-radius: 999px; background: var(--paper-shade); }
+.reward-progress-track span { display: block; width: 100%; height: 100%; border-radius: inherit; background: var(--primary); transform-origin: right; animation: reward-fill 1.2s .3s ease-out both; }
+.reward-continue { --fill: var(--hud-background); position: relative; width: 100%; height: 3rem; margin-top: 2rem; border-radius: var(--wobble-sm); color: var(--hud-foreground); font-weight: 800; }
 .reward-flash { position: absolute; display: grid; place-items: center; width: 0; height: 0; isolation: isolate; }
-.reward-halo { position: absolute; width: 12rem; height: 12rem; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--primary) 28%, transparent), transparent 68%); animation: reward-halo 1.6s ease-out both; }
-.reward-ring { position: absolute; width: 3.5rem; height: 3.5rem; border-radius: 50%; border: 2px solid color-mix(in oklab, var(--hud-accent) 70%, transparent); box-shadow: 0 0 22px color-mix(in oklab, var(--primary) 45%, transparent); animation: reward-ring 1.5s cubic-bezier(.12,.68,.2,1) both; }
-.reward-message { position: absolute; top: -7.4rem; display: flex; align-items: flex-start; gap: .55rem; width: min(20rem, calc(100vw - 2rem)); padding: .8rem 1rem; border-radius: .8rem; background: var(--hud-background); color: var(--hud-foreground); box-shadow: var(--shadow-premium); font-size: .9rem; font-weight: 800; animation: reward-message 2.6s cubic-bezier(.2,.8,.2,1) both; }
+.reward-halo { position: absolute; width: 12rem; height: 12rem; border-radius: 50%; background: color-mix(in oklab, var(--mustard) 30%, transparent); animation: reward-halo 1.6s ease-out both; }
+.reward-ring { position: absolute; width: 3.5rem; height: 3.5rem; border-radius: 50%; border: var(--line) solid var(--ink); animation: reward-ring 1.5s cubic-bezier(.12,.68,.2,1) both; }
+.reward-message { --fill: var(--hud-background); position: absolute; top: -7.4rem; display: flex; align-items: flex-start; gap: .55rem; width: min(20rem, calc(100vw - 2rem)); padding: .8rem 1rem; border-radius: var(--wobble-sm); color: var(--hud-foreground); font-size: .9rem; font-weight: 800; animation: reward-message 2.6s cubic-bezier(.2,.8,.2,1) both; }
 .reward-message > span { min-width: 0; }
 .reward-message b, .reward-message small { display: block; }
 .reward-message small { margin-top: .15rem; color: var(--hud-muted); font-size: .68rem; line-height: 1.45; font-weight: 600; }
-.reward-flash-corrective .reward-ring { border-color: color-mix(in oklab, var(--warning) 75%, transparent); box-shadow: 0 0 22px color-mix(in oklab, var(--warning) 42%, transparent); }
-.reward-flash-corrective .reward-message { background: color-mix(in oklab, var(--warning) 14%, var(--hud-background)); }
-@keyframes ceremony-veil { from { opacity: 0; backdrop-filter: blur(0); } to { opacity: 1; backdrop-filter: blur(12px); } }
+.reward-flash-corrective .reward-ring { border-color: var(--vermilion); }
+.reward-flash-corrective .reward-message { --fill: #4f4434; }
+@keyframes ceremony-veil { from { opacity: 0; } to { opacity: 1; } }
 @keyframes ceremony-land { from { opacity: 0; transform: translateY(32px) scale(.87); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes medal-arrive { from { transform: translateY(28px) scale(.4) rotate(-20deg); opacity: 0; } to { transform: translateY(0) scale(1) rotate(0); opacity: 1; } }
 @keyframes medal-orbit { from { transform: scale(.4); opacity: .9; } to { transform: scale(1.35); opacity: 0; } }
@@ -420,197 +523,103 @@
 @keyframes reward-ring { 0% { opacity: 0; transform: scale(.2); } 20% { opacity: 1; } 100% { opacity: 0; transform: scale(4.6); } }
 @keyframes reward-message { 0% { opacity: 0; transform: translateY(18px) scale(.82); } 22% { opacity: 1; transform: translateY(-5px) scale(1.03); } 40% { transform: translateY(0) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-18px) scale(.97); } }
 .reward-action { position: relative; overflow: hidden; }
-.reward-action:not(:disabled):active { transform: scale(.96); box-shadow: 0 0 0 5px color-mix(in oklab, var(--primary) 15%, transparent); }
-.profit-hero-achieved { box-shadow: 0 24px 50px -28px color-mix(in oklab, var(--primary) 55%, transparent), inset 0 0 28px color-mix(in oklab, var(--hud-accent) 7%, transparent); }
-.profit-hero-achieved .gauge-value { filter: drop-shadow(0 0 7px var(--hud-accent)); }
 
 /* Live motivational feedback: expressive but compact, never obscuring financial data. */
-.momentum-coach { position: relative; display: flex; align-items: center; gap: .75rem; min-height: 8.75rem; padding: .85rem .85rem 3.8rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--card); box-shadow: var(--shadow-card); overflow: hidden; animation: coach-shift .45s cubic-bezier(.2,.8,.2,1) both; transition: background-color .35s ease, border-color .35s ease, box-shadow .35s ease; }
-.momentum-emoji { display: grid; place-items: center; flex: 0 0 auto; width: 2.9rem; height: 2.9rem; border-radius: .85rem; background: var(--muted); font-size: 1.65rem; filter: drop-shadow(0 5px 7px color-mix(in oklab, var(--foreground) 12%, transparent)); animation: momentum-pop .55s cubic-bezier(.2,1.5,.3,1) both; }
+.momentum-coach { display: block; padding: .6rem .7rem .75rem; overflow: visible; animation: coach-shift .45s cubic-bezier(.2,.8,.2,1) both; }
 .momentum-coach p { margin-top: .18rem; font-size: .72rem; line-height: 1.5; font-weight: 600; color: var(--muted-foreground); }
-.momentum-percent { flex: 0 0 auto; padding: .15rem .48rem; border-radius: 999px; font-size: .65rem; font-weight: 800; background: var(--muted); color: var(--foreground); }
-.momentum-action { display: grid; place-items: center; flex: 0 0 auto; width: 2.25rem; height: 2.25rem; border-radius: 50%; background: var(--foreground); color: var(--background); box-shadow: 0 6px 16px color-mix(in oklab, var(--foreground) 18%, transparent); }
-.momentum-action svg { width: 1rem; height: 1rem; }
-.momentum-coach-warning { border-color: color-mix(in oklab, var(--warning) 38%, var(--border)); background: color-mix(in oklab, var(--warning) 7%, var(--card)); }
-.momentum-coach-warning .momentum-emoji, .momentum-coach-warning .momentum-percent { background: color-mix(in oklab, var(--warning) 16%, var(--card)); }
-.momentum-coach-progress { border-color: color-mix(in oklab, var(--chart-2) 34%, var(--border)); background: color-mix(in oklab, var(--chart-2) 6%, var(--card)); }
-.momentum-coach-progress .momentum-emoji, .momentum-coach-progress .momentum-percent { background: color-mix(in oklab, var(--chart-2) 13%, var(--card)); }
-.momentum-coach-success { border-color: color-mix(in oklab, var(--primary) 38%, var(--border)); background: color-mix(in oklab, var(--primary) 7%, var(--card)); box-shadow: var(--shadow-card), 0 12px 28px -22px var(--primary); }
-.momentum-coach-success .momentum-emoji, .momentum-coach-success .momentum-percent { background: color-mix(in oklab, var(--primary) 14%, var(--card)); }
-@keyframes momentum-pop { from { opacity: 0; transform: scale(.55) rotate(-12deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+.momentum-coach-warning { --fill: var(--mustard-tint); }
+.momentum-coach-progress { --fill: var(--slate-tint); }
+.momentum-coach-success { --fill: var(--green-tint); }
 @keyframes coach-shift { from { opacity: .7; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-.daily-journey { position: absolute; inset-inline: .85rem; bottom: .7rem; display: grid; grid-template-columns: repeat(3, 1fr); align-items: start; }
-.daily-journey-line { position: absolute; top: .58rem; inset-inline: 16%; height: 3px; border-radius: 999px; background: var(--muted); overflow: hidden; }
-.daily-journey-line span { display: block; height: 100%; border-radius: inherit; background: var(--primary); transition: width .75s cubic-bezier(.22,1,.36,1); }
+.momentum-action {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  color: var(--primary-foreground);
+  background: radial-gradient(circle 1.125rem at calc(50% + 2px) calc(50% + 2px), var(--primary) 98%, transparent 100%);
+  box-shadow: 2px 2px 0 var(--primary);
+}
+.momentum-action:active { background: var(--primary); box-shadow: 0 0 0 transparent; }
+.momentum-action svg { width: 1rem; height: 1rem; }
+.daily-journey { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); align-items: start; margin-top: 1rem; }
+.daily-journey-line { position: absolute; top: .55rem; inset-inline: 16%; height: 1.5px; background: repeating-linear-gradient(90deg, color-mix(in oklab, var(--ink) 70%, transparent) 0 5px, transparent 5px 10px); overflow: hidden; }
+.daily-journey-line span { display: block; height: 100%; background: var(--primary); transition: width .75s cubic-bezier(.22,1,.36,1); }
 .daily-step { position: relative; z-index: 1; display: grid; justify-items: center; gap: .18rem; color: var(--muted-foreground); font-size: .58rem; font-weight: 800; }
-.daily-step i { display: grid; place-items: center; width: 1.2rem; height: 1.2rem; border: 2px solid var(--muted); border-radius: 50%; background: var(--card); font-size: .56rem; font-style: normal; transition: transform .35s ease, background-color .35s ease, border-color .35s ease; }
-.daily-step-done i { border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); }
+.daily-step i { display: grid; place-items: center; width: 1.2rem; height: 1.2rem; border: var(--line) solid var(--ink); border-radius: 50%; background: var(--card); font-size: .56rem; font-style: normal; }
+.daily-step-done i { background: var(--primary); color: var(--primary-foreground); animation: step-stamp .5s cubic-bezier(.3,1.9,.4,1) both; }
 .daily-step-active { color: var(--foreground); }
-.daily-step-active i { border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 12%, transparent); transform: scale(1.08); }
-.weekly-bar-today:not(.weekly-bar-active) { animation: today-breathe 2.4s ease-in-out infinite; }
-@keyframes today-breathe { 0%, 100% { box-shadow: 0 0 0 transparent; } 50% { box-shadow: 0 0 14px color-mix(in oklab, var(--primary) 32%, transparent); } }
+.daily-step-active i { box-shadow: 2px 2px 0 var(--mustard); }
+@keyframes step-stamp { from { transform: scale(2.2) rotate(-25deg); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
   .reward-halo, .reward-ring { display: none; }
   .reward-message { animation: none !important; opacity: 1; }
   .reward-ceremony, .reward-ceremony-card, .reward-medal, .reward-medal-orbit, .reward-progress-track span { animation: none !important; }
-  .momentum-emoji { animation: none !important; }
-  .momentum-coach, .weekly-bar-today { animation: none !important; }
-  .reward-action:not(:disabled):active { transform: none; }
+  .momentum-coach, .daily-step i { animation: none !important; }
 }
-
-
-/* =====================================================================
-   XEROX CARICATURE WORLD — ink, paper, line-boil, cartoon physics
-   ===================================================================== */
-:root {
-  --ink: oklch(0.21 0.02 155);
-  --paper: oklch(0.975 0.014 95);
-  --paper-shade: oklch(0.93 0.025 90);
-  --skin: oklch(0.83 0.07 55);
-  --skin-shade: oklch(0.72 0.08 45);
-  --cap: oklch(0.38 0.04 60);
-  --pants: oklch(0.33 0.03 250);
-  --gold: oklch(0.83 0.16 85);
-  --taxi: oklch(0.87 0.16 95);
-  --ink-shadow: 4px 5px 0 var(--ink);
-  --ink-shadow-sm: 2px 3px 0 var(--ink);
-  --font-comic: "Karantina", "Secular One", "Sora", sans-serif;
-  --background: var(--paper);
-}
-
-/* paper grain + ink splats */
-body {
-  background-color: var(--paper);
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.12 0 0 0 0 0.1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
-    radial-gradient(circle at 12% 8%, color-mix(in oklab, var(--primary) 9%, transparent), transparent 32%),
-    radial-gradient(circle at 92% 40%, color-mix(in oklab, var(--gold) 12%, transparent), transparent 30%);
-}
-
-
-.ink-world { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-.ink-skyline { position: absolute; inset-inline: 0; bottom: 3.6rem; width: 100%; height: 30vh; opacity: .22; animation: sky-drift 60s linear infinite alternate; }
-.ink-sky-far path { fill: color-mix(in oklab, var(--primary) 18%, var(--paper)); stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; filter: url(#ink-boil); }
-.ink-sky-windows path, .ink-road { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
-.ink-road { stroke-dasharray: 18 14; animation: road-run 1.4s linear infinite; }
-.ink-sun { position: absolute; top: 4.5rem; inset-inline-end: -1.5rem; width: 7rem; opacity: .22; animation: sun-spin 40s linear infinite; }
-.ink-sun circle { fill: var(--gold); stroke: var(--ink); stroke-width: 2.5; }
-.ink-sun path { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
-.ink-splat { position: absolute; border-radius: 48% 52% 40% 60% / 55% 40% 60% 45%; background: var(--ink); opacity: .05; }
-.ink-splat-1 { width: 9rem; height: 7rem; top: 20%; inset-inline-start: -3rem; }
-.ink-splat-2 { width: 5rem; height: 4rem; top: 55%; inset-inline-end: -1rem; }
-.ink-splat-3 { width: 3rem; height: 3rem; top: 8%; inset-inline-start: 40%; opacity: .04; }
-@keyframes sky-drift { from { transform: translateX(-4%); } to { transform: translateX(4%); } }
-@keyframes road-run { to { stroke-dashoffset: -32; } }
-@keyframes sun-spin { to { transform: rotate(360deg); } }
-
-/* hand-inked cards everywhere */
-.ink-card, .premium-panel, .premium-stat, .momentum-coach, .weekly-detail {
-  border: 2.5px solid var(--ink) !important;
-  border-radius: 20px 24px 18px 26px / 24px 18px 26px 20px !important;
-  box-shadow: var(--ink-shadow) !important;
-  background-color: var(--card);
-  position: relative;
-}
-.ink-card { transition: transform .35s cubic-bezier(.3,1.6,.4,1), box-shadow .35s cubic-bezier(.3,1.6,.4,1); }
-.ink-card:active { transform: translate(2px, 3px); box-shadow: var(--ink-shadow-sm) !important; }
-.premium-stat:nth-child(odd) { transform: rotate(-.6deg); }
-.premium-stat:nth-child(even) { transform: rotate(.7deg); }
-.premium-stat:hover { transform: rotate(0) translateY(-4px) scale(1.02); }
-.premium-stat::after { content: ""; position: absolute; inset-inline-end: 10px; bottom: 10px; width: 26px; height: 14px; background: repeating-linear-gradient(-45deg, var(--ink) 0 1.5px, transparent 1.5px 5px); opacity: .18; }
-.profit-hero { border: 3px solid var(--ink) !important; border-radius: 26px 30px 24px 32px / 30px 24px 32px 26px !important; box-shadow: 6px 7px 0 var(--ink) !important; }
-.weekly-bar { border: 2px solid var(--ink); border-radius: 8px 8px 3px 3px !important; transform-origin: bottom; animation: bar-grow .8s cubic-bezier(.3,1.7,.4,1) both; }
-.weekly-bar-active { box-shadow: 2px 3px 0 var(--ink) !important; }
-@keyframes bar-grow { from { transform: scaleY(0); } }
-.ink-nav { border-top: 3px solid var(--ink) !important; background: color-mix(in oklab, var(--paper) 92%, transparent) !important; }
-.ink-nav [aria-current="page"] svg { animation: nav-hop .5s cubic-bezier(.3,1.8,.4,1); }
-.ink-nav span[style] { border: 2.5px solid var(--ink); box-shadow: var(--ink-shadow-sm) !important; }
-@keyframes nav-hop { 0% { transform: translateY(0) scale(1,1); } 30% { transform: translateY(2px) scale(1.25,.75); } 60% { transform: translateY(-7px) scale(.85,1.2); } 100% { transform: none; } }
-button[class*="bg-primary"], .reward-action, .drive-mode-button { border: 2.5px solid var(--ink) !important; box-shadow: var(--ink-shadow-sm) !important; font-weight: 800; }
-button[class*="bg-primary"]:active, .drive-mode-button:active { transform: translate(2px, 3px) !important; box-shadow: 0 0 0 var(--ink) !important; }
-[role="tablist"] { border: 2.5px solid var(--ink); box-shadow: var(--ink-shadow-sm); border-radius: 14px; background: var(--paper-shade); }
-[role="tab"][data-state="active"] { border: 2px solid var(--ink); transform: rotate(-1deg); box-shadow: 2px 2px 0 var(--ink); }
-input, textarea, [role="combobox"] { border: 2px solid var(--ink) !important; border-radius: 12px !important; }
-
-/* typography with offset ink */
-.ink-title, h1.font-display { font-family: "Secular One", var(--font-display); font-weight: 400 !important; letter-spacing: 0; color: var(--ink); text-shadow: 2px 2px 0 color-mix(in oklab, var(--primary) 55%, transparent); }
-h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 
 /* ---- comic bubble + words ---- */
-.comic-bubble { position: relative; padding: .7rem .9rem; border: 2.5px solid var(--ink); border-radius: 22px 26px 20px 28px / 26px 20px 28px 22px; background: var(--card); box-shadow: var(--ink-shadow-sm); font-family: var(--font-comic); font-size: 1.15rem; font-weight: 700; line-height: 1.15; color: var(--ink); animation: bubble-pop .5s cubic-bezier(.3,1.9,.4,1) both; }
-.comic-bubble::after { content: ""; position: absolute; bottom: -12px; width: 18px; height: 16px; background: inherit; border-inline-end: 2.5px solid var(--ink); border-bottom: 2.5px solid var(--ink); }
+.comic-bubble { position: relative; padding: .6rem .85rem; border-radius: 20px 24px 18px 26px / 24px 18px 26px 20px; font-family: var(--font-comic); font-size: 1.15rem; font-weight: 700; line-height: 1.15; color: var(--ink); animation: bubble-pop .5s cubic-bezier(.3,1.9,.4,1) both; }
+.comic-bubble::after { content: ""; position: absolute; bottom: -8px; width: 14px; height: 13px; background: var(--fill); border-inline-end: var(--line) solid var(--ink); border-bottom: var(--line) solid var(--ink); }
 .comic-bubble-end::after { inset-inline-end: 22%; transform: skewX(30deg) rotate(10deg); }
 .comic-bubble-start::after { inset-inline-start: 22%; transform: skewX(-30deg) rotate(-10deg); }
-.comic-bubble-win { background: color-mix(in oklab, var(--primary) 16%, var(--card)); }
-.comic-bubble-warn { background: color-mix(in oklab, var(--warning) 20%, var(--card)); }
+.comic-bubble-win { --fill: var(--green-tint); }
+.comic-bubble-warn { --fill: var(--mustard-tint); }
 @keyframes bubble-pop { 0% { transform: scale(.3) rotate(-8deg); opacity: 0; } 60% { transform: scale(1.08) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
-.comic-word { position: absolute; z-index: 3; top: -1.6rem; inset-inline-end: 4%; font-family: var(--font-comic); font-size: 2.1rem; font-weight: 700; color: var(--gold); -webkit-text-stroke: 1.6px var(--ink); text-shadow: 3px 3px 0 var(--ink); animation: word-slam .9s cubic-bezier(.2,1.8,.4,1) both; pointer-events: none; }
+.comic-word { position: absolute; z-index: 3; top: -1.4rem; inset-inline-end: 4%; font-family: var(--font-comic); font-size: 2rem; font-weight: 700; color: var(--mustard); -webkit-text-stroke: 1px var(--ink); text-shadow: 2px 2px 0 var(--ink); animation: word-slam .9s cubic-bezier(.2,1.8,.4,1) both; pointer-events: none; }
 @keyframes word-slam { 0% { transform: scale(3) rotate(-20deg); opacity: 0; } 40% { transform: scale(.9) rotate(-8deg); opacity: 1; } 70% { transform: scale(1.1) rotate(-12deg); } 100% { transform: scale(1) rotate(-10deg); } }
 
-/* ---- stages ---- */
-.page-stage { position: relative; height: 10.5rem; margin-top: .4rem; }
-.page-stage-floor { position: absolute; inset-inline: -.5rem; bottom: 6px; height: 3px; background: var(--ink); border-radius: 3px; opacity: .85; }
-.page-stage-floor::before { content: ""; position: absolute; inset: 4px 10% auto; height: 2px; background: repeating-linear-gradient(90deg, var(--ink) 0 14px, transparent 14px 26px); opacity: .4; }
-.page-stage-mascot { position: absolute; bottom: 4px; inset-inline-start: .2rem; width: 8.5rem !important; height: 10.2rem !important; }
-.page-stage-taxi { position: absolute; bottom: 2px; inset-inline-start: 7.5rem; width: 9.5rem; height: 5.6rem; }
-.page-stage-bubble { position: absolute; top: .2rem; inset-inline-end: 0; max-width: 55%; }
+/* ---- stages: a painted backdrop panel, the cast stands in front of it ----
+   The painting slips off its frame line like every other fill. The captain is
+   taller than the panel on purpose, so his cap breaks out over the top edge. */
+.stage-bg { isolation: isolate; }
+.stage-bg::before, .stage-bg::after { content: ""; position: absolute; inset: var(--frame-top, 0) 0 0; z-index: -1; border-radius: var(--wobble-sm); pointer-events: none; }
+.stage-bg::before { background: var(--slate-tint) var(--backdrop) center bottom / cover no-repeat; transform: translate(var(--slip), var(--slip)); }
+.stage-bg::after { border: var(--line) solid var(--ink); }
+.stage-street { --backdrop: url("/backdrops/street.webp"); }
+.stage-road { --backdrop: url("/backdrops/road.webp"); }
+.stage-promenade { --backdrop: url("/backdrops/promenade.webp"); }
+.stage-garage { --backdrop: url("/backdrops/garage.webp"); }
+.page-stage { --frame-top: 1.4rem; position: relative; height: 10.5rem; margin-top: .6rem; }
+.page-stage-mascot { position: absolute; bottom: 5px; inset-inline-start: .3rem; width: 8.5rem !important; height: 10.2rem !important; }
+.page-stage-taxi { position: absolute; bottom: 5px; inset-inline-start: 7.6rem; width: 9.5rem; height: 5.6rem; }
+.page-stage-bubble { position: absolute; top: 0; inset-inline-end: .5rem; max-width: 55%; }
 .page-stage:has(.page-stage-taxi) .page-stage-bubble { max-width: 46%; }
 
-.momentum-coach { display: block !important; padding: .6rem .7rem .75rem !important; min-height: 0 !important; overflow: visible !important; background: linear-gradient(180deg, color-mix(in oklab, var(--chart-2) 10%, var(--card)), var(--card) 62%) !important; }
-.momentum-coach-warning { background: linear-gradient(180deg, color-mix(in oklab, var(--warning) 16%, var(--card)), var(--card) 62%) !important; }
-.momentum-coach-success { background: linear-gradient(180deg, color-mix(in oklab, var(--primary) 18%, var(--card)), var(--card) 62%) !important; }
-.coach-stage { position: relative; height: 11.5rem; margin-top: -2.6rem; }
-.coach-stage-sun { position: absolute; top: 2.8rem; inset-inline-end: 1rem; width: 2.6rem; height: 2.6rem; border: 2.5px solid var(--ink); border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 6px color-mix(in oklab, var(--gold) 25%, transparent); animation: sun-pulse 3s ease-in-out infinite; }
-.momentum-coach-start .coach-stage-sun { background: color-mix(in oklab, var(--gold) 40%, var(--card)); }
-@keyframes sun-pulse { 50% { box-shadow: 0 0 0 12px color-mix(in oklab, var(--gold) 10%, transparent); } }
-.coach-mascot { position: absolute; bottom: 4px; inset-inline-start: .4rem; width: 9.6rem !important; height: 11.6rem !important; }
-.coach-taxi { position: absolute; bottom: 2px; inset-inline-start: 9.2rem; width: 10.5rem; height: 6.2rem; }
-.coach-streak { position: absolute; top: 3rem; inset-inline-start: 50%; padding: .2rem .6rem; border: 2.5px solid var(--ink); border-radius: 999px; background: var(--card); box-shadow: var(--ink-shadow-sm); font-weight: 900; font-size: .85rem; transform: rotate(-6deg); animation: badge-wobble 2.4s ease-in-out infinite; }
-@keyframes badge-wobble { 50% { transform: rotate(4deg) scale(1.06); } }
-.coach-bubble { display: flex; align-items: center; gap: .6rem; margin-top: .6rem; font-family: inherit; font-size: inherit; }
-.coach-bubble::after { inset-inline-start: 3rem; top: -12px; bottom: auto; transform: rotate(180deg) skewX(30deg); }
+.coach-stage { --frame-top: 2.6rem; position: relative; height: 11.5rem; margin-top: -2.6rem; }
+.coach-mascot { position: absolute; bottom: 5px; inset-inline-start: .4rem; width: 9.6rem !important; height: 11.6rem !important; }
+.coach-taxi { position: absolute; bottom: 5px; inset-inline-start: 9.2rem; width: 10.5rem; height: 6.2rem; }
+.coach-streak { --slip: 2px; position: absolute; top: 3.4rem; inset-inline-start: 50%; padding: .15rem .55rem; border-radius: 999px; font-weight: 900; font-size: .85rem; transform: rotate(-5deg); }
+.coach-bubble { display: flex; align-items: center; gap: .6rem; margin-top: .9rem; font-family: inherit; font-size: inherit; }
+.coach-bubble::after { inset-inline-start: 3rem; top: -8px; bottom: auto; width: 14px; height: 14px; border: 0; border-top: var(--line) solid var(--ink); border-left: var(--line) solid var(--ink); transform: rotate(45deg); }
 .coach-bubble h2 { font-size: 1.05rem; color: var(--ink); }
 .coach-bubble p { margin: .1rem 0 0; font-size: .75rem; font-weight: 700; color: var(--muted-foreground); }
-.coach-bubble-emoji { font-size: 1.8rem; animation: emoji-boing 1.6s cubic-bezier(.3,1.8,.4,1) infinite; display: inline-block; }
-@keyframes emoji-boing { 0%, 60%, 100% { transform: none; } 70% { transform: translateY(2px) scale(1.2,.8); } 80% { transform: translateY(-8px) scale(.85,1.15) rotate(-8deg); } }
-.momentum-action { border: 2.5px solid var(--ink); background: var(--primary) !important; color: var(--primary-foreground) !important; box-shadow: var(--ink-shadow-sm) !important; animation: cta-nudge 1.8s ease-in-out infinite; }
-@keyframes cta-nudge { 0%, 70%, 100% { transform: none; } 80% { transform: translateX(-5px); } 90% { transform: translateX(2px); } }
-.daily-journey { position: relative !important; inset: auto !important; margin-top: 1rem; }
-.daily-step i { border: 2.5px solid var(--ink) !important; }
-.daily-step-done i { animation: step-stamp .5s cubic-bezier(.3,1.9,.4,1) both; }
-.daily-journey-line { background: repeating-linear-gradient(90deg, var(--ink) 0 6px, transparent 6px 11px) !important; opacity: .9; height: 3px !important; }
-.daily-journey-line span { background: var(--primary) !important; }
-@keyframes step-stamp { from { transform: scale(2.2) rotate(-25deg); opacity: 0; } }
-
-/* retro speedometer */
-.gauge-ticks line { stroke: var(--hud-foreground); stroke-width: 2.5; stroke-linecap: round; opacity: .6; }
-.gauge-needle { transform-origin: 110px 108px; transform-box: view-box; transition: transform 1.6s cubic-bezier(.25,1.8,.35,1); animation: needle-jitter .18s steps(2) infinite; }
-.gauge-needle path { fill: var(--warning); stroke: var(--ink); stroke-width: 2; }
-.gauge-needle circle { fill: var(--hud-foreground); stroke: var(--ink); stroke-width: 2.5; }
-.profit-hero-achieved .gauge-needle path { fill: var(--hud-accent); }
-@keyframes needle-jitter { 50% { translate: .4px -.3px; } }
+.coach-bubble-emoji { display: inline-block; font-size: 1.8rem; }
 
 /* live reaction on /add */
-.live-reaction { position: relative; display: flex; align-items: flex-end; gap: .4rem; height: 8.5rem; margin: -.4rem -.3rem .2rem; border-bottom: 2.5px dashed color-mix(in oklab, var(--ink) 40%, transparent); }
+.live-reaction { position: relative; display: flex; align-items: flex-end; gap: .4rem; height: 8.5rem; margin: -.4rem -.3rem .2rem; border-bottom: var(--line) solid color-mix(in oklab, var(--ink) 35%, transparent); }
 .live-reaction-mascot { width: 7rem !important; height: 8.4rem !important; flex: 0 0 auto; }
 .live-reaction-bubble { align-self: flex-start; margin-top: .6rem; }
-.live-reaction-bubble.comic-bubble::after { inset-inline-start: -10px; bottom: 14px; transform: rotate(90deg) skewX(30deg); }
+.live-reaction-bubble.comic-bubble::after { inset-inline-start: -9px; bottom: 14px; transform: rotate(90deg) skewX(30deg); }
 
 /* calendar */
 .calendar-flip { animation: page-flip .6s cubic-bezier(.3,1.4,.4,1) both; transform-origin: top center; }
 @keyframes page-flip { from { transform: perspective(900px) rotateX(-70deg); opacity: 0; } }
-.cal-cell { border: 2px solid color-mix(in oklab, var(--ink) 25%, transparent) !important; border-radius: 10px 12px 9px 13px !important; }
-.ink-stamp { position: absolute; top: -5px; inset-inline-end: -5px; display: grid; place-items: center; width: 1.15rem; height: 1.15rem; border: 2px solid var(--primary); border-radius: 50%; color: var(--primary); background: var(--card); font-size: .65rem; font-weight: 900; transform: rotate(-14deg); animation: stamp-down .5s cubic-bezier(.3,1.9,.4,1) both; box-shadow: 1px 1px 0 var(--ink); }
+.cal-cell { border: 1px solid color-mix(in oklab, var(--ink) 30%, transparent); border-radius: 8px 10px 7px 9px / 9px 7px 10px 8px; }
+.ink-stamp { position: absolute; top: -5px; inset-inline-end: -5px; display: grid; place-items: center; width: 1.15rem; height: 1.15rem; border: var(--line) solid var(--primary); border-radius: 50%; color: var(--primary); background: var(--card); font-size: .65rem; font-weight: 900; transform: rotate(-14deg); animation: stamp-down .5s cubic-bezier(.3,1.9,.4,1) both; box-shadow: 1.5px 1.5px 0 var(--green-tint); }
 @keyframes stamp-down { from { transform: scale(2.6) rotate(-40deg); opacity: 0; } }
 
 /* comic reward burst (in the single reward overlay) */
 .comic-burst { position: absolute; width: 11rem; height: 11rem; translate: -50% -125%; display: grid; place-items: center; animation: burst-in 1.4s cubic-bezier(.2,1.8,.4,1) both; }
 .comic-burst svg { position: absolute; inset: 0; animation: burst-spin 1.4s ease-out both; }
-.comic-burst-star { fill: var(--gold); stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; filter: url(#ink-boil); }
-.comic-burst b { position: relative; font-family: var(--font-comic); font-size: 2.6rem; color: var(--card); -webkit-text-stroke: 2px var(--ink); text-shadow: 3px 3px 0 var(--ink); transform: rotate(-10deg); }
+.comic-burst-star { fill: var(--mustard); stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; filter: url(#ink-boil); }
+.comic-burst b { position: relative; font-family: var(--font-comic); font-size: 2.6rem; color: var(--card); -webkit-text-stroke: 1.5px var(--ink); text-shadow: 3px 3px 0 var(--ink); transform: rotate(-10deg); }
 .comic-burst-oof { width: auto; height: auto; }
-.comic-burst-oof b { color: var(--warning); font-size: 2.8rem; animation: m-shake-x .4s steps(4) 2; }
+.comic-burst-oof b { color: var(--vermilion); font-size: 2.8rem; animation: m-shake-x .4s steps(4) 2; }
 @keyframes burst-in { 0% { transform: scale(0) rotate(-30deg); opacity: 0; } 25% { transform: scale(1.2) rotate(6deg); opacity: 1; } 40% { transform: scale(.95); } 80% { opacity: 1; transform: scale(1); } 100% { transform: scale(1.4); opacity: 0; } }
 @keyframes burst-spin { to { transform: rotate(25deg); } }
 
@@ -751,8 +760,8 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 @keyframes puff { 0% { opacity: .9; transform: scale(.3) translate(0, 0); } 100% { opacity: 0; transform: scale(1.8) translate(14px, -10px); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .mascot, .mascot *, .taxi, .taxi *, .ink-world *, .comic-bubble, .comic-word, .comic-burst, .comic-burst *, .coach-stage *, .coach-bubble-emoji, .momentum-action, .gauge-needle, .weekly-bar, .calendar-flip, .ink-stamp, .daily-step i, .ink-nav svg { animation: none !important; }
-  .m-ink, .taxi-body, .taxi-wheel, .ink-sky-far path, .comic-burst-star { filter: none !important; }
+  .mascot, .mascot *, .taxi, .taxi *, .comic-bubble, .comic-word, .comic-burst, .comic-burst *, .coach-stage *, .gauge-needle, .weekly-bar, .calendar-flip, .ink-stamp, .daily-step i, .ink-nav svg { animation: none !important; }
+  .m-ink, .taxi-body, .taxi-wheel, .comic-burst-star { filter: none !important; }
   .comic-burst { display: none; }
 }
 
@@ -840,12 +849,12 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 @keyframes taxi-jolt { 0% { transform: none; } 30% { transform: translateY(-16px) scale(.94, 1.1); } 60% { transform: scale(1.08, .92); } 100% { transform: none; } }
 
 /* scene choreography (travel); poses come from beats */
-.ms-quip { position: absolute; top: .3rem; inset-inline-start: 34%; z-index: 3; padding: .2rem .65rem; border: 2.5px solid var(--ink); border-radius: 1rem 1rem 1rem .2rem; background: var(--card); box-shadow: var(--ink-shadow-sm); font: 900 .95rem var(--font-comic); color: var(--ink); white-space: nowrap; animation: quip-pop .45s cubic-bezier(.2,1.8,.4,1) both; }
+.ms-quip { --slip: 2px; position: absolute; top: .3rem; inset-inline-start: 34%; z-index: 3; padding: .2rem .65rem; border-radius: 1rem 1rem 1rem .2rem; font: 900 .95rem var(--font-comic); color: var(--ink); white-space: nowrap; animation: quip-pop .45s cubic-bezier(.2,1.8,.4,1) both; }
 @keyframes quip-pop { from { opacity: 0; transform: scale(.4) rotate(-10deg); } to { opacity: 1; transform: scale(1) rotate(-3deg); } }
 .ms-fx { position: absolute; inset: 0; pointer-events: none; }
 .scene-morning .ms-taxi { animation: sc-taxi-arrive 9s cubic-bezier(.2,.8,.2,1) both; }
 .scene-morning .ms-mascot { animation: sc-step-out 9s cubic-bezier(.3,1.3,.4,1) both; }
-.scene-morning .ms-fx::before { content: ""; position: absolute; bottom: 1rem; inset-inline-start: 4.5rem; width: 3rem; height: .8rem; border: 2.5px solid var(--ink); border-radius: 50%; background: color-mix(in oklab, var(--cap) 70%, var(--ink)); opacity: 0; animation: sc-puddle 9s ease-out both; }
+.scene-morning .ms-fx::before { content: ""; position: absolute; bottom: 1rem; inset-inline-start: 4.5rem; width: 3rem; height: .8rem; border: var(--line) solid var(--ink); border-radius: 50%; background: color-mix(in oklab, var(--cap) 70%, var(--ink)); opacity: 0; animation: sc-puddle 9s ease-out both; }
 .scene-heist .ms-mascot { animation: sc-tiptoe 8.2s cubic-bezier(.4,0,.3,1) both; }
 .scene-heist .ms-taxi { animation: sc-taxi-bounce 8.2s ease-in-out both; }
 .scene-heist .ms-fx::before, .scene-parade .ms-fx::before { content: "₪ ₪ ₪ ₪ ₪"; position: absolute; top: 0; inset-inline: 0; text-align: center; font: 900 1.5rem var(--font-comic); color: var(--gold); -webkit-text-stroke: 1.5px var(--ink); letter-spacing: .8rem; opacity: 0; animation: sc-coins 8s ease-out both; }
@@ -893,7 +902,7 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 @keyframes enter-boing { 0% { opacity: 0; transform: scale(.3, 1.6); } 40% { opacity: 1; transform: scale(1.12, .86); } 60% { transform: scale(.94, 1.06); } 80% { transform: scale(1.02, .98); } 100% { transform: none; } }
 
 /* speedometer: stutter, stall, then shoot */
-.gauge-needle { animation: needle-stall 3.4s cubic-bezier(.2,1.6,.4,1) 1, needle-jitter .18s steps(2) 3.4s infinite; }
+.gauge-needle { animation: needle-stall 3.4s cubic-bezier(.2,1.6,.4,1) 1; }
 @keyframes needle-stall { 0% { rotate: -70deg; } 20% { rotate: -40deg; } 24% { rotate: -46deg; } 28% { rotate: -40deg; } 50% { rotate: -38deg; } 54% { rotate: -42deg; } 70% { rotate: 6deg; } 100% { rotate: 0deg; } }
 
 @media (prefers-reduced-motion: reduce) {

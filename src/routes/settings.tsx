@@ -169,6 +169,7 @@ function SettingsPage() {
           prop: "wrench",
           line: "המוסך פתוח. מכוונים את המכונה 🔧",
           taxi: "tired",
+          backdrop: "garage",
         }}
       />
 

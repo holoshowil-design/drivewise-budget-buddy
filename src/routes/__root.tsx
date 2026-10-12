@@ -84,7 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { title: "דרייבר - ניהול הכנסות והוצאות" },
       { name: "description", content: "אפליקציה אישית לנהג: מעקב הכנסות, הוצאות, רווחיות ויעדים." },
-      { name: "theme-color", content: "#00a651" },
+      { name: "theme-color", content: "#f3ead3" },
       { property: "og:title", content: "דרייבר - ניהול הכנסות והוצאות" },
       { name: "twitter:title", content: "דרייבר - ניהול הכנסות והוצאות" },
       {
@@ -147,7 +147,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="relative z-[1] min-h-screen text-foreground pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
+      <div className="relative min-h-screen text-foreground pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
         <Outlet />
       </div>
       <DriveDetector />

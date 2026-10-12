@@ -16,7 +16,7 @@ export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <nav className="ink-nav fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/90 backdrop-blur-xl pb-[env(safe-area-inset-bottom,0px)]">
+    <nav className="ink-nav fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom,0px)]">
       <ul className="mx-auto flex max-w-xl items-stretch justify-around px-2">
         {items.map((it) => {
           const active = pathname === it.to;
@@ -33,10 +33,7 @@ export function BottomNav() {
                 )}
               >
                 {it.highlight ? (
-                  <span
-                    className="-mt-6 flex h-13 w-13 items-center justify-center rounded-full text-primary-foreground transition-transform active:scale-95"
-                    style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)", height: "3.25rem", width: "3.25rem" }}
-                  >
+                  <span className="nav-fab">
                     <Icon className="h-6 w-6" strokeWidth={2.5} />
                   </span>
                 ) : (
