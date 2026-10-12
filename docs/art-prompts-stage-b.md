@@ -101,6 +101,18 @@ pixar style, photo.
 | קפטן: רוטן | `dec6fdf3-398f-44c2-98af-643cd8be9266` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165904_dec6fdf3-398f-44c2-98af-643cd8be9266_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165904_dec6fdf3-398f-44c2-98af-643cd8be9266.png) |
 | קפטן: ישנוני | `0e26f434-d842-43db-8ad2-f08e45203082` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165904_0e26f434-d842-43db-8ad2-f08e45203082_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165904_0e26f434-d842-43db-8ad2-f08e45203082.png) |
 
+## סבב 4 (12 באוקטובר 2026)
+
+**הבקשה של אַרי:** "את הדמות להפוך למטומטם יותר, את הפנים גם". 4 גרסאות פנים לקפטן "סופר כסף", מאותה תמונת ייחוס. 8 קרדיטים.
+חמש ההבעות מסבב 3 ייעשו מחדש לפי הפנים שייבחרו.
+
+| גרסה | מזהה ב-Higgsfield | קישור |
+| --- | --- | --- |
+| פנים א: לסת שמוטה, שתי שיניים בולטות, עיניים צמודות ופוזלות | `26c44202-fbd7-41e2-afd1-46b02d6cb109` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170040_26c44202-fbd7-41e2-afd1-46b02d6cb109_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170040_26c44202-fbd7-41e2-afd1-46b02d6cb109.png) |
+| פנים ב: עיניים כמו נקודות רחוקות, חיוך עם שיניים קדמיות, אוזניים בולטות | `458269b2-25e8-46bb-b1b0-226af049afeb` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170040_458269b2-25e8-46bb-b1b0-226af049afeb_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170040_458269b2-25e8-46bb-b1b0-226af049afeb.png) |
+| פנים ג: עפעפיים כבדים, סנטר נסוג, קצה הלשון בחוץ | `e852599b-209b-4fc0-b662-6eec17ac0642` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170040_e852599b-209b-4fc0-b662-6eec17ac0642_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170040_e852599b-209b-4fc0-b662-6eec17ac0642.png) |
+| פנים ד: עין אחת גדולה מהשנייה, רווח בין השיניים, שערה סוררת | `a2dcdb42-4605-4087-b3a2-cd475845e3ac` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170040_a2dcdb42-4605-4087-b3a2-cd475845e3ac_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170040_a2dcdb42-4605-4087-b3a2-cd475845e3ac.png) |
+
 ## אחרי הסבב
 
 1. מציגים לאַרי את 12 התמונות.
