@@ -66,23 +66,6 @@ export function DailyProfitGauge({
           role="img"
           aria-label={`${Math.round(targetPct)} אחוז מהיעד`}
         >
-          <defs>
-            <linearGradient id="profitGaugeBefore" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stopColor="var(--warning)" />
-              <stop offset="1" stopColor="var(--hud-neutral)" />
-            </linearGradient>
-            <linearGradient id="profitGaugeAfter" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stopColor="var(--primary)" />
-              <stop offset="1" stopColor="var(--hud-accent)" />
-            </linearGradient>
-            <filter id="gaugeGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
           <path
             d="M 30 108 A 80 80 0 0 1 190 108"
             className="gauge-track"
@@ -92,10 +75,9 @@ export function DailyProfitGauge({
             d="M 30 108 A 80 80 0 0 1 190 108"
             className="gauge-value"
             pathLength={pathLength}
-            stroke={passedBreakEven ? "url(#profitGaugeAfter)" : "url(#profitGaugeBefore)"}
+            stroke={passedBreakEven ? "var(--hud-good)" : "var(--hud-accent)"}
             strokeDasharray={pathLength}
             strokeDashoffset={dashOffset}
-            filter={passedBreakEven ? "url(#gaugeGlow)" : undefined}
           />
           <g className="gauge-ticks">
             {Array.from({ length: 11 }, (_, i) => {
@@ -116,8 +98,8 @@ export function DailyProfitGauge({
             <path d="M107 108 L110 46 L113 108 Z" />
             <circle cx="110" cy="108" r="7" />
           </g>
-          <circle cx="30" cy="108" r="3" fill="var(--warning)" />
-          <circle cx="190" cy="108" r="3" fill="var(--hud-accent)" />
+          <circle cx="30" cy="108" r="3" fill="var(--hud-accent)" />
+          <circle cx="190" cy="108" r="3" fill="var(--hud-good)" />
         </svg>
         <div className="absolute inset-x-0 bottom-0 text-center">
           <CountUp
@@ -240,9 +222,7 @@ export function MomentumCoach({ data }: { data: AppData }) {
       className={`momentum-coach momentum-coach-${state.tone}`}
       aria-live="polite"
     >
-      <div className="coach-stage" aria-hidden="true">
-        <span className="coach-stage-sun" />
-        <span className="page-stage-floor" />
+      <div className="coach-stage stage-bg stage-street" aria-hidden="true">
         <MovieStage
           morning
           base={{
@@ -359,14 +339,16 @@ export function PremiumStats({
       icon: TrendingUp,
       badge: badges[0],
       tone: "text-success",
+      fill: "green",
     },
-    { label: "הוצאות כולל דלק", value: expense, icon: Zap, badge: badges[1], tone: "text-warning" },
+    { label: "הוצאות כולל דלק", value: expense, icon: Zap, badge: badges[1], tone: "text-warning", fill: "mustard" },
     {
       label: "נקודת איזון",
       value: breakEven,
       icon: Award,
       badge: "יעד מינימום",
       tone: "text-muted-foreground",
+      fill: "vermilion",
     },
     {
       label: "תחזית חודשית",
@@ -374,13 +356,14 @@ export function PremiumStats({
       icon: Sparkles,
       badge: forecast > 0 ? "לפי הקצב הנוכחי" : "ממתין לנתונים",
       tone: "text-primary",
+      fill: "slate",
     },
   ];
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      {stats.map(({ label, value, icon: Icon, badge, tone }) => (
-        <div key={label} className="premium-stat group">
+      {stats.map(({ label, value, icon: Icon, badge, tone, fill }) => (
+        <div key={label} className="premium-stat group" data-fill={fill}>
           <div className="flex items-center justify-between gap-2">
             <Icon className={`h-4 w-4 ${tone}`} />
             <span className="truncate text-[9px] font-semibold text-muted-foreground">{badge}</span>
