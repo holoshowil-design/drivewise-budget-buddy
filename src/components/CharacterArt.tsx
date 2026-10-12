@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import type { MascotMood, MascotProp } from "@/components/DriverMascot";
 import type { TaxiMood } from "@/components/CaricatureTaxi";
+import { FrameStrip } from "@/components/anim/FrameStrip";
+import { HEIST, clipMs, clipReady, loadClip, type Clip } from "@/lib/anim/clips";
+import { filmsWanted, motionAllowed } from "@/lib/anim/motion";
 
 /** Higgsfield-painted poses, one image per mood. Same props as the SVG characters so callers swap freely. */
 const CAPTAIN: Record<MascotMood, string> = {
@@ -32,6 +35,7 @@ if (typeof window !== "undefined") {
 export function CaptainArt({ mood, className = "", reactive = true }: { mood: MascotMood; prop?: MascotProp; className?: string; reactive?: boolean }) {
   const [pose, setPose] = useState<MascotMood>(mood);
   const [beat, setBeat] = useState(0);
+  const [film, setFilm] = useState<Clip | null>(null);
 
   useEffect(() => setPose(mood), [mood]);
   useEffect(() => {
@@ -47,10 +51,26 @@ export function CaptainArt({ mood, className = "", reactive = true }: { mood: Ma
     window.addEventListener("driver-reward", onReward);
     return () => { window.removeEventListener("driver-reward", onReward); window.clearTimeout(timer); };
   }, [mood, reactive]);
+  // money coming in: he snatches it in the drawn film once it has loaded; the film outlasts mood changes
+  useEffect(() => {
+    if (!reactive) return;
+    let timer: number | undefined;
+    const onReward = (e: Event) => {
+      const kind = (e as CustomEvent<{ kind?: string }>).detail?.kind;
+      if (kind !== "income" && kind !== "trip" && kind !== "break-even") return;
+      if (!clipReady(HEIST) || !motionAllowed()) return;
+      setFilm(HEIST);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setFilm(null), clipMs(HEIST) + 2200);
+    };
+    window.addEventListener("driver-reward", onReward);
+    const warm = window.setTimeout(() => { if (filmsWanted()) void loadClip(HEIST); }, 2500);
+    return () => { window.removeEventListener("driver-reward", onReward); window.clearTimeout(timer); window.clearTimeout(warm); };
+  }, [reactive]);
 
   return (
-    <span className={`mascot art-captain art-pose-${pose} ${className}`} key={`${pose}-${beat}`} aria-hidden="true">
-      <img src={src(CAPTAIN[pose])} alt="" draggable={false} decoding="async" />
+    <span className={`mascot art-captain art-pose-${pose} ${film ? "art-filmed" : ""} ${className}`} key={film ? `film-${beat}` : `${pose}-${beat}`} aria-hidden="true">
+      {film ? <FrameStrip clip={film} className="art-film" /> : <img src={src(CAPTAIN[pose])} alt="" draggable={false} decoding="async" />}
     </span>
   );
 }
