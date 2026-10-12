@@ -70,6 +70,22 @@ pixar style, photo.
 | T5 | `4fd20f3e-9184-4db6-88c2-ce9b3f5f832f` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162515_4fd20f3e-9184-4db6-88c2-ce9b3f5f832f_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162515_4fd20f3e-9184-4db6-88c2-ce9b3f5f832f.png) |
 | T6 | `ec0f4c19-a339-44f5-b851-49acfe3005c5` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162801_ec0f4c19-a339-44f5-b851-49acfe3005c5_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162801_ec0f4c19-a339-44f5-b851-49acfe3005c5.png) |
 
+## סבב 2 (12 באוקטובר 2026)
+
+**ההחלטה של אַרי:** קפטן 4, "טיפה מצחיק יותר". במקום טורבו המונית: **מכונית רגילה, לא מונית, בלי עיניים ובלי חיוך**, מצחיקה יותר, ובסגנון רטרו של שנות ה-30. לוקחים את סגנון התקופה, לא את המכונית מהסרט (בגלל זכויות).
+**גרסאות הקפטן** נוצרו עם קפטן 4 כתמונת ייחוס (`c686844c-0244-4064-b012-83cf1622c99f`). 8 תמונות, 16 קרדיטים.
+
+| גרסה | מזהה ב-Higgsfield | קישור |
+| --- | --- | --- |
+| קפטן 4א: מוגזם יותר, ידיים שלובות, גבה מורמת | `1ed3611f-7970-4122-8fd9-c25aa68e7be2` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164506_1ed3611f-7970-4122-8fd9-c25aa68e7be2_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164506_1ed3611f-7970-4122-8fd9-c25aa68e7be2.png) |
+| קפטן 4ב: טופח על האף, "יש לי תוכנית" | `480182a1-fb0e-4c57-9331-6b5866e82dcf` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164506_480182a1-fb0e-4c57-9331-6b5866e82dcf_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164506_480182a1-fb0e-4c57-9331-6b5866e82dcf.png) |
+| קפטן 4ג: כובע גדול מדי שנופל על הגבות | `ea533f13-86ba-4345-be5e-f57a543005dc` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164506_ea533f13-86ba-4345-be5e-f57a543005dc_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164506_ea533f13-86ba-4345-be5e-f57a543005dc.png) |
+| קפטן 4ד: סופר שטרות, עיניים מצטלבות | `992dcfb4-dbd4-4a7d-8f7f-480f5cba14ac` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164508_992dcfb4-dbd4-4a7d-8f7f-480f5cba14ac_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164508_992dcfb4-dbd4-4a7d-8f7f-480f5cba14ac.png) |
+| מכונית 1: מכסה מנוע ארוך עד אבסורד | `19ae34d4-65e6-442c-aa55-58c3a1ac2052` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164639_19ae34d4-65e6-442c-aa55-58c3a1ac2052_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164639_19ae34d4-65e6-442c-aa55-58c3a1ac2052.png) |
+| מכונית 2: גבוהה וצרה, על סף נפילה | `3180961f-301b-4412-b683-45ad4bd042b9` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164639_3180961f-301b-4412-b683-45ad4bd042b9_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164639_3180961f-301b-4412-b683-45ad4bd042b9.png) |
+| מכונית 3: קטנה ושמנמנה שרוצה להיות לימוזינה | `280355d2-d155-4ed9-b9ae-bcb981d3210c` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164752_280355d2-d155-4ed9-b9ae-bcb981d3210c_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164752_280355d2-d155-4ed9-b9ae-bcb981d3210c.png) |
+| מכונית 4: רודסטר עם פלסטר על הכנף | `2c5f170d-1ca1-4253-8a44-3d8d9d96c39d` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164751_2c5f170d-1ca1-4253-8a44-3d8d9d96c39d_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164751_2c5f170d-1ca1-4253-8a44-3d8d9d96c39d.png) |
+
 ## אחרי הסבב
 
 1. מציגים לאַרי את 12 התמונות.
