@@ -113,6 +113,28 @@ pixar style, photo.
 | פנים ג: עפעפיים כבדים, סנטר נסוג, קצה הלשון בחוץ | `e852599b-209b-4fc0-b662-6eec17ac0642` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170040_e852599b-209b-4fc0-b662-6eec17ac0642_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170040_e852599b-209b-4fc0-b662-6eec17ac0642.png) |
 | פנים ד: עין אחת גדולה מהשנייה, רווח בין השיניים, שערה סוררת | `a2dcdb42-4605-4087-b3a2-cd475845e3ac` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170040_a2dcdb42-4605-4087-b3a2-cd475845e3ac_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170040_a2dcdb42-4605-4087-b3a2-cd475845e3ac.png) |
 
+## סבב 5: הסט של הדמויות שנבחרו (12 באוקטובר 2026)
+
+**ההחלטה הסופית של אַרי:**
+- **הקפטן:** "סופר כסף" עם פנים ד, כלומר עין אחת גדולה מהשנייה, שיניים חסרות ושערה סוררת. תמונת ייחוס: `a2dcdb42-4605-4087-b3a2-cd475845e3ac`.
+- **המונית:** "הגבוהה והנוטה" בצבעי מונית, עם פס משבצות, **בלי פנים ובלי שלט גג**. תמונת ייחוס: `a3ae4b1f-5710-4f51-bf05-065383987b1e`.
+
+11 תמונות, 22 קרדיטים. "סופר כסף" עצמו הוא ההבעה השישית של הקפטן.
+
+| תמונה | מזהה ב-Higgsfield | קישור |
+| --- | --- | --- |
+| קפטן: ערמומי | `bc584116-edb2-4255-9557-8591d28cb5a4` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170753_bc584116-edb2-4255-9557-8591d28cb5a4_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170753_bc584116-edb2-4255-9557-8591d28cb5a4.png) |
+| קפטן: מנצח | `e2898a1f-a863-4c79-a3b8-bbc9a4cc0d24` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170753_e2898a1f-a863-4c79-a3b8-bbc9a4cc0d24_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170753_e2898a1f-a863-4c79-a3b8-bbc9a4cc0d24.png) |
+| קפטן: המום | `18f70151-ac1d-484b-91a8-d4d55b6ebbe7` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170753_18f70151-ac1d-484b-91a8-d4d55b6ebbe7_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170753_18f70151-ac1d-484b-91a8-d4d55b6ebbe7.png) |
+| קפטן: רוטן | `a963dcdb-795e-4511-8d64-7c2a0cb4b7c5` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170753_a963dcdb-795e-4511-8d64-7c2a0cb4b7c5_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170753_a963dcdb-795e-4511-8d64-7c2a0cb4b7c5.png) |
+| קפטן: ישנוני | `bc75b8d9-baab-4d81-9d13-3f11ab41254c` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170846_bc75b8d9-baab-4d81-9d13-3f11ab41254c_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170846_bc75b8d9-baab-4d81-9d13-3f11ab41254c.png) |
+| מונית: שמחה, קופצת | `8a3d8563-91b1-402d-a121-a4db4b284555` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170845_8a3d8563-91b1-402d-a121-a4db4b284555_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170845_8a3d8563-91b1-402d-a121-a4db4b284555.png) |
+| מונית: עייפה, שוקעת | `25860a4b-40c0-4618-8ba8-6ea89134e241` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170845_25860a4b-40c0-4618-8ba8-6ea89134e241_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170845_25860a4b-40c0-4618-8ba8-6ea89134e241.png) |
+| מונית: טורבו, נמתחת במהירות | `fac052c8-1196-4f3c-a12a-be83dec4ef9e` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170946_fac052c8-1196-4f3c-a12a-be83dec4ef9e_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170946_fac052c8-1196-4f3c-a12a-be83dec4ef9e.png) |
+| מונית: צופרת | `c70952a0-e20a-46d0-87a4-60341f510906` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170945_c70952a0-e20a-46d0-87a4-60341f510906_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170945_c70952a0-e20a-46d0-87a4-60341f510906.png) |
+| מונית: משתעלת עשן | `2bf0b7c8-4909-442f-b85b-98e4388e5ba1` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170946_2bf0b7c8-4909-442f-b85b-98e4388e5ba1_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170946_2bf0b7c8-4909-442f-b85b-98e4388e5ba1.png) |
+| מונית: קופצת לאוויר מבהלה | `8e0a2985-4593-4eaf-88e3-bdfaa972f0b4` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170946_8e0a2985-4593-4eaf-88e3-bdfaa972f0b4_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_170946_8e0a2985-4593-4eaf-88e3-bdfaa972f0b4.png) |
+
 ## אחרי הסבב
 
 1. מציגים לאַרי את 12 התמונות.
