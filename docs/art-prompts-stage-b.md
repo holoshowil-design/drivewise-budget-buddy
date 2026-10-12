@@ -50,6 +50,26 @@ pixar style, photo.
 | T5 | גלגלים גדולים | `CHARACTER: a small round taxi car with oversized cartoon wheels like big feet, mustard paint, checker band, small roof sign, round headlight eyes, grille mouth with teeth, mirror ears. Generic invented car, no real brand. POSE: side view facing left, mid-hop with all four wheels off the ground, joyful.` |
 | T6 | מצח שמשה | `CHARACTER: a rounded little taxi car with a tall curved windshield like a big forehead, wipers as expressive eyebrows, mustard paint, checker band, small roof sign, round headlight eyes, grille mouth, mirror ears. Generic invented car, no real brand. POSE: side view facing left, wipers raised in surprise.` |
 
+## תוצאות הסבב (12 באוקטובר 2026)
+
+12 תמונות, 24 קרדיטים, בגודל 1696x2528 (קפטן) ו-2528x1696 (טורבו). המודל בפועל: `nano_banana_2`.
+**Claude לא ראה את התמונות:** רשת סביבת הענן חוסמת את `d8j0ntlcm91z4.cloudfront.net`. אַרי בוחר ומדווח.
+
+| # | מזהה ב-Higgsfield | קישור |
+| --- | --- | --- |
+| C1 | `fdc94334-5162-4d65-bb28-9c7bfd9eca8c` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162620_fdc94334-5162-4d65-bb28-9c7bfd9eca8c_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162620_fdc94334-5162-4d65-bb28-9c7bfd9eca8c.png) |
+| C2 | `09bc7afb-d249-40ef-82d7-3a704020bc5f` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162620_09bc7afb-d249-40ef-82d7-3a704020bc5f_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162620_09bc7afb-d249-40ef-82d7-3a704020bc5f.png) |
+| C3 | `d208ad44-3104-4d80-a377-74384da5105d` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162515_d208ad44-3104-4d80-a377-74384da5105d_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162515_d208ad44-3104-4d80-a377-74384da5105d.png) |
+| C4 | `c686844c-0244-4064-b012-83cf1622c99f` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162621_c686844c-0244-4064-b012-83cf1622c99f_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162621_c686844c-0244-4064-b012-83cf1622c99f.png) |
+| C5 | `2caaa279-7e53-418d-9b7c-d2caf6821efb` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162700_2caaa279-7e53-418d-9b7c-d2caf6821efb_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162700_2caaa279-7e53-418d-9b7c-d2caf6821efb.png) |
+| C6 | `0f9903c8-a401-4c42-8c3c-73121d6868e1` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162734_0f9903c8-a401-4c42-8c3c-73121d6868e1_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162734_0f9903c8-a401-4c42-8c3c-73121d6868e1.png) |
+| T1 | `a93ede9e-8309-4d11-ba78-e1201813bf9f` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162734_a93ede9e-8309-4d11-ba78-e1201813bf9f_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162734_a93ede9e-8309-4d11-ba78-e1201813bf9f.png) |
+| T2 | `40ba1580-3560-41af-abff-ebb74030ea07` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162515_40ba1580-3560-41af-abff-ebb74030ea07_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162515_40ba1580-3560-41af-abff-ebb74030ea07.png) |
+| T3 | `133f5b30-7aa3-4f0f-ae2f-3095add8ba2d` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162734_133f5b30-7aa3-4f0f-ae2f-3095add8ba2d_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162734_133f5b30-7aa3-4f0f-ae2f-3095add8ba2d.png) |
+| T4 | `43c82811-3c90-444f-acfe-92e62f6c20ac` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162515_43c82811-3c90-444f-acfe-92e62f6c20ac_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162515_43c82811-3c90-444f-acfe-92e62f6c20ac.png) |
+| T5 | `4fd20f3e-9184-4db6-88c2-ce9b3f5f832f` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162515_4fd20f3e-9184-4db6-88c2-ce9b3f5f832f_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162515_4fd20f3e-9184-4db6-88c2-ce9b3f5f832f.png) |
+| T6 | `ec0f4c19-a339-44f5-b851-49acfe3005c5` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162801_ec0f4c19-a339-44f5-b851-49acfe3005c5_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_162801_ec0f4c19-a339-44f5-b851-49acfe3005c5.png) |
+
 ## אחרי הסבב
 
 1. מציגים לאַרי את 12 התמונות.
