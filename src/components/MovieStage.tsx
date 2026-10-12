@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { MascotMood, MascotProp } from "@/components/DriverMascot";
 import type { TaxiMood } from "@/components/CaricatureTaxi";
 import { CaptainArt, TaxiArt } from "@/components/CharacterArt";
+import { claimAmbient, playCues, playSound, type CueHandle } from "@/lib/sound";
+import { MOOD_MUMBLE, TAXI_VOICE, sceneCues } from "@/lib/sound/cues";
 
 export type StageBase = { mood: MascotMood; prop?: MascotProp; taxi?: TaxiMood; driving?: boolean };
 type Beat = { at: number; mood: MascotMood; prop?: MascotProp; taxi?: TaxiMood; driving?: boolean; quip?: string };
@@ -65,11 +67,17 @@ export function MovieStage({ base, mascotClass, taxiClass, morning = false }: { 
   const [take, setTake] = useState(0);
   const timers = useRef<number[]>([]);
   const playing = useRef(false);
+  const soundtrack = useRef<CueHandle | null>(null);
 
   useEffect(() => {
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (still) return;
-    const clear = () => { timers.current.forEach((t) => window.clearTimeout(t)); timers.current = []; };
+    const clear = () => {
+      timers.current.forEach((t) => window.clearTimeout(t));
+      timers.current = [];
+      soundtrack.current?.stop();
+      soundtrack.current = null;
+    };
     let idleTimer: number | undefined;
     const scheduleIdle = () => {
       window.clearTimeout(idleTimer);
@@ -80,6 +88,9 @@ export function MovieStage({ base, mascotClass, taxiClass, morning = false }: { 
       playing.current = true;
       const def = SCENES[name];
       setScene(name); setTake((t) => t + 1); setBeat(def.beats[0]);
+      // reward films are voiced by the reward itself; idle films only now and then
+      const cues = sceneCues(name);
+      if (cues && claimAmbient(name === "morning")) soundtrack.current = playCues(cues, { ambient: true });
       def.beats.slice(1).forEach((b) => timers.current.push(window.setTimeout(() => setBeat(b), b.at)));
       timers.current.push(window.setTimeout(() => { playing.current = false; setScene(null); setBeat(null); scheduleIdle(); }, def.length));
     };
@@ -100,9 +111,9 @@ export function MovieStage({ base, mascotClass, taxiClass, morning = false }: { 
   return (
     <div className={`movie-stage ${scene ? `scene-${scene}` : "scene-none"}`} key={take}>
       {taxiMood && taxiClass && (
-        <span className={`ms-taxi ${taxiClass}`}><TaxiArt mood={taxiMood} driving={cur.driving ?? base.driving} className="h-full w-full" /></span>
+        <span className={`ms-taxi ${taxiClass}`} onClick={() => playSound(TAXI_VOICE[taxiMood])}><TaxiArt mood={taxiMood} driving={cur.driving ?? base.driving} className="h-full w-full" /></span>
       )}
-      <span className={`ms-mascot ${mascotClass}`}><CaptainArt mood={cur.mood} prop={cur.prop ?? base.prop} reactive={false} className="ms-mascot-art" /></span>
+      <span className={`ms-mascot ${mascotClass}`} onClick={() => playSound(MOOD_MUMBLE[cur.mood])}><CaptainArt mood={cur.mood} prop={cur.prop ?? base.prop} reactive={false} className="ms-mascot-art" /></span>
       {scene && <span className="ms-fx" />}
       {cur.quip && <span key={cur.quip} className="ms-quip">{cur.quip}</span>}
     </div>

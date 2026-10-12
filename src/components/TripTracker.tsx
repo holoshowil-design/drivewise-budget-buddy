@@ -37,6 +37,7 @@ import {
 } from "@/lib/active-trip";
 import { TripEndDialog, type TripFormValues } from "@/components/TripEndDialog";
 import { celebrate, crossedDailyGoal } from "@/lib/rewards";
+import { hushSound, playSound } from "@/lib/sound";
 import { calculateWorkStreak, tripMotivation } from "@/lib/motivation";
 import { classifyStep, looksForgotten, MAX_ACCURACY_M } from "@/lib/gps";
 import { hasBackgroundTracking, watchLocation } from "@/lib/location";
@@ -169,8 +170,14 @@ export function TripTracker({
     setAskStart(false);
     requestNotifyPermission();
     startWatch();
+    playSound("turbo-start");
     toast.success("נסיעת עבודה התחילה");
   }, [persist, startWatch]);
+
+  // driving mode is always silent
+  useEffect(() => {
+    if (driveMode) hushSound();
+  }, [driveMode]);
 
   /**
    * Stops tracking and opens the end-of-trip form (nothing is saved yet).

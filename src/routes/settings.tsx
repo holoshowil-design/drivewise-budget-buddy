@@ -22,6 +22,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getOnlineFuelPrice } from "@/lib/fuel-price.functions";
 import { FuelPriceHistoryCard } from "@/components/FuelPriceHistoryCard";
 import { AppPasswordCard } from "@/components/AppPasswordCard";
+import { SoundSettingsCard } from "@/components/SoundSettingsCard";
 import { parseBackup, planRestore, applyRestore } from "@/lib/backup";
 import { NumberField } from "@/components/NumberField";
 import { parseNumber } from "@/lib/number";
@@ -327,6 +328,8 @@ function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        <SoundSettingsCard />
 
         <Card>
           <CardContent className="p-4 space-y-3">
