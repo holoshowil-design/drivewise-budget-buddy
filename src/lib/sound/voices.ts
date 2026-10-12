@@ -1,4 +1,5 @@
 import type { SoundName } from "./cues";
+import type { RecordedSound } from "./takes";
 import {
   drive,
   filter,
@@ -14,141 +15,8 @@ import {
   type Voice,
 } from "./synth";
 
-/* ---------------- the Captain: a wordless, wobbly old voice ----------------
-   A sawtooth "throat" through three vowel formants, with a little breath.
-   He never says real words, he mumbles in the rhythm of his speech bubbles. */
-
-type Vowel = "a" | "e" | "i" | "o" | "u" | "m";
-const FORMANTS: Record<Vowel, readonly number[]> = {
-  a: [730, 1090, 2440],
-  e: [530, 1840, 2480],
-  i: [300, 2200, 2900],
-  o: [570, 840, 2410],
-  u: [320, 870, 2240],
-  m: [250, 1000, 2200],
-};
-const LEVELS: Record<Vowel, readonly number[]> = {
-  a: [1, 0.55, 0.25],
-  e: [1, 0.6, 0.3],
-  i: [0.9, 0.5, 0.3],
-  o: [1, 0.45, 0.15],
-  u: [1, 0.3, 0.1],
-  m: [1, 0.12, 0.04],
-};
-const BANDWIDTH = [130, 170, 250];
-
-/** One syllable: vowel, length, pitch contour (Hz), optional pause before it,
- *  `h` for a breathy onset, `tie` to slur from the previous syllable. */
-type Syl = {
-  v: Vowel;
-  d: number;
-  f0: readonly number[];
-  pause?: number;
-  h?: boolean;
-  tie?: boolean;
-  slide?: number;
-  loud?: number;
-};
-
-function speak(
-  o: Out,
-  syls: readonly Syl[],
-  { breath = 0.12, wobble = 22, level = 1 } = {},
-): number {
-  const lead = 0.08;
-  const total = lead + syls.reduce((s, x) => s + (x.pause ?? 0) + x.d, 0) + 0.08;
-  const throat = osc(o, "sawtooth", syls[0].f0[0], 0, total);
-  lfo(o, throat.detune, 5.3, wobble, 0, total);
-  lfo(o, throat.detune, 1.3, wobble * 0.7, 0, total);
-  // an old voice never holds still: slow random waver on top of the vibrato
-  const shiver = noise(o, 0, total);
-  const shiverTone = filter(o, "lowpass", 18);
-  const shiverDepth = gain(o, wobble * 1.5);
-  shiver.connect(shiverTone).connect(shiverDepth).connect(throat.detune);
-  const air = noise(o, 0, total);
-  const voiced = gain(o, 0);
-  const breathy = gain(o, 0);
-  const out = gain(o, level);
-  throat.connect(voiced);
-  air.connect(breathy);
-  const bank = FORMANTS[syls[0].v].map((f, i) => {
-    const band = filter(o, "bandpass", f, f / BANDWIDTH[i]);
-    const g = gain(o, LEVELS[syls[0].v][i]);
-    voiced.connect(band);
-    breathy.connect(band);
-    band.connect(g).connect(out);
-    return { band, g };
-  });
-  out.connect(o.dest);
-
-  let at = lead;
-  let prevEnd = 0;
-  let prev = syls[0].v;
-  syls.forEach((s, idx) => {
-    at += s.pause ?? 0;
-    const T = o.t + at;
-    const loud = s.loud ?? 1;
-    const tiedNext = syls[idx + 1]?.tie && !syls[idx + 1]?.pause;
-    // the mouth moves to the new vowel in 40ms
-    bank.forEach(({ band, g }, i) => {
-      band.frequency.setValueAtTime(FORMANTS[prev][i], T);
-      band.frequency.linearRampToValueAtTime(FORMANTS[s.v][i], T + 0.04);
-      band.Q.setValueAtTime(FORMANTS[prev][i] / BANDWIDTH[i], T);
-      band.Q.linearRampToValueAtTime(FORMANTS[s.v][i] / BANDWIDTH[i], T + 0.04);
-      g.gain.setValueAtTime(LEVELS[prev][i], T);
-      g.gain.linearRampToValueAtTime(LEVELS[s.v][i], T + 0.04);
-    });
-    prev = s.v;
-    // pitch contour across the first `slide` of the syllable
-    const span = s.d * (s.slide ?? 1);
-    s.f0.forEach((f, k) => {
-      const tt = T + (s.f0.length === 1 ? 0 : (k / (s.f0.length - 1)) * span);
-      if (k === 0) throat.frequency.setValueAtTime(f, tt);
-      else throat.frequency.linearRampToValueAtTime(f, tt);
-    });
-    // loudness: soft attack unless slurred, fall away unless the next one is slurred
-    if (!(s.tie && !s.pause)) {
-      voiced.gain.setValueAtTime(0, T);
-      voiced.gain.linearRampToValueAtTime(loud, T + 0.03);
-    } else voiced.gain.linearRampToValueAtTime(loud, T + 0.03);
-    voiced.gain.setValueAtTime(loud, T + s.d - 0.05);
-    voiced.gain.linearRampToValueAtTime(tiedNext ? loud : 0, T + s.d);
-    // breath: a puff before an aspirated syllable, a little air under every one
-    if (s.h) {
-      const from = Math.max(T - 0.07, o.t + prevEnd);
-      breathy.gain.setValueAtTime(0, from);
-      breathy.gain.linearRampToValueAtTime(0.7 * loud, T - 0.005);
-    } else if (!(s.tie && !s.pause)) breathy.gain.setValueAtTime(0, T);
-    breathy.gain.linearRampToValueAtTime(breath * loud, T + 0.03);
-    breathy.gain.setValueAtTime(breath * loud, T + s.d - 0.05);
-    breathy.gain.linearRampToValueAtTime(tiedNext ? breath * loud : 0, T + s.d);
-    at += s.d;
-    prevEnd = at;
-  });
-  return total;
-}
-
-const say =
-  (syls: readonly Syl[], opts?: Parameters<typeof speak>[2]): Voice =>
-  (o) =>
-    speak(o, syls, opts);
-
-/** A tune hummed through the nose: semitone steps over `base`, slurred note to note. */
-function hum(notes: readonly (readonly [number, number])[], base: number): Voice {
-  return (o) =>
-    speak(
-      o,
-      notes.map(([n, d], i) => ({
-        v: "m" as const,
-        d,
-        f0: i === 0 ? [semis(base, n)] : [semis(base, notes[i - 1][0]), semis(base, n)],
-        slide: 0.22,
-        tie: i > 0,
-        loud: i % 4 === 0 ? 1 : 0.85,
-      })),
-      { breath: 0.05, wobble: 14 },
-    );
-}
+/* ---------------- the Captain ----------------
+   His voice is recorded (see takes.ts); only his whistle is made here. */
 
 /** He whistles: a pure tone with vibrato and breath, slurred note to note. */
 function whistle(notes: readonly (readonly [number, number])[], base: number): Voice {
@@ -182,59 +50,6 @@ function whistle(notes: readonly (readonly [number, number])[], base: number): V
     return total;
   };
 }
-
-/** Rattling inhale, whistling exhale. */
-const snore: Voice = (o) => {
-  const breathe = (at: number) => {
-    const T = o.t + at;
-    // inhale: the soft palate flutters about 26 times a second
-    const rasp = noise(o, at, at + 1.05);
-    const raspBand = filter(o, "bandpass", 330, 1.4);
-    const throat = osc(o, "sawtooth", 68, at, at + 1.05);
-    const throatTone = filter(o, "lowpass", 320, 1);
-    const flutter = gain(o, 0.5);
-    lfo(o, flutter.gain, 26, 0.5, at, at + 1.05);
-    const inhale = gain(o, 0);
-    ramp(inhale.gain, T, [
-      [0, 0],
-      [0.75, 0.9],
-      [0.95, 0.5],
-      [1.05, 0],
-    ]);
-    rasp.connect(raspBand).connect(flutter);
-    const throatAmp = gain(o, 0.45);
-    throat.connect(throatTone).connect(throatAmp).connect(flutter);
-    flutter.connect(inhale).connect(o.dest);
-    // exhale: a little whistle through the moustache
-    const puff = noise(o, at + 1.15, at + 1.85);
-    const puffBand = filter(o, "bandpass", 1500, 1.6);
-    ramp(puffBand.frequency, T, [
-      [1.15, 1600],
-      [1.85, 800],
-    ]);
-    const puffAmp = gain(o, 0);
-    ramp(puffAmp.gain, T, [
-      [1.15, 0],
-      [1.25, 0.4],
-      [1.85, 0],
-    ]);
-    puff.connect(puffBand).connect(puffAmp).connect(o.dest);
-    const peep = osc(o, "sine", 1250, at + 1.15, at + 1.85);
-    ramp(peep.frequency, T, [
-      [1.15, 1300],
-      [1.85, 950],
-    ]);
-    const peepAmp = gain(o, 0);
-    ramp(peepAmp.gain, T, [
-      [1.15, 0],
-      [1.3, 0.05],
-      [1.85, 0],
-    ]);
-    peep.connect(peepAmp).connect(o.dest);
-  };
-  breathe(0);
-  return 1.95;
-};
 
 /* ---------------- Turbo the taxi: an old engine, a klaxon, tired brakes ---------------- */
 
@@ -716,68 +531,10 @@ const fanfare: Voice = (o) => {
   return 2.1;
 };
 
-const MUMBLES = {
-  grumble: say(
-    [
-      { v: "m", d: 0.16, f0: [118, 112] },
-      { v: "o", d: 0.13, f0: [114, 104], h: true, pause: 0.07 },
-      { v: "m", d: 0.2, f0: [106, 96] },
-      { v: "u", d: 0.26, f0: [100, 92, 84], pause: 0.06 },
-    ],
-    { wobble: 30 },
-  ),
-  smirk: say([
-    { v: "e", d: 0.1, f0: [165, 174], h: true },
-    { v: "e", d: 0.12, f0: [172, 160], h: true, pause: 0.08 },
-  ]),
-  sleepy: say([
-    { v: "a", d: 0.75, f0: [140, 215, 190, 120], h: true },
-    { v: "m", d: 0.32, f0: [118, 102], tie: true },
-  ]),
-  shock: say([
-    { v: "a", d: 0.1, f0: [180, 260], h: true },
-    { v: "o", d: 0.22, f0: [280, 340, 320], tie: true },
-  ]),
-  victory: say([
-    { v: "i", d: 0.1, f0: [210, 230] },
-    { v: "a", d: 0.18, f0: [235, 290], tie: true },
-    { v: "u", d: 0.32, f0: [330, 345, 290], h: true, pause: 0.08 },
-  ]),
-  excited: say([
-    { v: "o", d: 0.1, f0: [220, 230], h: true },
-    { v: "o", d: 0.1, f0: [245, 255], h: true, pause: 0.07 },
-    { v: "o", d: 0.18, f0: [270, 300, 290], h: true, pause: 0.07 },
-  ]),
-  pain: say([
-    { v: "a", d: 0.12, f0: [300, 260] },
-    { v: "u", d: 0.12, f0: [250, 220], tie: true },
-    { v: "a", d: 0.12, f0: [290, 255], pause: 0.08 },
-    { v: "u", d: 0.16, f0: [245, 200], tie: true },
-  ]),
-  yes: say([
-    { v: "m", d: 0.14, f0: [140, 132] },
-    { v: "m", d: 0.2, f0: [150, 185], h: true, pause: 0.07 },
-  ]),
-  one: say([{ v: "a", d: 0.18, f0: [150, 140], h: true }]),
-  two: say([{ v: "e", d: 0.18, f0: [160, 150], h: true }]),
-  three: say([{ v: "i", d: 0.28, f0: [190, 230, 220], h: true }]),
-};
+/** Every sound that is made in code; the Captain's voice comes from recorded takes. */
+type SynthSound = Exclude<SoundName, RecordedSound>;
 
-const RAW: Record<SoundName, Voice> = {
-  ...MUMBLES,
-  tune: hum(
-    [
-      [0, 0.16],
-      [4, 0.16],
-      [7, 0.16],
-      [9, 0.32],
-      [7, 0.16],
-      [4, 0.16],
-      [2, 0.16],
-      [0, 0.4],
-    ],
-    150,
-  ),
+const RAW: Record<SynthSound, Voice> = {
   whistle: whistle(
     [
       [0, 0.12],
@@ -791,7 +548,6 @@ const RAW: Record<SoundName, Voice> = {
     ],
     880,
   ),
-  snore,
   aooga,
   beep,
   "turbo-start": turboStart,
@@ -809,21 +565,8 @@ const RAW: Record<SoundName, Voice> = {
 };
 
 /** Level trims, measured (A-weighted) so a honk, a bell and a mumble come out about equally loud. */
-const TRIM: Partial<Record<SoundName, number>> = {
-  grumble: 1.8,
-  smirk: 1.76,
-  sleepy: 1.35,
-  shock: 1.05,
-  victory: 0.93,
-  excited: 0.93,
-  pain: 1.36,
-  yes: 1.8,
-  one: 1.55,
-  two: 1.66,
-  three: 1.46,
-  tune: 1.07,
+const TRIM: Partial<Record<SynthSound, number>> = {
   whistle: 0.62,
-  snore: 1.53,
   aooga: 0.72,
   beep: 0.67,
   "turbo-start": 1.4,
@@ -847,5 +590,5 @@ function trimmed(voice: Voice, k: number): Voice {
 }
 
 export const SOUNDS = Object.fromEntries(
-  (Object.keys(RAW) as SoundName[]).map((name) => [name, trimmed(RAW[name], TRIM[name] ?? 1)]),
-) as Record<SoundName, Voice>;
+  (Object.keys(RAW) as SynthSound[]).map((name) => [name, trimmed(RAW[name], TRIM[name] ?? 1)]),
+) as Record<SynthSound, Voice>;

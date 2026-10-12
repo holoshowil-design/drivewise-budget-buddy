@@ -1,6 +1,14 @@
 import { useEffect } from "react";
 import type { RewardDetail } from "@/lib/rewards";
-import { playCues, refreshSoundPref, resumeSound, suspendSound, unlockSound } from "@/lib/sound";
+import {
+  loadTakes,
+  playCues,
+  refreshSoundPref,
+  resumeSound,
+  soundEnabled,
+  suspendSound,
+  unlockSound,
+} from "@/lib/sound";
 import { REWARD_CUES } from "@/lib/sound/cues";
 import { SOUND_KEY } from "@/lib/sound/prefs";
 
@@ -23,7 +31,10 @@ export function SoundDirector() {
     window.addEventListener("driver-reward", onReward);
     window.addEventListener("storage", onStorage);
     document.addEventListener("visibilitychange", onVisibility);
+    // load the Captain's voice once the page has settled, so it is ready by the first touch
+    const prefetch = window.setTimeout(() => soundEnabled() && loadTakes(), 2000);
     return () => {
+      window.clearTimeout(prefetch);
       window.removeEventListener("pointerdown", onGesture, gesture);
       window.removeEventListener("touchend", onGesture, gesture);
       window.removeEventListener("keydown", onGesture, gesture);

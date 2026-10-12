@@ -1,9 +1,12 @@
 import { readActive } from "@/lib/active-trip";
 import { ambientAllowed, canPlay, type Cue, type SoundName } from "./cues";
 import { readSoundPref, writeSoundPref } from "./prefs";
+import type { Voice } from "./synth";
+import { isRecorded, loadTakes, pickTake, playTake } from "./takes";
 import { SOUNDS } from "./voices";
 
 export type { SoundName } from "./cues";
+export { loadTakes } from "./takes";
 
 /**
  * The app's one speaker. Nothing is created until the first touch (browsers
@@ -57,6 +60,7 @@ function audio(): AudioContext | null {
 export function unlockSound() {
   lastGesture = Date.now();
   if (!soundEnabled()) return;
+  void loadTakes();
   const c = audio();
   if (c && c.state !== "running") void c.resume().catch(() => {});
 }
@@ -76,6 +80,13 @@ function fade(g: GainNode) {
   g.gain.setTargetAtTime(0, ctx.currentTime, 0.03);
 }
 
+/** The Captain stays quiet until his recorded voice has loaded, rather than sounding synthetic. */
+function voiceFor(name: SoundName): Voice | null {
+  if (!isRecorded(name)) return SOUNDS[name];
+  const take = pickTake(name);
+  return take && ((o) => playTake(o, take));
+}
+
 /** Plays one sound now. Returns its volume node, or null when it may not play. */
 export function playSound(
   name: SoundName,
@@ -88,11 +99,13 @@ export function playSound(
     !canPlay({ enabled: soundEnabled(), running, hidden: document.hidden, driving: inDriveMode() })
   )
     return null;
+  const voice = voiceFor(name);
+  if (!voice) return null;
   const g = c.createGain();
   g.gain.value = volume * (ambient ? AMBIENT_VOLUME : 1);
   g.connect(bus);
   playing.add(g);
-  const length = SOUNDS[name]({ ctx: c, dest: g, t: c.currentTime + 0.02 });
+  const length = voice({ ctx: c, dest: g, t: c.currentTime + 0.02 });
   window.setTimeout(
     () => {
       g.disconnect();

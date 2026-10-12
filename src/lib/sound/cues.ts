@@ -97,8 +97,7 @@ export const SCENE_CUES = {
     { sound: "rev", at: 4600 },
   ],
   snooze: [
-    { sound: "snore", at: 300 },
-    { sound: "snore", at: 2300 },
+    { sound: "snore", at: 400 },
     { sound: "aooga", at: 4400 },
     { sound: "shock", at: 4650 },
     { sound: "smirk", at: 6200 },

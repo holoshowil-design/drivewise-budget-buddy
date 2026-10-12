@@ -12,6 +12,7 @@ import {
   sceneCues,
   type Cue,
 } from "./cues";
+import { TAKES } from "./takes";
 import { SOUNDS } from "./voices";
 
 const known = new Set<string>(SOUND_NAMES);
@@ -29,8 +30,9 @@ function checkTrack(cues: readonly Cue[], longest: number) {
 }
 
 describe("sound registry", () => {
-  it("builds every named sound", () => {
-    expect(Object.keys(SOUNDS).sort()).toEqual([...SOUND_NAMES].sort());
+  it("gives every named sound one voice: synthesized, or the Captain's recorded takes", () => {
+    const voiced = [...Object.keys(SOUNDS), ...Object.keys(TAKES)].sort();
+    expect(voiced).toEqual([...SOUND_NAMES].sort());
     for (const voice of Object.values(SOUNDS)) expect(typeof voice).toBe("function");
   });
 

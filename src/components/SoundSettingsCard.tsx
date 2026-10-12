@@ -9,14 +9,16 @@ import { playSound, setSoundEnabled, soundEnabled, type SoundName } from "@/lib/
 /** The samples button walks through these, so it is easy to say which one to change. */
 const SAMPLES: readonly { sound: SoundName; label: string }[] = [
   { sound: "aooga", label: "הצופר של טורבו" },
+  { sound: "smirk", label: "הקפטן מצחקק" },
   { sound: "tune", label: "הקפטן מזמזם" },
   { sound: "turbo-start", label: "טורבו מתניע" },
   { sound: "grumble", label: "הקפטן רוטן" },
   { sound: "brake", label: "בלימה" },
-  { sound: "whistle", label: "הקפטן שורק" },
+  { sound: "shock", label: "הקפטן נבהל" },
   { sound: "kaching", label: "קופה רושמת" },
   { sound: "victory", label: "הקפטן חוגג" },
   { sound: "womp", label: "טרומבון עצוב" },
+  { sound: "whistle", label: "הקפטן שורק" },
   { sound: "fanfare", label: "תרועת ניצחון" },
   { sound: "snore", label: "הקפטן נוחר" },
 ];
