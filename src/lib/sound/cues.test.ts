@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { FILMS } from "@/lib/anim/films";
 import {
   AMBIENT_GAP_MS,
   AMBIENT_IDLE_MS,
+  FILM_SCENE_CUES,
   MOOD_MUMBLE,
   REWARD_CUES,
   SCENE_CUES,
@@ -44,10 +46,28 @@ describe("sound registry", () => {
     for (const cues of Object.values(SCENE_CUES)) checkTrack(cues, 10_000);
   });
 
+  it("keeps the drawn films' soundtracks inside the films they follow", () => {
+    for (const [name, cues] of Object.entries(FILM_SCENE_CUES)) {
+      const film = FILMS[name as keyof typeof FILMS];
+      expect(film).toBeDefined();
+      checkTrack(cues, film!.length);
+    }
+  });
+
   it("voices only the films it has a soundtrack for", () => {
     expect(sceneCues("morning")).toBe(SCENE_CUES.morning);
     expect(sceneCues("heist")).toBeUndefined();
     expect(sceneCues("parade")).toBeUndefined();
+  });
+
+  it("follows the drawings when a scene plays as a drawn film", () => {
+    expect(sceneCues("morning", true)).toBe(FILM_SCENE_CUES.morning);
+    expect(sceneCues("snooze", true)).toBe(FILM_SCENE_CUES.snooze);
+    // Turbo's laps travel the same either way; rewards voice their own films
+    expect(sceneCues("brake", true)).toBe(SCENE_CUES.brake);
+    expect(sceneCues("heist", true)).toBeUndefined();
+    expect(sceneCues("parade", true)).toBeUndefined();
+    expect(sceneCues("splash", true)).toBeUndefined();
   });
 
   it("has a voice for every mood of the Captain and of Turbo", () => {

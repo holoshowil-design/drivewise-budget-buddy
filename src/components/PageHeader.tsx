@@ -6,7 +6,8 @@ import { MovieStage } from "@/components/MovieStage";
 
 /** Painted Tel Aviv backdrops in public/backdrops. */
 export type StageBackdrop = "street" | "road" | "promenade" | "garage";
-export type PageScene = { mood: MascotMood; prop?: MascotProp; line: string; taxi?: TaxiMood; driving?: boolean; backdrop?: StageBackdrop };
+/** `rewards`: the page fires rewards (trip end), so their films are fetched ahead. */
+export type PageScene = { mood: MascotMood; prop?: MascotProp; line: string; taxi?: TaxiMood; driving?: boolean; backdrop?: StageBackdrop; rewards?: boolean };
 
 export function PageHeader({ title, subtitle, action, scene }: { title: string; subtitle?: string; action?: ReactNode; scene?: PageScene }) {
   return (
@@ -20,7 +21,7 @@ export function PageHeader({ title, subtitle, action, scene }: { title: string; 
       </div>
       {scene && (
         <div className={`page-stage stage-bg stage-${scene.backdrop ?? "street"}`} aria-hidden="true">
-          <MovieStage base={{ mood: scene.mood, prop: scene.prop, taxi: scene.taxi, driving: scene.driving }} mascotClass="page-stage-mascot" taxiClass="page-stage-taxi" />
+          <MovieStage base={{ mood: scene.mood, prop: scene.prop, taxi: scene.taxi, driving: scene.driving }} mascotClass="page-stage-mascot" taxiClass="page-stage-taxi" rewards={scene.rewards} />
           <ComicBubble side="start" className="page-stage-bubble">{scene.line}</ComicBubble>
         </div>
       )}
