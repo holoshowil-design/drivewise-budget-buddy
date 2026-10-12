@@ -874,6 +874,14 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 .scene-count .ms-mascot .m-head { animation: m-count 1.5s cubic-bezier(.2,1.6,.4,1) infinite; }
 .scene-phone .ms-mascot { animation: sc-pace 7s ease-in-out both; }
 .scene-snooze .ms-mascot { animation: sc-snooze 8s cubic-bezier(.5,0,.3,1) both; }
+/* drawn films (stage 3): the strip stands where the still pose stands and lets whatever
+   flies around the Captain spill over his box; once it holds the last drawing he jigs */
+.frame-strip { position: absolute; display: block; overflow: hidden; pointer-events: none; }
+/* the cells move by inline transform only, so no pose animation may reach them */
+.frame-strip > img.frame-cells { position: absolute; top: 0; left: 0; max-width: none; user-select: none; pointer-events: none; animation: none; }
+.movie-stage.ms-filmed .ms-mascot { animation: none; }
+.ms-film, .art-film { transform-origin: 50% 100%; animation: m-dance .45s steps(2) var(--film-ms, 0ms) infinite alternate; }
+.art-captain.art-filmed { position: relative; }
 @keyframes sc-taxi-arrive { 0% { transform: translateX(-130%) skewX(-12deg); } 22% { transform: translateX(6%) skewX(10deg) scaleX(.92); } 28% { transform: translateX(0) skewX(-4deg); } 32%, 100% { transform: none; } }
 @keyframes sc-step-out { 0%, 24% { opacity: 0; transform: translateX(-60%) scale(.6); } 30% { opacity: 1; transform: translateX(-40%) scale(1.05, .9) translateY(-10px); } 40% { transform: translateX(-10%) translateY(0); } 46%, 100% { opacity: 1; transform: none; } }
 @keyframes sc-puddle { 0%, 52% { opacity: 0; transform: scaleX(.2); } 58%, 85% { opacity: .9; transform: scaleX(1); } 100% { opacity: 0; } }
