@@ -901,3 +901,12 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 }
 .momentum-coach { overflow: visible; }
 .coach-stage .ms-quip { top: 3.2rem; inset-inline-start: 38%; }
+
+/* Lock the page horizontally. Entrance animations (e.g. cards sliding in on
+   the dashboard) briefly reach past the screen edge; mobile browsers and the
+   Android app then widen the page and it can be dragged sideways, bottom menu
+   included. Clipping horizontal overflow keeps it at the screen width. */
+html,
+body {
+  overflow-x: clip;
+}
