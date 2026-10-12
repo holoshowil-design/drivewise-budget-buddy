@@ -86,6 +86,21 @@ pixar style, photo.
 | מכונית 3: קטנה ושמנמנה שרוצה להיות לימוזינה | `280355d2-d155-4ed9-b9ae-bcb981d3210c` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164752_280355d2-d155-4ed9-b9ae-bcb981d3210c_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164752_280355d2-d155-4ed9-b9ae-bcb981d3210c.png) |
 | מכונית 4: רודסטר עם פלסטר על הכנף | `2c5f170d-1ca1-4253-8a44-3d8d9d96c39d` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164751_2c5f170d-1ca1-4253-8a44-3d8d9d96c39d_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_164751_2c5f170d-1ca1-4253-8a44-3d8d9d96c39d.png) |
 
+## סבב 3 (12 באוקטובר 2026)
+
+**הבחירה של אַרי:** הקפטן "סופר כסף" (`992dcfb4-dbd4-4a7d-8f7f-480f5cba14ac`) והמכונית "הגבוהה והנוטה" (`3180961f-301b-4412-b683-45ad4bd042b9`), "רק שיזהו לפי הצבעים שזו מונית".
+7 תמונות, 14 קרדיטים. כולן נוצרו מתמונות הייחוס של הבחירה.
+
+| גרסה | מזהה ב-Higgsfield | קישור |
+| --- | --- | --- |
+| מונית א: חרדל עם פס משבצות, כנפיים בצפחה | `a3ae4b1f-5710-4f51-bf05-065383987b1e` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165812_a3ae4b1f-5710-4f51-bf05-065383987b1e_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165812_a3ae4b1f-5710-4f51-bf05-065383987b1e.png) |
+| מונית ב: חרדל עם גג וכנפיים שחורים, בלי משבצות | `635e4b0e-364c-4b1e-be56-134be06db68b` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165812_635e4b0e-364c-4b1e-be56-134be06db68b_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165812_635e4b0e-364c-4b1e-be56-134be06db68b.png) |
+| קפטן: ערמומי | `2ce811b4-5212-4d6a-a41b-e44b530f0bfd` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165812_2ce811b4-5212-4d6a-a41b-e44b530f0bfd_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165812_2ce811b4-5212-4d6a-a41b-e44b530f0bfd.png) |
+| קפטן: מנצח | `f52f9ce8-f408-4fce-8d67-bd40a2834695` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165812_f52f9ce8-f408-4fce-8d67-bd40a2834695_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165812_f52f9ce8-f408-4fce-8d67-bd40a2834695.png) |
+| קפטן: המום | `6b1aeda7-b761-4b8a-ad98-b7ff6dc00a0a` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165904_6b1aeda7-b761-4b8a-ad98-b7ff6dc00a0a_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165904_6b1aeda7-b761-4b8a-ad98-b7ff6dc00a0a.png) |
+| קפטן: רוטן | `dec6fdf3-398f-44c2-98af-643cd8be9266` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165904_dec6fdf3-398f-44c2-98af-643cd8be9266_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165904_dec6fdf3-398f-44c2-98af-643cd8be9266.png) |
+| קפטן: ישנוני | `0e26f434-d842-43db-8ad2-f08e45203082` | [תצוגה מקדימה](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165904_0e26f434-d842-43db-8ad2-f08e45203082_min.webp) · [מקור](https://d8j0ntlcm91z4.cloudfront.net/user_309K9wPIJh1X1hzt8BxeAFSNp5a/hf_20261012_165904_0e26f434-d842-43db-8ad2-f08e45203082.png) |
+
 ## אחרי הסבב
 
 1. מציגים לאַרי את 12 התמונות.
