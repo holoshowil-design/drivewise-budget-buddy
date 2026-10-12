@@ -50,48 +50,48 @@
 
 :root {
   --radius: 0.75rem;
-  /* 1961 paper palette (docs/visual-art-direction.md): warm ink, cream paper, flat muted fills.
-     Text colours keep at least 4.5:1 on paper and on cards. */
+  /* 1961 paper palette (docs/visual-art-direction.md): warm ink, cream paper, flat bold fills.
+     Text colours keep at least 4.5:1 on paper, on cards and on the tints. */
   --background: #f3ead3;
   --foreground: #231f1c;
   --card: #fbf6e9;
   --card-foreground: #231f1c;
   --popover: #fbf6e9;
   --popover-foreground: #231f1c;
-  --primary: #3b7049;
+  --primary: #2c7041;
   --primary-foreground: #fffbf0;
-  --primary-glow: #4e8c5e;
+  --primary-glow: #3f8a55;
   --secondary: #eadfc6;
   --secondary-foreground: #231f1c;
   --muted: #eadfc6;
-  --muted-foreground: #6b6155;
+  --muted-foreground: #5f564b;
   --accent: #e8dcbf;
   --accent-foreground: #231f1c;
-  --destructive: #b4412a;
+  --destructive: #b8381f;
   --destructive-foreground: #fffbf0;
-  --success: #3b7049;
+  --success: #2c7041;
   --success-foreground: #fffbf0;
   --warning: #8a6410;
   --warning-foreground: #231f1c;
   --border: #d6c9ab;
   --input: #cfc0a0;
-  --ring: #3b7049;
-  --chart-1: #4e8c5e;
-  --chart-2: #4a5b70;
-  --chart-3: #e8b43a;
-  --chart-4: #d8553a;
-  --chart-5: #7fa3b5;
+  --ring: #2c7041;
+  --chart-1: #3f8a55;
+  --chart-2: #3d5878;
+  --chart-3: #f2b630;
+  --chart-4: #e2502f;
+  --chart-5: #6fa3c0;
 
   --gradient-primary: linear-gradient(var(--primary), var(--primary));
   --shadow-glow: 0 0 0 transparent;
   --shadow-card: 2px 2px 0 color-mix(in oklab, var(--foreground) 14%, transparent);
   --shadow-premium: 3px 3px 0 color-mix(in oklab, var(--foreground) 14%, transparent);
-  --hud-background: #34414f;
-  --hud-surface: #435266;
+  --hud-background: #283a58;
+  --hud-surface: #34496c;
   --hud-foreground: #f6efdc;
   --hud-muted: #c5c0b0;
-  --hud-accent: #e8b43a;
-  --hud-neutral: #8d98a5;
+  --hud-accent: #f2b630;
+  --hud-neutral: #93a0b6;
   --hud-border: rgb(246 239 220 / 0.22);
 }
 
@@ -294,14 +294,14 @@
   --ink: #231f1c;
   --paper: #f3ead3;
   --paper-shade: #e8dbbb;
-  --mustard: #e8b43a;
-  --slate: #4a5b70;
-  --vermilion: #d8553a;
-  --green-tint: #dde8d2;
-  --mustard-tint: #f6e4b3;
-  --vermilion-tint: #f3d2c5;
-  --slate-tint: #dfe2df;
-  --hud-good: #a8d29c;
+  --mustard: #f2b630;
+  --slate: #3d5878;
+  --vermilion: #e2502f;
+  --green-tint: #cde3bf;
+  --mustard-tint: #f8db8f;
+  --vermilion-tint: #f6c3ae;
+  --slate-tint: #d2dce7;
+  --hud-good: #a3d98f;
   /* the line, how far the fill slips off it, and the hand-cut corners */
   --line: 1.5px;
   --slip: 3px;
@@ -434,6 +434,10 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 .status-chip-neutral { background: var(--mustard); }
 .status-chip-danger { background: var(--vermilion-tint); }
 .premium-stat { min-height: 7.5rem; padding: 1rem; }
+.premium-stat[data-fill="green"] { --fill: var(--green-tint); }
+.premium-stat[data-fill="mustard"] { --fill: var(--mustard-tint); }
+.premium-stat[data-fill="vermilion"] { --fill: var(--vermilion-tint); }
+.premium-stat[data-fill="slate"] { --fill: var(--slate-tint); }
 .premium-stat::after { content: ""; position: absolute; inset-inline-end: 10px; bottom: 10px; width: 24px; height: 12px; background: repeating-linear-gradient(-45deg, var(--ink) 0 1px, transparent 1px 4px); opacity: .16; }
 .premium-panel { padding: 1rem; }
 .weekly-bar {
@@ -584,16 +588,17 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 .stage-road { --backdrop: url("/backdrops/road.webp"); }
 .stage-promenade { --backdrop: url("/backdrops/promenade.webp"); }
 .stage-garage { --backdrop: url("/backdrops/garage.webp"); }
-.page-stage { --frame-top: 1.4rem; position: relative; height: 10.5rem; margin-top: .6rem; }
+.page-stage { --frame-top: 2.6rem; position: relative; height: 12.4rem; margin-top: .6rem; }
 .page-stage-mascot { position: absolute; bottom: 5px; inset-inline-start: .3rem; width: 8.5rem !important; height: 10.2rem !important; }
-.page-stage-taxi { position: absolute; bottom: 5px; inset-inline-start: 7.6rem; width: 9.5rem; height: 5.6rem; }
+/* the taxi stands about as tall as the captain's shoulders */
+.page-stage-taxi { position: absolute; bottom: 5px; inset-inline-start: 6.2rem; width: 13rem; height: 8.1rem; }
 .page-stage-bubble { position: absolute; top: 0; inset-inline-end: .5rem; max-width: 55%; }
-.page-stage:has(.page-stage-taxi) .page-stage-bubble { max-width: 46%; }
+.page-stage:has(.page-stage-taxi) .page-stage-bubble { max-width: 44%; }
 
 .coach-stage { --frame-top: 2.6rem; position: relative; height: 11.5rem; margin-top: -2.6rem; }
 .coach-mascot { position: absolute; bottom: 5px; inset-inline-start: .4rem; width: 9.6rem !important; height: 11.6rem !important; }
-.coach-taxi { position: absolute; bottom: 5px; inset-inline-start: 9.2rem; width: 10.5rem; height: 6.2rem; }
-.coach-streak { --slip: 2px; position: absolute; top: 3.4rem; inset-inline-start: 50%; padding: .15rem .55rem; border-radius: 999px; font-weight: 900; font-size: .85rem; transform: rotate(-5deg); }
+.coach-taxi { position: absolute; bottom: 5px; inset-inline-start: 7.4rem; width: 12.6rem; height: 8.2rem; }
+.coach-streak { --slip: 2px; position: absolute; top: 3.6rem; inset-inline-end: .9rem; padding: .15rem .55rem; border-radius: 999px; font-weight: 900; font-size: .85rem; transform: rotate(-5deg); }
 .coach-bubble { display: flex; align-items: center; gap: .6rem; margin-top: .9rem; font-family: inherit; font-size: inherit; }
 .coach-bubble::after { inset-inline-start: 3rem; top: -8px; bottom: auto; width: 14px; height: 14px; border: 0; border-top: var(--line) solid var(--ink); border-left: var(--line) solid var(--ink); transform: rotate(45deg); }
 .coach-bubble h2 { font-size: 1.05rem; color: var(--ink); }
@@ -861,7 +866,8 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 .scene-splash .ms-mascot { animation: sc-kick 7.6s cubic-bezier(.3,1.4,.4,1) both; }
 .scene-splash .ms-taxi { animation: sc-taxi-kicked 7.6s cubic-bezier(.2,1.6,.4,1) both; }
 .scene-splash .ms-fx::before { content: "💦"; position: absolute; top: 2rem; inset-inline-start: 4rem; font-size: 2rem; opacity: 0; animation: sc-splash 7.6s ease-out both; }
-.scene-parade .ms-mascot { animation: sc-roof 10s cubic-bezier(.4,0,.3,1) both; z-index: 2; }
+.scene-parade .ms-mascot { --roof: -65%; transform-origin: 50% 100%; animation: sc-roof 10s cubic-bezier(.4,0,.3,1) both; z-index: 2; }
+.page-stage .scene-parade .ms-mascot { --roof: -75%; }
 .scene-parade .ms-taxi { animation: sc-parade 10s cubic-bezier(.45,0,.3,1) both; }
 .scene-wipe .ms-mascot { animation: sc-wipe 7s ease-in-out both; z-index: 2; }
 .scene-wipe .ms-mascot .m-fore-r { animation: m-scrub .25s ease-in-out infinite alternate; }
@@ -877,7 +883,8 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 @keyframes sc-kick { 0%, 46% { transform: none; } 50% { transform: translateX(-24%) rotate(-12deg); } 54% { transform: translateX(-30%) rotate(14deg) scale(1.08, .92); } 62%, 100% { transform: none; } }
 @keyframes sc-taxi-kicked { 0%, 50% { transform: none; } 54% { transform: translateX(-10%) rotate(-5deg); } 62% { transform: translateX(3%) rotate(2deg); } 70%, 100% { transform: none; } }
 @keyframes sc-splash { 0%, 18% { opacity: 0; transform: scale(.3); } 22% { opacity: 1; transform: scale(1.4) rotate(-10deg); } 40% { opacity: 0; transform: scale(1.8) translateY(-20px); } 100% { opacity: 0; } }
-@keyframes sc-roof { 0% { transform: none; } 10% { transform: translate(-30%, -40%) scale(.9, 1.1); } 16%, 20% { transform: translate(-58%, -28%); } 30% { transform: translate(-48%, -28%); } 40% { transform: translate(-68%, -28%); } 55% { transform: translate(-50%, -28%); } 66% { transform: translate(140%, -28%); } 67% { transform: translate(-260%, -28%); } 80% { transform: translate(-58%, -28%); } 92% { transform: translate(-20%, -40%); } 100% { transform: none; } }
+/* --roof lifts the captain's feet onto the taxi roof; riding up there he shrinks a little so he stays on the stage */
+@keyframes sc-roof { 0% { transform: none; } 10% { transform: translate(-30%, calc(var(--roof) - 14%)) scale(.7, .84); } 16%, 20% { transform: translate(-58%, var(--roof)) scale(.72); } 30% { transform: translate(-48%, var(--roof)) scale(.72); } 40% { transform: translate(-68%, var(--roof)) scale(.72); } 55% { transform: translate(-50%, var(--roof)) scale(.72); } 66% { transform: translate(140%, var(--roof)) scale(.72); } 67% { transform: translate(-260%, var(--roof)) scale(.72); } 80% { transform: translate(-58%, var(--roof)) scale(.72); } 92% { transform: translate(-20%, calc(var(--roof) - 14%)) scale(.86); } 100% { transform: none; } }
 @keyframes sc-parade { 0%, 16% { transform: none; } 30% { transform: translateX(10%); } 40% { transform: translateX(-10%); } 55% { transform: translateX(8%); } 66% { transform: translateX(200%); } 67% { transform: translateX(-200%); } 80%, 100% { transform: none; } }
 @keyframes sc-wipe { 0% { transform: none; } 18%, 76% { transform: translateX(-40%); } 100% { transform: none; } }
 @keyframes m-scrub { from { transform: rotate(-30deg) translateX(-4px); } to { transform: rotate(10deg) translateX(4px); } }

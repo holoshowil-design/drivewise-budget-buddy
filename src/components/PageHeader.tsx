@@ -21,7 +21,7 @@ export function PageHeader({ title, subtitle, action, scene }: { title: string; 
       {scene && (
         <div className={`page-stage stage-bg stage-${scene.backdrop ?? "street"}`} aria-hidden="true">
           <MovieStage base={{ mood: scene.mood, prop: scene.prop, taxi: scene.taxi, driving: scene.driving }} mascotClass="page-stage-mascot" taxiClass="page-stage-taxi" />
-          <ComicBubble side="end" className="page-stage-bubble">{scene.line}</ComicBubble>
+          <ComicBubble side="start" className="page-stage-bubble">{scene.line}</ComicBubble>
         </div>
       )}
     </header>

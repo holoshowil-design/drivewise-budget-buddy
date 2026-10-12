@@ -339,14 +339,16 @@ export function PremiumStats({
       icon: TrendingUp,
       badge: badges[0],
       tone: "text-success",
+      fill: "green",
     },
-    { label: "הוצאות כולל דלק", value: expense, icon: Zap, badge: badges[1], tone: "text-warning" },
+    { label: "הוצאות כולל דלק", value: expense, icon: Zap, badge: badges[1], tone: "text-warning", fill: "mustard" },
     {
       label: "נקודת איזון",
       value: breakEven,
       icon: Award,
       badge: "יעד מינימום",
       tone: "text-muted-foreground",
+      fill: "vermilion",
     },
     {
       label: "תחזית חודשית",
@@ -354,13 +356,14 @@ export function PremiumStats({
       icon: Sparkles,
       badge: forecast > 0 ? "לפי הקצב הנוכחי" : "ממתין לנתונים",
       tone: "text-primary",
+      fill: "slate",
     },
   ];
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      {stats.map(({ label, value, icon: Icon, badge, tone }) => (
-        <div key={label} className="premium-stat group">
+      {stats.map(({ label, value, icon: Icon, badge, tone, fill }) => (
+        <div key={label} className="premium-stat group" data-fill={fill}>
           <div className="flex items-center justify-between gap-2">
             <Icon className={`h-4 w-4 ${tone}`} />
             <span className="truncate text-[9px] font-semibold text-muted-foreground">{badge}</span>
