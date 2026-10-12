@@ -102,10 +102,62 @@ export const SCENE_CUES = {
     { sound: "shock", at: 4650 },
     { sound: "smirk", at: 6200 },
   ],
+  drive: [
+    { sound: "rev", at: 0 },
+    { sound: "beep", at: 1800 },
+    { sound: "aooga", at: 4200 },
+  ],
+  brake: [
+    { sound: "rev", at: 0 },
+    { sound: "brake", at: 2300 },
+    { sound: "boing", at: 3200 },
+    { sound: "shock", at: 3350 },
+    { sound: "cough", at: 3600 },
+    { sound: "sigh", at: 5000 },
+  ],
 } satisfies Record<string, readonly Cue[]>;
 
-export function sceneCues(name: string): readonly Cue[] | undefined {
-  return (SCENE_CUES as Record<string, readonly Cue[]>)[name];
+/** The same scenes as drawn films, timed to the drawings (FILMS in lib/anim/films). */
+export const FILM_SCENE_CUES = {
+  morning: [
+    { sound: "rev", at: 0 },
+    { sound: "sleepy", at: 200 },
+    { sound: "brake", at: 1150 },
+    { sound: "boing", at: 2000 },
+    { sound: "cough", at: 2400 },
+    { sound: "splash", at: 2600 },
+    { sound: "shock", at: 3250 },
+    { sound: "grumble", at: 4000 },
+    { sound: "aooga", at: 7200 },
+    { sound: "yes", at: 7700 },
+  ],
+  wipe: [
+    { sound: "tune", at: 200 },
+    { sound: "beep", at: 4500 },
+  ],
+  count: [
+    { sound: "one", at: 450 },
+    { sound: "two", at: 1600 },
+    { sound: "three", at: 2450 },
+    { sound: "kaching", at: 2900 },
+  ],
+  phone: [
+    { sound: "phone", at: 0 },
+    { sound: "yes", at: 2500 },
+    { sound: "rev", at: 4700 },
+  ],
+  snooze: [
+    { sound: "snore", at: 1300 },
+    { sound: "aooga", at: 3300 },
+    { sound: "shock", at: 3450 },
+    { sound: "smirk", at: 4600 },
+  ],
+} satisfies Record<string, readonly Cue[]>;
+
+/** A scene's soundtrack, the film's when it plays as a film. Turbo's laps sound the same either way. */
+export function sceneCues(name: string, filmed = false): readonly Cue[] | undefined {
+  const film = filmed ? (FILM_SCENE_CUES as Record<string, readonly Cue[]>)[name] : undefined;
+  return film ?? (SCENE_CUES as Record<string, readonly Cue[]>)[name];
 }
 
 /** What the Captain mumbles in each mood, and what Turbo says when tapped. */

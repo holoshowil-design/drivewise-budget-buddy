@@ -3,10 +3,11 @@ import { clipMs, filmBox, type Clip } from "@/lib/anim/clips";
 import { cellAt, timeline } from "@/lib/anim/timing";
 
 /**
- * Plays a drawn film once, on twos, then holds its last drawing. Sized in % of the box it
- * stands in, so the same film fits every stage. Only `transform` changes, and only when the
- * drawing changes, so React never re-renders during playback. `--film-ms` is the film's
- * length, for CSS that should start once the drawing holds.
+ * Plays a drawn film once, on twos, then holds its last drawing; a loop plays until it is
+ * taken away. Sized in % of the box it stands in, so the same film fits every stage. Only
+ * `transform` changes, and only when the drawing changes, so React never re-renders during
+ * playback. `--film-ms` is the film's length, for CSS that should start once the drawing
+ * holds (the jig of a celebration).
  */
 export function FrameStrip({ clip, className = "" }: { clip: Clip; className?: string }) {
   const strip = useRef<HTMLImageElement>(null);
@@ -26,12 +27,12 @@ export function FrameStrip({ clip, className = "" }: { clip: Clip; className?: s
     let last = -1;
     const tick = (now: number) => {
       t0 ||= now;
-      const i = cellAt(starts, now - t0);
+      const i = cellAt(starts, clip.loop ? (now - t0) % total : now - t0);
       if (i !== last) {
         last = i;
         show(i);
       }
-      if (now - t0 < total) raf = requestAnimationFrame(tick);
+      if (clip.loop || now - t0 < total) raf = requestAnimationFrame(tick);
     };
     show(0);
     raf = requestAnimationFrame(tick);
@@ -40,7 +41,7 @@ export function FrameStrip({ clip, className = "" }: { clip: Clip; className?: s
 
   return (
     <span
-      className={`frame-strip ${className}`}
+      className={`frame-strip ${clip.jig ? "frame-jig" : ""} ${className}`}
       style={{ ...filmBox(clip), ["--film-ms" as string]: `${clipMs(clip)}ms` }}
       aria-hidden="true"
     >
