@@ -506,6 +506,8 @@ export function TripTracker({
                 : firstIncomeToday && nextStreak.milestone
                   ? "streak"
                   : "trip";
+            // the trip is over before its reward plays, so the Captain's film may start
+            finishEnding();
             celebrate(kind, trigger, income?.amount, data.settings.currency, {
               title: kind === "streak" ? `רצף של ${nextStreak.current} ימים` : feedback.title,
               message: feedback.message,
@@ -516,7 +518,6 @@ export function TripTracker({
                 ? `נסיעה והכנסה נשמרו · ${trip.km.toFixed(1)} ק״מ`
                 : `נסיעה נשמרה · ${trip.km.toFixed(1)} ק״מ`,
             );
-            finishEnding();
           }}
           onDiscard={() => {
             const cancelled = activeRef.current;

@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import type { MascotMood, MascotProp } from "@/components/DriverMascot";
 import type { TaxiMood } from "@/components/CaricatureTaxi";
 import { FrameStrip } from "@/components/anim/FrameStrip";
-import { HEIST, PARADE, SPLASH, clipMs, clipReady, loadClip, type Clip } from "@/lib/anim/clips";
-import { filmsWanted, motionAllowed } from "@/lib/anim/motion";
+import { HEIST, PARADE, SPLASH, clipMs, clipReady, type Clip } from "@/lib/anim/clips";
+import { motionAllowed } from "@/lib/anim/motion";
+import { warmClips } from "@/lib/anim/warm";
 import type { RewardDetail, RewardKind } from "@/lib/rewards";
 
 /** Higgsfield-painted poses, one image per mood. Same props as the SVG characters so callers swap freely. */
@@ -68,7 +69,8 @@ export function CaptainArt({ mood, className = "", reactive = true }: { mood: Ma
       timer = window.setTimeout(() => setFilm(null), clipMs(clip) + (clip.jig ? 2200 : 300));
     };
     window.addEventListener("driver-reward", onReward);
-    const warm = window.setTimeout(() => { if (filmsWanted()) new Set(Object.values(REWARD_FILM)).forEach((c) => void loadClip(c)); }, 2500);
+    // one after another, the likeliest first: the form opens on income
+    const warm = window.setTimeout(() => void warmClips([HEIST, SPLASH, PARADE]), 1500);
     return () => { window.removeEventListener("driver-reward", onReward); window.clearTimeout(timer); window.clearTimeout(warm); };
   }, [reactive]);
 

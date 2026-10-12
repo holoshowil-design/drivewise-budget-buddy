@@ -3,9 +3,11 @@ import type { MascotMood, MascotProp } from "@/components/DriverMascot";
 import type { TaxiMood } from "@/components/CaricatureTaxi";
 import { CaptainArt, TaxiArt } from "@/components/CharacterArt";
 import { FrameStrip } from "@/components/anim/FrameStrip";
-import { clipReady, loadClip } from "@/lib/anim/clips";
+import { clipReady } from "@/lib/anim/clips";
 import { FILMS, clipsOf, type Beat, type Film, type SceneName } from "@/lib/anim/films";
+import { idleDelay, shuffledRound } from "@/lib/anim/idle";
 import { filmsWanted, motionAllowed } from "@/lib/anim/motion";
+import { warmClips } from "@/lib/anim/warm";
 import { claimAmbient, playCues, playSound, type CueHandle } from "@/lib/sound";
 import { MOOD_MUMBLE, TAXI_VOICE, sceneCues } from "@/lib/sound/cues";
 
@@ -75,10 +77,12 @@ const IDLE: SceneName[] = ["wipe", "count", "phone", "snooze", "drive", "brake"]
 /** Turbo's own scenes, only on stages he stands on. */
 const TAXI_ONLY: SceneName[] = ["drive", "brake"];
 
-/** Reward films are fetched once the page settles, on stages where rewards fire; an idle film once its scene is next. */
+/** Reward films are fetched once the page settles, on stages where rewards fire; an idle film once its scene is among the next two. */
 const REWARDS: SceneName[] = ["heist", "parade"];
-const warm = (name: SceneName) => { const f = FILMS[name]; if (f && filmsWanted()) clipsOf(f).forEach((c) => void loadClip(c)); };
-const loaded = (f: Film) => clipsOf(f).every(clipReady);
+/** The strips a scene needs on this stage: Turbo's only when he stands on it. */
+const needed = (f: Film, taxi: boolean) => clipsOf(f).filter((c) => taxi || c === f.clip);
+const warm = (name: SceneName, taxi: boolean) => { const f = FILMS[name]; if (f) void warmClips(needed(f, taxi)); };
+const loaded = (f: Film, taxi: boolean) => needed(f, taxi).every(clipReady);
 
 export function MovieStage({ base, mascotClass, taxiClass, morning = false, rewards = false }: { base: StageBase; mascotClass: string; taxiClass?: string; morning?: boolean; rewards?: boolean }) {
   const [scene, setScene] = useState<SceneName | null>(null);
@@ -101,20 +105,31 @@ export function MovieStage({ base, mascotClass, taxiClass, morning = false, rewa
     };
     let idleTimer: number | undefined;
     let settled = false;
-    let next: SceneName | undefined;
-    const scheduleIdle = () => {
+    let last: SceneName | undefined;
+    const upcoming: SceneName[] = []; // the idle scenes, in the order they will play
+    const warmNext = () => { if (settled) upcoming.slice(0, 2).forEach((n) => warm(n, taxiStage)); };
+    const scheduleIdle = (first = false) => {
       window.clearTimeout(idleTimer);
       const pool = taxiStage ? IDLE : IDLE.filter((n) => !TAXI_ONLY.includes(n));
-      const name = (next = pool[Math.floor(Math.random() * pool.length)]);
-      if (settled) warm(name);
-      idleTimer = window.setTimeout(() => play(name), 16000 + Math.random() * 12000);
+      if (upcoming.length < 2) upcoming.push(...shuffledRound(pool, upcoming[upcoming.length - 1] ?? last));
+      warmNext();
+      idleTimer = window.setTimeout(playIdle, idleDelay(first));
+    };
+    // an idle scene whose film is still on its way waits a few seconds for it before the drawn-pose scene stands in
+    const playIdle = () => {
+      const name = upcoming.shift()!;
+      last = name;
+      const drawn = FILMS[name];
+      const t0 = Date.now();
+      const go = () => { if (!drawn || !filmsWanted() || !motionAllowed() || loaded(drawn, taxiStage) || Date.now() - t0 > 6000) play(name); else timers.current.push(window.setTimeout(go, 250)); };
+      go();
     };
     const play = (name: SceneName) => {
       // a reward takes over from whatever was coming next
       clear(); window.clearTimeout(idleTimer);
       playing.current = true;
       const drawn = FILMS[name];
-      const film = drawn && loaded(drawn) && motionAllowed() ? drawn : null;
+      const film = drawn && loaded(drawn, taxiStage) && motionAllowed() ? drawn : null;
       const def = film ?? SCENES[name];
       setScene(name); setTake((t) => t + 1); setBeat(def.beats[0]); setFilmed(film);
       // reward films are voiced by the reward itself; idle films only now and then
@@ -129,16 +144,16 @@ export function MovieStage({ base, mascotClass, taxiClass, morning = false, rewa
     };
     window.addEventListener("driver-reward", onReward);
     // fetch the films once the page has settled, so the next reward or idle scene can play one
-    const warmTimer = window.setTimeout(() => { settled = true; if (rewards) REWARDS.forEach(warm); if (next) warm(next); }, 2500);
+    const warmTimer = window.setTimeout(() => { settled = true; if (rewards) REWARDS.forEach((n) => warm(n, taxiStage)); warmNext(); }, 1500);
     if (morning && new Date().getHours() < 12 && !sessionStorage.getItem("scene-morning")) {
-      // the morning films get until 2.5 s to arrive; after that the drawn-pose scene plays.
+      // the morning films get until 8 s to arrive; after that the drawn-pose scene plays.
       // It counts as seen once it starts, so a remount before then doesn't lose it.
       const film = FILMS.morning && filmsWanted() ? FILMS.morning : null;
-      warm("morning");
+      warm("morning", taxiStage);
       const t0 = Date.now();
-      const begin = () => { if (!film || loaded(film) || Date.now() - t0 > 1900) { sessionStorage.setItem("scene-morning", "1"); play("morning"); } else timers.current.push(window.setTimeout(begin, 150)); };
+      const begin = () => { if (!film || loaded(film, taxiStage) || Date.now() - t0 > 8000) { sessionStorage.setItem("scene-morning", "1"); play("morning"); } else timers.current.push(window.setTimeout(begin, 150)); };
       timers.current.push(window.setTimeout(begin, 600));
-    } else scheduleIdle();
+    } else scheduleIdle(true);
     return () => { window.removeEventListener("driver-reward", onReward); clear(); window.clearTimeout(idleTimer); window.clearTimeout(warmTimer); };
   }, [morning, rewards, taxiStage]);
 
