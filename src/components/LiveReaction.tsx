@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { DriverMascot, type MascotMood, type MascotProp } from "@/components/DriverMascot";
+import type { MascotMood, MascotProp } from "@/components/DriverMascot";
+import { CaptainArt } from "@/components/CharacterArt";
 import { ComicBubble } from "@/components/InkWorld";
 
 type Kind = "income" | "expense" | "fuel";
@@ -29,7 +30,7 @@ export function LiveReaction({ kind, amount }: { kind: Kind; amount: number }) {
   }, [state.line]);
   return (
     <div className={`live-reaction live-reaction-${state.tone}`} aria-hidden="true">
-      <DriverMascot mood={state.mood} prop={state.prop} className="live-reaction-mascot" />
+      <CaptainArt mood={state.mood} prop={state.prop} className="live-reaction-mascot" />
       <ComicBubble key={pop} tone={state.tone} className="live-reaction-bubble">{state.line}</ComicBubble>
       {state.word && <span key={`w-${pop}`} className="comic-word">{state.word}</span>}
     </div>

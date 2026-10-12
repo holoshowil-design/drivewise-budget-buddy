@@ -910,3 +910,19 @@ html,
 body {
   overflow-x: clip;
 }
+
+/* painted character images (CharacterArt) */
+.art-captain img, .art-taxi img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: bottom center; user-select: none; pointer-events: none; }
+.art-captain img { transform-origin: 50% 100%; animation: m-breathe 2.4s ease-in-out infinite; }
+.art-pose-sleepy img { animation: art-sway 4s ease-in-out infinite; }
+.art-pose-grumble img, .art-pose-pain img { animation: m-shake .5s steps(4) 3, m-breathe 1.2s 1.5s infinite; }
+.art-pose-smirk img { animation: m-pop .6s cubic-bezier(.2,1.7,.3,1) both, m-breathe 2.4s .6s infinite; }
+.art-pose-excited img { animation: m-bounce .55s cubic-bezier(.3,0,.4,1) infinite alternate; }
+.art-pose-victory img { animation: m-leap 1.2s cubic-bezier(.3,0,.3,1) both, m-dance .45s steps(2) 1.2s infinite alternate; }
+.art-pose-shock img { animation: m-startle .5s cubic-bezier(.2,1.8,.4,1) both; }
+.art-taxi img { transform-origin: 50% 100%; animation: taxi-idle .32s steps(2) infinite; }
+.art-taxi-tired img { animation: taxi-sigh 3s ease-in-out infinite; }
+.art-taxi-shock img { animation: m-startle .5s cubic-bezier(.2,1.8,.4,1) both; }
+.art-taxi-honk img { animation: taxi-rev .9s ease-in-out infinite; }
+.art-taxi.taxi-driving img { animation: taxi-drive .3s ease-in-out infinite alternate; }
+@keyframes art-sway { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-2deg) translateY(2px); } }

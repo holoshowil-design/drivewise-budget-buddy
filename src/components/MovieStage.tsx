@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { DriverMascot, type MascotMood, type MascotProp } from "@/components/DriverMascot";
-import { CaricatureTaxi, type TaxiMood } from "@/components/CaricatureTaxi";
+import type { MascotMood, MascotProp } from "@/components/DriverMascot";
+import type { TaxiMood } from "@/components/CaricatureTaxi";
+import { CaptainArt, TaxiArt } from "@/components/CharacterArt";
 
 export type StageBase = { mood: MascotMood; prop?: MascotProp; taxi?: TaxiMood; driving?: boolean };
 type Beat = { at: number; mood: MascotMood; prop?: MascotProp; taxi?: TaxiMood; driving?: boolean; quip?: string };
@@ -99,9 +100,9 @@ export function MovieStage({ base, mascotClass, taxiClass, morning = false }: { 
   return (
     <div className={`movie-stage ${scene ? `scene-${scene}` : "scene-none"}`} key={take}>
       {taxiMood && taxiClass && (
-        <span className={`ms-taxi ${taxiClass}`}><CaricatureTaxi mood={taxiMood} driving={cur.driving ?? base.driving} className="h-full w-full" /></span>
+        <span className={`ms-taxi ${taxiClass}`}><TaxiArt mood={taxiMood} driving={cur.driving ?? base.driving} className="h-full w-full" /></span>
       )}
-      <span className={`ms-mascot ${mascotClass}`}><DriverMascot mood={cur.mood} prop={cur.prop ?? base.prop} reactive={false} className="ms-mascot-art" /></span>
+      <span className={`ms-mascot ${mascotClass}`}><CaptainArt mood={cur.mood} prop={cur.prop ?? base.prop} reactive={false} className="ms-mascot-art" /></span>
       {scene && <span className="ms-fx" />}
       {cur.quip && <span key={cur.quip} className="ms-quip">{cur.quip}</span>}
     </div>
