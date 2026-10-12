@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CloudCheck } from "lucide-react";
 import { loadLastAccount, type LastAccount } from "@/lib/last-account";
-
+import { authErrorMessage } from "@/lib/auth-messages";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -32,7 +32,10 @@ function AuthPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
+  /** Opened from a password-reset email: show the "new password" form. */
+  const [recovery, setRecovery] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [last, setLast] = useState<LastAccount | null>(null);
 
@@ -43,28 +46,69 @@ function AuthPage() {
   }, []);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/" });
-  }, [loading, user, navigate]);
+    if (typeof window !== "undefined" && window.location.hash.includes("type=recovery"))
+      setRecovery(true);
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setRecovery(true);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
 
+  useEffect(() => {
+    if (!loading && user && !recovery) navigate({ to: "/" });
+  }, [loading, user, recovery, navigate]);
+
+  const saveNewPassword = async () => {
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setBusy(false);
+    if (error) return void toast.error(authErrorMessage(error.message));
+    toast.success("הסיסמה עודכנה. אפשר להתחבר איתה גם באפליקציה.");
+    setRecovery(false);
+    navigate({ to: "/" });
+  };
 
   const submit = async () => {
     setBusy(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+      if (mode === "reset") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth`,
+        });
+        if (error) throw error;
+        toast.success("אם יש חשבון עם המייל הזה, נשלח אליו קישור לסיסמה חדשה. בדוק גם בספאם.", {
+          duration: 10000,
+        });
+        setMode("signin");
+      } else if (mode === "signup") {
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
-        toast.success("נשלח אליך מייל אישור. אשר אותו כדי להיכנס.");
+        // An existing account gets no email and no error (the server hides it):
+        // it comes back with no identities.
+        if (data.user && (data.user.identities?.length ?? 0) === 0) {
+          toast.error(
+            "כבר יש חשבון עם המייל הזה, ולכן לא נשלח מייל. אם נכנסת עם Google: היכנס בדפדפן ← הגדרות ← 'סיסמה לכניסה מהאפליקציה'. אחרת לחץ 'שכחתי סיסמה'.",
+            { duration: 15000 },
+          );
+          setMode("signin");
+          return;
+        }
+        toast.success("נשלח אליך מייל אישור. אשר אותו כדי להיכנס (בדוק גם בספאם).", {
+          duration: 10000,
+        });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("התחברת בהצלחה");
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "שגיאה בהתחברות");
+      toast.error(authErrorMessage(e instanceof Error ? e.message : undefined), {
+        duration: 10000,
+      });
     } finally {
       setBusy(false);
     }
@@ -87,6 +131,33 @@ function AuthPage() {
     <div className="mx-auto max-w-xl">
       <PageHeader title="חשבון" subtitle="שמירה בענן — הנתונים לא ילכו לאיבוד" />
       <div className="px-4 space-y-4">
+        {recovery && (
+          <Card>
+            <CardContent className="p-4 space-y-3">
+              <h3 className="font-semibold">סיסמה חדשה</h3>
+              <div className="space-y-1.5">
+                <Label htmlFor="new-password" className="text-xs text-muted-foreground">
+                  סיסמה חדשה (לפחות 6 תווים)
+                </Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  dir="ltr"
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
+              <Button
+                className="w-full"
+                disabled={busy || newPassword.length < 6}
+                onClick={saveNewPassword}
+              >
+                שמור סיסמה
+              </Button>
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -97,7 +168,11 @@ function AuthPage() {
             {last && (
               <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
                 {last.avatar ? (
-                  <img src={last.avatar} alt={last.name || "תמונת פרופיל"} className="h-10 w-10 rounded-full object-cover" />
+                  <img
+                    src={last.avatar}
+                    alt={last.name || "תמונת פרופיל"}
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
                 ) : (
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
                     {(last.name || last.email).slice(0, 1).toUpperCase()}
@@ -106,7 +181,9 @@ function AuthPage() {
                 <div className="min-w-0 flex-1">
                   <div className="text-xs text-muted-foreground">התחברת כאן לאחרונה עם</div>
                   {last.name && <div className="truncate text-sm font-semibold">{last.name}</div>}
-                  <div dir="ltr" className="truncate text-right text-xs text-muted-foreground">{last.email}</div>
+                  <div dir="ltr" className="truncate text-right text-xs text-muted-foreground">
+                    {last.email}
+                  </div>
                 </div>
               </div>
             )}
@@ -117,17 +194,32 @@ function AuthPage() {
 
             <div className="text-center text-xs text-muted-foreground">או</div>
 
-
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">אימייל</Label>
-              <Input type="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input
+                type="email"
+                dir="ltr"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">סיסמה</Label>
-              <Input type="password" dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} />
+              {mode !== "reset" && <Label className="text-xs text-muted-foreground">סיסמה</Label>}
+              {mode !== "reset" && (
+                <Input
+                  type="password"
+                  dir="ltr"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              )}
             </div>
-            <Button className="w-full" disabled={busy || !email || !password} onClick={submit}>
-              {mode === "signin" ? "התחבר" : "הרשמה"}
+            <Button
+              className="w-full"
+              disabled={busy || !email || (mode !== "reset" && !password)}
+              onClick={submit}
+            >
+              {mode === "signin" ? "התחבר" : mode === "signup" ? "הרשמה" : "שלח קישור לסיסמה חדשה"}
             </Button>
             <button
               className="w-full text-xs text-muted-foreground underline"
@@ -135,6 +227,14 @@ function AuthPage() {
             >
               {mode === "signin" ? "אין לי חשבון — הרשמה" : "יש לי חשבון — התחברות"}
             </button>
+            {mode === "signin" && (
+              <button
+                className="w-full text-xs text-muted-foreground underline"
+                onClick={() => setMode("reset")}
+              >
+                שכחתי סיסמה
+              </button>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { getOnlineFuelPrice } from "@/lib/fuel-price.functions";
 import { FuelPriceHistoryCard } from "@/components/FuelPriceHistoryCard";
+import { AppPasswordCard } from "@/components/AppPasswordCard";
 import { parseBackup, planRestore, applyRestore } from "@/lib/backup";
 import { NumberField } from "@/components/NumberField";
 import { parseNumber } from "@/lib/number";
@@ -388,6 +389,7 @@ function AccountCard() {
               כל שינוי נשמר אוטומטית בענן בדיוק כפי שהוא מוצג באפליקציה, וזמין בכל מכשיר שתתחבר בו
               לאותו חשבון.
             </p>
+            {user.email && <AppPasswordCard email={user.email} />}
             <Button
               variant="outline"
               className="w-full"
