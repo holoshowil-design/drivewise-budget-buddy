@@ -16,6 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/BottomNav";
 import { DriveDetector } from "@/components/DriveDetector";
 import { RewardEffects } from "@/components/RewardEffects";
+import { SoundDirector } from "@/components/SoundDirector";
 import { InkWorld } from "@/components/InkWorld";
 import { useCloudSync } from "@/hooks/use-auth";
 
@@ -153,6 +154,7 @@ function RootComponent() {
       <DriveDetector />
       <InkWorld />
       <RewardEffects />
+      <SoundDirector />
       <BottomNav />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>

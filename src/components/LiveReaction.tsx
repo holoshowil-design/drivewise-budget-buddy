@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { MascotMood, MascotProp } from "@/components/DriverMascot";
 import { CaptainArt } from "@/components/CharacterArt";
 import { ComicBubble } from "@/components/InkWorld";
+import { playSound } from "@/lib/sound";
+import { MOOD_MUMBLE } from "@/lib/sound/cues";
 
 type Kind = "income" | "expense" | "fuel";
 
@@ -28,6 +30,13 @@ export function LiveReaction({ kind, amount }: { kind: Kind; amount: number }) {
   useEffect(() => {
     if (prev.current !== state.line) { prev.current = state.line; setPop((p) => p + 1); }
   }, [state.line]);
+  // he mumbles when his mood changes, once the typing settles
+  const said = useRef(state.mood);
+  useEffect(() => {
+    if (said.current === state.mood) return;
+    const t = window.setTimeout(() => { said.current = state.mood; playSound(MOOD_MUMBLE[state.mood]); }, 350);
+    return () => window.clearTimeout(t);
+  }, [state.mood]);
   return (
     <div className={`live-reaction live-reaction-${state.tone}`} aria-hidden="true">
       <CaptainArt mood={state.mood} prop={state.prop} className="live-reaction-mascot" />
