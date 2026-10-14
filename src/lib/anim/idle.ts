@@ -1,6 +1,9 @@
-/** The first idle scene on a page comes soon, then one every so often (ms, from..to). */
-export const IDLE_FIRST_MS = [6000, 10000] as const;
-export const IDLE_GAP_MS = [14000, 22000] as const;
+/**
+ * The first idle scene on a page comes soon, then one every so often (ms, from..to).
+ * Ari asked for the films more often; the voices keep their own, slower pace (claimAmbient).
+ */
+export const IDLE_FIRST_MS = [2500, 3400] as const;
+export const IDLE_GAP_MS = [3500, 6500] as const;
 
 /** How long to wait for the next idle scene; `random` is 0..1. */
 export function idleDelay(first: boolean, random: () => number = Math.random) {
