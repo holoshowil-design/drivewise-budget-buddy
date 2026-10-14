@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { z } from "zod";
 import { ChevronDown } from "lucide-react";
 import { LiveReaction } from "@/components/LiveReaction";
 import { celebrate, crossedDailyGoal } from "@/lib/rewards";
@@ -37,17 +36,24 @@ import { CommissionChips } from "@/components/CommissionChips";
 import { DayRecords } from "@/components/DayRecords";
 import { CommonAmounts } from "@/components/CommonAmounts";
 
-const searchSchema = z.object({
-  tab: z.enum(["income", "expense", "fuel"]).optional(),
+type AddSearch = {
+  tab?: "income" | "expense" | "fuel";
   /** Pre-fills the form date (from the calendar "+" button). */
-  date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional(),
+  date?: string;
+};
+
+// A plain check instead of a zod schema keeps zod (~50 KB) out of the first load.
+const TABS = ["income", "expense", "fuel"] as const;
+const validateAddSearch = (search: Record<string, unknown>): AddSearch => ({
+  tab: TABS.find((t) => t === search.tab),
+  date:
+    typeof search.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(search.date)
+      ? search.date
+      : undefined,
 });
 
 export const Route = createFileRoute("/add")({
-  validateSearch: searchSchema,
+  validateSearch: validateAddSearch,
   head: () => ({
     meta: [
       { title: "הוספת רשומה - דרייבר" },

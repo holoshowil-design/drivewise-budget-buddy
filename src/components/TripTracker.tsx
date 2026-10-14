@@ -1,5 +1,4 @@
 import {
-  Fragment,
   useCallback,
   useEffect,
   useRef,
@@ -15,12 +14,9 @@ import {
   Square,
   MapPin,
   Timer,
-  Fuel,
-  Trash2,
   AlertTriangle,
   Gauge,
   Minimize2,
-  Pencil,
   Hourglass,
   Flag,
 } from "lucide-react";
@@ -32,10 +28,8 @@ import {
   fmt,
   fmtDuration,
   effectiveFuelParams,
-  energyUnitLabel,
   type Trip,
 } from "@/lib/store";
-import { dayLabel, groupByDay } from "@/lib/day-groups";
 import {
   ACTIVE_EVENT,
   readActive,
@@ -45,6 +39,7 @@ import {
   type ActiveTrip,
 } from "@/lib/active-trip";
 import { TripEndDialog, type TripFormValues } from "@/components/TripEndDialog";
+import { TripHistory } from "@/components/TripHistory";
 import { celebrate, crossedDailyGoal } from "@/lib/rewards";
 import { hushSound, playSound } from "@/lib/sound";
 import { calculateWorkStreak, tripMotivation } from "@/lib/motivation";
@@ -82,7 +77,6 @@ export function TripTracker({
   const activeRef = useRef<ActiveTrip | null>(null);
 
   const c = data.settings.currency;
-  const unit = energyUnitLabel(data.vehicle);
   const askWaiting = data.settings.askWaiting !== false;
 
   const persist = useCallback((t: ActiveTrip | null) => {
@@ -254,6 +248,10 @@ export function TripTracker({
     });
   };
 
+  const deleteRef = useRef(deleteTrip);
+  deleteRef.current = deleteTrip;
+  const onDelete = useCallback((t: Trip) => deleteRef.current(t), []);
+
   const saveEnded: ComponentProps<typeof TripEndDialog>["onSave"] = (trip, income) => {
     const reachedGoal = income
       ? crossedDailyGoal(data, { ...income, km: 0, tripId: "reward-trip-preview" }, trip)
@@ -305,9 +303,6 @@ export function TripTracker({
   );
   const liveNet = grossToday - liveCost;
 
-  const trips: Trip[] = [...(data.trips ?? [])].sort((a, b) =>
-    `${b.date} ${b.time ?? ""}`.localeCompare(`${a.date} ${a.time ?? ""}`),
-  );
   const editIncome = editing?.incomeId
     ? (data.incomes.find((i) => i.id === editing.incomeId) ?? null)
     : null;
@@ -564,70 +559,8 @@ export function TripTracker({
 
       {stage}
 
-      {/* History */}
-      <Card>
-        <CardContent className="p-4">
-          <h3 className="mb-3 flex items-center gap-1.5 text-sm font-semibold">
-            <Fuel className="h-4 w-4 text-primary" /> נסיעות שהסתיימו
-          </h3>
-          {trips.length === 0 ? (
-            <p className="text-xs text-muted-foreground">עדיין אין נסיעות שמורות.</p>
-          ) : (
-            <ul className="divide-y">
-              {groupByDay(trips.slice(0, 30), (t) => t.date).map((day) => (
-                <Fragment key={day.date}>
-                  <li className="pb-1 pt-3 text-xs font-semibold text-muted-foreground">
-                    {dayLabel(day.date, today)}
-                  </li>
-                  {day.rows.map((t) => {
-                    const p = effectiveFuelParams(t.date, data.vehicle, data.settings, t.time);
-                    const units = t.km / (p.consumption || 1);
-                    const inc = t.incomeId
-                      ? data.incomes.find((i) => i.id === t.incomeId)
-                      : undefined;
-                    return (
-                      <li key={t.id} className="flex items-center justify-between gap-2 py-2.5">
-                        <button
-                          type="button"
-                          className="min-w-0 flex-1 text-start"
-                          onClick={() => setEditing(t)}
-                        >
-                          <div className="num text-sm font-semibold">
-                            {t.km.toFixed(1)} ק״מ · {fmtDuration(t.seconds)}
-                            {inc && <span className="text-success"> · {fmt(inc.amount, c)}</span>}
-                          </div>
-                          <div className="num text-[11px] text-muted-foreground">
-                            {t.time ? `${t.time} · ` : ""}≈ {fmt(units * p.price, c)} (
-                            {units.toFixed(1)} {unit})
-                            {(t.waitSeconds ?? 0) > 0 &&
-                              ` · המתנה ${Math.round((t.waitSeconds ?? 0) / 60)} ד׳`}
-                          </div>
-                        </button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label="ערוך נסיעה"
-                          onClick={() => setEditing(t)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label="מחק נסיעה"
-                          onClick={() => deleteTrip(t)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </li>
-                    );
-                  })}
-                </Fragment>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      {/* History: memoized, so the one-second timer does not redraw it */}
+      <TripHistory data={data} onEdit={setEditing} onDelete={onDelete} />
     </div>
   );
 }
