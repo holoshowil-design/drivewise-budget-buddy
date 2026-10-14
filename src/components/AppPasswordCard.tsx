@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { KeyRound } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,7 @@ export function AppPasswordCard({ email }: { email: string }) {
   const save = async () => {
     if (tooShort || mismatch || !password) return;
     setBusy(true);
+    const { supabase } = await import("@/integrations/supabase/client");
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
     if (error) {

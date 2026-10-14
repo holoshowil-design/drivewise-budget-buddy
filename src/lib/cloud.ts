@@ -1,6 +1,7 @@
-import { supabase } from "@/integrations/supabase/client";
 import type { AppData } from "./store";
 import { mergeWithMeta } from "./sync-meta";
+
+const getSupabase = () => import("@/integrations/supabase/client").then((m) => m.supabase);
 
 /**
  * Merge two blobs: per record the newer change wins, deletions are kept as
@@ -19,6 +20,7 @@ export type CloudWrite =
   { status: "ok"; version: string } | { status: "conflict" } | { status: "error" };
 
 export async function fetchCloudData(userId: string): Promise<CloudRead> {
+  const supabase = await getSupabase();
   const { data, error } = await supabase
     .from("app_state")
     .select("data, updated_at")
@@ -38,6 +40,7 @@ export async function writeCloudData(
   data: AppData,
   expectedVersion: string | null,
 ): Promise<CloudWrite> {
+  const supabase = await getSupabase();
   const updated_at = new Date().toISOString();
   if (expectedVersion === null) {
     const { data: row, error } = await supabase

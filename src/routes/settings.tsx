@@ -17,7 +17,6 @@ import {
 import { toast } from "sonner";
 import { Trash2, RefreshCw, CloudCheck, LogOut, LogIn, Download, Upload } from "lucide-react";
 import { useAuthUser } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { getOnlineFuelPrice } from "@/lib/fuel-price.functions";
 import { FuelPriceHistoryCard } from "@/components/FuelPriceHistoryCard";
@@ -398,6 +397,7 @@ function AccountCard() {
               variant="outline"
               className="w-full"
               onClick={async () => {
+                const { supabase } = await import("@/integrations/supabase/client");
                 await supabase.auth.signOut();
                 toast.success("התנתקת");
               }}

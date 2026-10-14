@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuthUser } from "@/hooks/use-auth";
+
+const getSupabase = () => import("@/integrations/supabase/client").then((m) => m.supabase);
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -48,10 +48,14 @@ function AuthPage() {
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash.includes("type=recovery"))
       setRecovery(true);
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") setRecovery(true);
+    let unsubscribe: (() => void) | undefined;
+    void getSupabase().then((supabase) => {
+      const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+        if (event === "PASSWORD_RECOVERY") setRecovery(true);
+      });
+      unsubscribe = () => sub.subscription.unsubscribe();
     });
-    return () => sub.subscription.unsubscribe();
+    return () => unsubscribe?.();
   }, []);
 
   useEffect(() => {
@@ -60,6 +64,7 @@ function AuthPage() {
 
   const saveNewPassword = async () => {
     setBusy(true);
+    const supabase = await getSupabase();
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setBusy(false);
     if (error) return void toast.error(authErrorMessage(error.message));
@@ -70,6 +75,7 @@ function AuthPage() {
 
   const submit = async () => {
     setBusy(true);
+    const supabase = await getSupabase();
     try {
       if (mode === "reset") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -115,6 +121,7 @@ function AuthPage() {
   };
 
   const google = async () => {
+    const { lovable } = await import("@/integrations/lovable/index");
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
       ...(last?.provider === "google" && last.email
