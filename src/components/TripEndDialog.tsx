@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useAppData, effectiveFuelParams, fmt, type Income } from "@/lib/store";
 import { NumberField } from "@/components/NumberField";
+import { CommissionChips } from "@/components/CommissionChips";
 import { numberOr } from "@/lib/number";
 import { checkDate, checkNumber } from "@/lib/validate";
 
@@ -177,6 +178,11 @@ export function TripEndDialog({
               onValueChange={setCommission}
               error={err("commission")}
             />
+            <CommissionChips
+              value={commission}
+              defaultPct={defaultCommission}
+              onPick={setCommission}
+            />
           </F>
         </div>
 
@@ -189,6 +195,10 @@ export function TripEndDialog({
               value={amount}
               onValueChange={setAmount}
               error={err("amount")}
+              enterKeyHint="done"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && amountN > 0) save(true);
+              }}
             />
           </F>
           <F label={`טיפ (${c})`}>

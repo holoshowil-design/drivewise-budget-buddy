@@ -33,6 +33,7 @@ import { NumberField } from "@/components/NumberField";
 import { numberOr, parseNumber } from "@/lib/number";
 import { validateExpense, validateIncome, type FieldErrors } from "@/lib/validate";
 import { useRollingDate } from "@/hooks/use-today";
+import { CommissionChips } from "@/components/CommissionChips";
 
 const searchSchema = z.object({
   tab: z.enum(["income", "expense", "fuel"]).optional(),
@@ -131,6 +132,7 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
   const [showMore, setShowMore] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const commissionTouched = useRef(false);
+  const saveButton = useRef<HTMLButtonElement>(null);
   const [form, setForm] = useState({
     date: initialDate ?? todayISO(),
     amount: "",
@@ -235,6 +237,10 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
             onValueChange={(amount) => set({ amount })}
             error={errors.amount}
             placeholder="0"
+            enterKeyHint="done"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") saveButton.current?.click();
+            }}
           />
         </Field>
         <QuickAmounts
@@ -247,6 +253,17 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
             נטו אחרי עמלה: {fmt(previewNet, c)}
           </div>
         )}
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">עמלה:</span>
+          <CommissionChips
+            value={form.commissionPct}
+            defaultPct={data.settings.defaultCommissionPct}
+            onPick={(commissionPct) => {
+              commissionTouched.current = true;
+              set({ commissionPct });
+            }}
+          />
+        </div>
         <div className="grid grid-cols-3 gap-3">
           <Field label="עמלה %">
             <NumberField
@@ -311,6 +328,7 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
         )}
 
         <Button
+          ref={saveButton}
           onClick={submit}
           className="reward-action w-full h-12 text-base font-semibold"
           size="lg"
