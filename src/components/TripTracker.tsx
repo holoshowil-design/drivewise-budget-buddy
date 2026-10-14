@@ -1,5 +1,13 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,16 +62,19 @@ const hhmm = (ms: number) =>
 export function TripTracker({
   autoStart = false,
   driveMode = false,
+  stage,
 }: {
   autoStart?: boolean;
   driveMode?: boolean;
+  /** The page's scene, placed under the live card so the start button comes first. */
+  stage?: ReactNode;
 }) {
+  const navigate = useNavigate();
   const { data, ready, removeTrip, restoreRecords, saveTripWithIncome, updateTripWithIncome } =
     useAppData();
   const [active, setActive] = useState<ActiveTrip | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [askStart, setAskStart] = useState(false);
   const [askWait, setAskWait] = useState(false);
   const [askForgot, setAskForgot] = useState(false);
   const [ending, setEnding] = useState<TripFormValues | null>(null);
@@ -85,10 +96,16 @@ export function TripTracker({
     const now = Date.now();
     // TripWatcher (root layout) starts measuring as soon as the trip is stored.
     persist({ startedAt: now, date: todayISO(), time: nowHHMM(), km: 0, lastMoveAt: now });
-    setAskStart(false);
     requestNotifyPermission();
     playSound("turbo-start");
-    toast.success("נסיעת עבודה התחילה");
+    toast.success("נסיעת עבודה התחילה", {
+      action: {
+        label: "ביטול",
+        onClick: () => {
+          if (activeRef.current?.startedAt === now) persist(null);
+        },
+      },
+    });
   }, [persist]);
 
   // driving mode is always silent
@@ -163,7 +180,16 @@ export function TripTracker({
     else if (saved) {
       activeRef.current = saved;
       setActive(saved);
-    } else if (autoStart) setAskStart(true);
+    } else if (autoStart) {
+      // A tap on "start driving" starts right away (the toast can undo it). Drop
+      // the action from the address so going back here does not start another.
+      start();
+      void navigate({
+        to: "/trip",
+        search: { mode: driveMode ? "drive" : undefined },
+        replace: true,
+      });
+    }
     const sync = () => {
       const t = readActive();
       activeRef.current = t;
@@ -226,6 +252,44 @@ export function TripTracker({
       duration: 8000,
       action: { label: "ביטול", onClick: () => restoreRecords({ trips: [t], incomes: linked }) },
     });
+  };
+
+  const saveEnded: ComponentProps<typeof TripEndDialog>["onSave"] = (trip, income) => {
+    const reachedGoal = income
+      ? crossedDailyGoal(data, { ...income, km: 0, tripId: "reward-trip-preview" }, trip)
+      : false;
+    const feedback = tripMotivation(data, trip, income);
+    const nextStreak = income
+      ? calculateWorkStreak([
+          ...data.incomes,
+          { ...income, km: 0, tripId: "streak-preview", id: "streak-preview" },
+        ])
+      : calculateWorkStreak(data.incomes);
+    const trigger = document.activeElement;
+    saveTripWithIncome({ ...trip, endedAt: new Date().toISOString() }, income);
+    const firstIncomeToday =
+      Boolean(income) &&
+      trip.date === todayISO() &&
+      !data.incomes.some((item) => item.date === trip.date);
+    const kind = reachedGoal
+      ? "goal"
+      : feedback.milestone === "break-even"
+        ? "break-even"
+        : firstIncomeToday && nextStreak.milestone
+          ? "streak"
+          : "trip";
+    // the trip is over before its reward plays, so the Captain's film may start
+    finishEnding();
+    celebrate(kind, trigger, income?.amount, data.settings.currency, {
+      title: kind === "streak" ? `רצף של ${nextStreak.current} ימים` : feedback.title,
+      message: feedback.message,
+      streak: nextStreak.current,
+    });
+    toast.success(
+      income
+        ? `נסיעה והכנסה נשמרו · ${trip.km.toFixed(1)} ק״מ`
+        : `נסיעה נשמרה · ${trip.km.toFixed(1)} ק״מ`,
+    );
   };
 
   if (!ready) return null;
@@ -311,28 +375,6 @@ export function TripTracker({
         </section>
       )}
 
-      {/* Auto-prompt from ?action=start_trip */}
-      {askStart && !active && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 pb-10 backdrop-blur-sm">
-          <Card className="w-full max-w-md border-2">
-            <CardContent className="p-5 text-center">
-              <h2 className="text-xl font-extrabold">להתחיל נסיעת עבודה?</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                נמדוד ק״מ וזמן אוטומטית עד לסיום הנסיעה.
-              </p>
-              <div className="mt-5 grid gap-2">
-                <Button className="h-16 text-lg font-bold" onClick={start}>
-                  <Play className="ms-1 h-6 w-6" /> כן, התחל עכשיו
-                </Button>
-                <Button variant="ghost" className="h-12" onClick={() => setAskStart(false)}>
-                  לא עכשיו
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       {/* Forgot to end? */}
       {askForgot && active && !ending && (
         <div
@@ -407,42 +449,10 @@ export function TripTracker({
           onOpenChange={(o) => {
             if (!o) resumeAfterCancel();
           }}
-          onSave={(trip, income) => {
-            const reachedGoal = income
-              ? crossedDailyGoal(data, { ...income, km: 0, tripId: "reward-trip-preview" }, trip)
-              : false;
-            const feedback = tripMotivation(data, trip, income);
-            const nextStreak = income
-              ? calculateWorkStreak([
-                  ...data.incomes,
-                  { ...income, km: 0, tripId: "streak-preview", id: "streak-preview" },
-                ])
-              : calculateWorkStreak(data.incomes);
-            const trigger = document.activeElement;
-            saveTripWithIncome({ ...trip, endedAt: new Date().toISOString() }, income);
-            const firstIncomeToday =
-              Boolean(income) &&
-              trip.date === todayISO() &&
-              !data.incomes.some((item) => item.date === trip.date);
-            const kind = reachedGoal
-              ? "goal"
-              : feedback.milestone === "break-even"
-                ? "break-even"
-                : firstIncomeToday && nextStreak.milestone
-                  ? "streak"
-                  : "trip";
-            // the trip is over before its reward plays, so the Captain's film may start
-            finishEnding();
-            celebrate(kind, trigger, income?.amount, data.settings.currency, {
-              title: kind === "streak" ? `רצף של ${nextStreak.current} ימים` : feedback.title,
-              message: feedback.message,
-              streak: nextStreak.current,
-            });
-            toast.success(
-              income
-                ? `נסיעה והכנסה נשמרו · ${trip.km.toFixed(1)} ק״מ`
-                : `נסיעה נשמרה · ${trip.km.toFixed(1)} ק״מ`,
-            );
+          onSave={saveEnded}
+          onSaveAndNext={(trip, income) => {
+            saveEnded(trip, income);
+            start();
           }}
           onDiscard={() => {
             const cancelled = activeRef.current;
@@ -551,6 +561,8 @@ export function TripTracker({
           )}
         </CardContent>
       </Card>
+
+      {stage}
 
       {/* History */}
       <Card>

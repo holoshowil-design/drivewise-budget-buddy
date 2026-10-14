@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useAppData, effectiveFuelParams, fmt, type Income } from "@/lib/store";
 import { NumberField } from "@/components/NumberField";
 import { CommissionChips } from "@/components/CommissionChips";
+import { CommonAmounts } from "@/components/CommonAmounts";
 import { numberOr } from "@/lib/number";
 import { checkDate, checkNumber } from "@/lib/validate";
 
@@ -31,6 +33,11 @@ type Props = {
   initialIncome?: Income | null;
   onSave: (trip: TripFormValues, income: Omit<Income, "id" | "km" | "tripId"> | null) => void;
   onDiscard?: () => void;
+  /** End mode: save, then start the next trip right away (back-to-back rides). */
+  onSaveAndNext?: (
+    trip: TripFormValues,
+    income: Omit<Income, "id" | "km" | "tripId"> | null,
+  ) => void;
 };
 
 export function TripEndDialog({
@@ -41,6 +48,7 @@ export function TripEndDialog({
   initialIncome,
   onSave,
   onDiscard,
+  onSaveAndNext,
 }: Props) {
   const { data, ready } = useAppData();
   const c = data.settings.currency;
@@ -53,6 +61,8 @@ export function TripEndDialog({
   const [tip, setTip] = useState("");
   const [commission, setCommission] = useState("");
   const [showErrors, setShowErrors] = useState(false);
+  // The trip details were measured; at the end of a trip only the amount is new.
+  const [showDetails, setShowDetails] = useState(mode === "edit");
 
   // Reset the form only when the dialog opens for another trip — not on every
   // parent render (the parent passes `initial` as a fresh object each time).
@@ -65,6 +75,7 @@ export function TripEndDialog({
   useEffect(() => {
     if (!open || !ready) return;
     setShowErrors(false);
+    setShowDetails(mode === "edit");
     setDate(initial.date);
     setTime(initial.time);
     setKm(initial.km ? initial.km.toFixed(1) : "0");
@@ -105,9 +116,12 @@ export function TripEndDialog({
     waitSeconds: waitS,
   });
 
-  const save = (withIncome: boolean) => {
+  const save = (withIncome: boolean, next = false) => {
     if (hasErrors) {
       setShowErrors(true);
+      // Every field except the amount and the tip sits in the details.
+      if (Object.entries(errors).some(([k, e]) => e && k !== "amount" && k !== "tip"))
+        setShowDetails(true);
       return;
     }
     const income =
@@ -123,7 +137,8 @@ export function TripEndDialog({
             note: initialIncome?.note ?? "נסיעת GPS",
           }
         : null;
-    onSave(tripValues(), income);
+    if (next && onSaveAndNext) onSaveAndNext(tripValues(), income);
+    else onSave(tripValues(), income);
   };
 
   return (
@@ -133,58 +148,10 @@ export function TripEndDialog({
           <DialogTitle className="text-xl font-extrabold">
             {mode === "end" ? "הנסיעה הסתיימה" : "עריכת נסיעה"}
           </DialogTitle>
-          <DialogDescription>הנתונים מולאו אוטומטית. נשאר רק להוסיף סכום.</DialogDescription>
+          <DialogDescription>
+            {mode === "end" ? "הק״מ והזמן נמדדו. נשאר רק להוסיף סכום." : "אפשר לתקן כל פרט."}
+          </DialogDescription>
         </DialogHeader>
-
-        <div className="grid grid-cols-2 gap-3">
-          <F label="תאריך">
-            <Input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              aria-invalid={err("date") ? true : undefined}
-            />
-            {err("date") && (
-              <p className="text-[11px] font-medium text-destructive" role="alert">
-                {err("date")}
-              </p>
-            )}
-          </F>
-          <F label="שעת התחלה">
-            <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
-          </F>
-          <F label="ק״מ">
-            <NumberField value={km} onValueChange={setKm} error={err("km")} />
-          </F>
-          <F label="דקות נהיגה">
-            <NumberField
-              inputMode="numeric"
-              value={driveMin}
-              onValueChange={setDriveMin}
-              error={err("driveMin")}
-            />
-          </F>
-          <F label="דקות המתנה">
-            <NumberField
-              inputMode="numeric"
-              value={waitMin}
-              onValueChange={setWaitMin}
-              error={err("waitMin")}
-            />
-          </F>
-          <F label="עמלה %">
-            <NumberField
-              value={commission}
-              onValueChange={setCommission}
-              error={err("commission")}
-            />
-            <CommissionChips
-              value={commission}
-              defaultPct={defaultCommission}
-              onPick={setCommission}
-            />
-          </F>
-        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <F label={`סכום שקיבלת (${c})`}>
@@ -211,6 +178,15 @@ export function TripEndDialog({
             />
           </F>
         </div>
+        <CommonAmounts onPick={setAmount} />
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">עמלה:</span>
+          <CommissionChips
+            value={commission}
+            defaultPct={defaultCommission}
+            onPick={setCommission}
+          />
+        </div>
 
         <div className="num flex items-center justify-between rounded-2xl bg-muted/60 px-4 py-3 text-sm">
           <span className="text-muted-foreground">דלק משוער {fmt(fuel, c)}</span>
@@ -221,6 +197,67 @@ export function TripEndDialog({
           </span>
         </div>
 
+        <button
+          type="button"
+          onClick={() => setShowDetails((v) => !v)}
+          aria-expanded={showDetails}
+          className="num flex w-full items-center justify-between rounded-xl border border-border px-3 py-2 text-xs text-muted-foreground"
+        >
+          <span className="font-semibold text-foreground">פרטי הנסיעה</span>
+          <span className="flex items-center gap-1">
+            {kmN.toFixed(1)} ק״מ · {Math.round(totalS / 60)} דק׳ · עמלה {comN}%
+            <ChevronDown
+              className={`h-3.5 w-3.5 transition-transform ${showDetails ? "rotate-180" : ""}`}
+            />
+          </span>
+        </button>
+        {showDetails && (
+          <div className="grid grid-cols-2 gap-3">
+            <F label="תאריך">
+              <Input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                aria-invalid={err("date") ? true : undefined}
+              />
+              {err("date") && (
+                <p className="text-[11px] font-medium text-destructive" role="alert">
+                  {err("date")}
+                </p>
+              )}
+            </F>
+            <F label="שעת התחלה">
+              <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+            </F>
+            <F label="ק״מ">
+              <NumberField value={km} onValueChange={setKm} error={err("km")} />
+            </F>
+            <F label="דקות נהיגה">
+              <NumberField
+                inputMode="numeric"
+                value={driveMin}
+                onValueChange={setDriveMin}
+                error={err("driveMin")}
+              />
+            </F>
+            <F label="דקות המתנה">
+              <NumberField
+                inputMode="numeric"
+                value={waitMin}
+                onValueChange={setWaitMin}
+                error={err("waitMin")}
+              />
+            </F>
+            <F label="עמלה %">
+              <NumberField
+                value={commission}
+                onValueChange={setCommission}
+                error={err("commission")}
+              />
+            </F>
+          </div>
+        )}
+
         <div className="grid gap-2">
           <Button
             className="reward-action h-14 text-lg font-bold"
@@ -229,6 +266,16 @@ export function TripEndDialog({
           >
             שמור עם הסכום
           </Button>
+          {mode === "end" && onSaveAndNext && (
+            <Button
+              variant="secondary"
+              className="reward-action h-12 font-bold"
+              onClick={() => save(true, true)}
+              disabled={amountN <= 0}
+            >
+              שמור והתחל נסיעה הבאה
+            </Button>
+          )}
           <Button variant="outline" className="reward-action h-12" onClick={() => save(false)}>
             {mode === "end" ? "שמור בלי סכום" : initialIncome ? "שמור והסר סכום" : "שמור בלי סכום"}
           </Button>
