@@ -32,9 +32,14 @@ const src = (name: string) => `/characters/${name}.webp`;
 /** The drawn film the add form's Captain plays for each reward, once it has loaded. */
 const REWARD_FILM: Partial<Record<RewardKind, Clip>> = { income: HEIST, trip: HEIST, "break-even": HEIST, goal: PARADE, streak: PARADE, corrective: SPLASH };
 
-// Warm the cache so pose swaps inside a scene never flash empty.
+// Warm the cache so pose swaps inside a scene never flash empty, once the first screen is
+// up (when the phone is idle), so the poses don't compete with the app's own loading.
 if (typeof window !== "undefined") {
-  for (const name of [...new Set([...Object.values(CAPTAIN), ...Object.values(TAXI)])]) new Image().src = src(name);
+  const warmPoses = () => {
+    for (const name of [...new Set([...Object.values(CAPTAIN), ...Object.values(TAXI)])]) new Image().src = src(name);
+  };
+  if ("requestIdleCallback" in window) window.requestIdleCallback(warmPoses, { timeout: 4000 });
+  else setTimeout(warmPoses, 2000);
 }
 
 export function CaptainArt({ mood, className = "", reactive = true }: { mood: MascotMood; prop?: MascotProp; className?: string; reactive?: boolean }) {

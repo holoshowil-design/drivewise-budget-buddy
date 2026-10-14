@@ -519,6 +519,20 @@ export function sumKm(list: Income[]) {
   return list.reduce((s, i) => s + (i.km || 0), 0);
 }
 
+const historyKey = (h: FuelPriceEntry) => `${h.date} ${h.time ?? "00:00"}`;
+/** Sorted copies of price histories, so a list of hundreds of records sorts once, not per record. */
+const sortedHistories = new WeakMap<FuelPriceEntry[], { h: FuelPriceEntry; key: string }[]>();
+function sortedHistory(history: FuelPriceEntry[]) {
+  let sorted = sortedHistories.get(history);
+  if (!sorted) {
+    sorted = history
+      .map((h) => ({ h, key: historyKey(h) }))
+      .sort((a, b) => a.key.localeCompare(b.key));
+    sortedHistories.set(history, sorted);
+  }
+  return sorted;
+}
+
 /**
  * Returns the fuel price and consumption that were effective at a given
  * moment (date + optional hour). Price/consumption changes are stamped with
@@ -534,17 +548,16 @@ export function effectiveFuelParams(
   const history = settings.fuelPriceHistory;
   const stamp = `${date} ${time ?? "00:00"}`;
   if (history && history.length > 0) {
-    const key = (h: FuelPriceEntry) => `${h.date} ${h.time ?? "00:00"}`;
-    const sorted = [...history].sort((a, b) => key(a).localeCompare(key(b)));
-    let entry: FuelPriceEntry | null = null;
-    for (const h of sorted) {
-      if (key(h) <= stamp) entry = h;
+    const sorted = sortedHistory(history);
+    let entry: { h: FuelPriceEntry; key: string } | null = null;
+    for (const item of sorted) {
+      if (item.key <= stamp) entry = item;
       else break;
     }
     // Before the first recorded change, the earliest known values are the
     // best guess (the current price would reprice old records).
     entry ??= sorted[0];
-    return { price: entry.price, consumption: entry.consumption, since: key(entry) };
+    return { price: entry.h.price, consumption: entry.h.consumption, since: entry.key };
   }
   return { price: settings.fuelPrice, consumption: vehicle.consumption, since: null };
 }
