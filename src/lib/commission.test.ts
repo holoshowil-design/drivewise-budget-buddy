@@ -3,6 +3,7 @@ import { commissionChoices } from "./commission";
 
 describe("commissionChoices", () => {
   it("offers the default, then 10% and 0%", () => {
+    expect(commissionChoices(12)).toEqual([12, 10, 0]);
     expect(commissionChoices(25)).toEqual([25, 10, 0]);
   });
 
@@ -14,5 +15,12 @@ describe("commissionChoices", () => {
   it("drops a default outside 0-100", () => {
     expect(commissionChoices(Number.NaN)).toEqual([10, 0]);
     expect(commissionChoices(120)).toEqual([10, 0]);
+  });
+});
+
+describe("default settings", () => {
+  it("start with a 12% commission", async () => {
+    const { load } = await import("./store");
+    expect(load().settings.defaultCommissionPct).toBe(12);
   });
 });

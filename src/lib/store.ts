@@ -110,7 +110,7 @@ const defaultData: AppData = {
     dailyGoal: 500,
     fixedMonthlyExpenses: 3000,
     workDaysPerMonth: 22,
-    defaultCommissionPct: 25,
+    defaultCommissionPct: 12,
     currency: "₪",
     fuelPrice: 7.4,
     fuelPriceHistory: [],
