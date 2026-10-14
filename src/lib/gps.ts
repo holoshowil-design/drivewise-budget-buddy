@@ -20,14 +20,26 @@ export function movementThresholdKm(prevAccM: number | undefined, curAccM: numbe
 
 export type StepDecision = "move" | "stay" | "jump";
 
-/** Classifies the step between the last anchor and a new fix. */
+/** Below this ground speed (km/h, measured by the GPS chip) the car counts as standing. */
+export const STANDING_SPEED_KMH = 4;
+
+/**
+ * Classifies the step between the last anchor and a new fix. `speedKmh` is the
+ * chip's own speed (Doppler), which does not drift the way positions do: a fix
+ * a little outside the accuracy radius that says "not moving" is drift. Calling
+ * it "stay" loses nothing, because the anchor stays put and the next real move
+ * is measured from it.
+ */
 export function classifyStep(
   distKm: number,
   seconds: number,
   prevAccM: number | undefined,
   curAccM: number,
+  speedKmh?: number | null,
 ): StepDecision {
-  if (distKm < movementThresholdKm(prevAccM, curAccM)) return "stay";
+  const threshold = movementThresholdKm(prevAccM, curAccM);
+  if (distKm < threshold) return "stay";
+  if (speedKmh != null && speedKmh < STANDING_SPEED_KMH && distKm < threshold * 3) return "stay";
   const speed = (distKm / Math.max(0.001, seconds)) * 3600;
   return speed > MAX_SPEED_KMH ? "jump" : "move";
 }

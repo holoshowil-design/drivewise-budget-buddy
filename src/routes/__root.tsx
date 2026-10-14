@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/BottomNav";
 import { DriveDetector } from "@/components/DriveDetector";
+import { TripWatcher } from "@/components/TripWatcher";
 import { RewardEffects } from "@/components/RewardEffects";
 import { SoundDirector } from "@/components/SoundDirector";
 import { InkWorld } from "@/components/InkWorld";
@@ -151,6 +152,7 @@ function RootComponent() {
       <div className="relative min-h-screen text-foreground pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
         <Outlet />
       </div>
+      <TripWatcher />
       <DriveDetector />
       <InkWorld />
       <RewardEffects />

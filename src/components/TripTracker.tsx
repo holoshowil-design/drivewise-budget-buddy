@@ -29,9 +29,9 @@ import {
 } from "@/lib/store";
 import { dayLabel, groupByDay } from "@/lib/day-groups";
 import {
+  ACTIVE_EVENT,
   readActive,
   writeActive,
-  haversine,
   notifyIfHidden,
   requestNotifyPermission,
   type ActiveTrip,
@@ -40,8 +40,9 @@ import { TripEndDialog, type TripFormValues } from "@/components/TripEndDialog";
 import { celebrate, crossedDailyGoal } from "@/lib/rewards";
 import { hushSound, playSound } from "@/lib/sound";
 import { calculateWorkStreak, tripMotivation } from "@/lib/motivation";
-import { classifyStep, looksForgotten, MAX_ACCURACY_M } from "@/lib/gps";
-import { hasBackgroundTracking, watchLocation } from "@/lib/location";
+import { looksForgotten } from "@/lib/gps";
+import { hasBackgroundTracking } from "@/lib/location";
+import { GPS_ERROR_EVENT, readGpsError } from "@/lib/trip-gps";
 
 const WAIT_ASK_MS = 4 * 60 * 1000;
 const WAIT_SNOOZE_MS = 15 * 60 * 1000;
@@ -67,9 +68,6 @@ export function TripTracker({
   const [askForgot, setAskForgot] = useState(false);
   const [ending, setEnding] = useState<TripFormValues | null>(null);
   const [editing, setEditing] = useState<Trip | null>(null);
-  /** Stops the running location watch (null when not watching). */
-  const watchRef = useRef<(() => void) | null>(null);
-  const wakeRef = useRef<{ release: () => Promise<void> } | null>(null);
   const activeRef = useRef<ActiveTrip | null>(null);
 
   const c = data.settings.currency;
@@ -82,98 +80,16 @@ export function TripTracker({
     writeActive(t);
   }, []);
 
-  const releaseWakeLock = useCallback(() => {
-    wakeRef.current?.release().catch(() => {});
-    wakeRef.current = null;
-  }, []);
-
-  const acquireWakeLock = useCallback(() => {
-    if (
-      wakeRef.current ||
-      typeof document === "undefined" ||
-      document.visibilityState !== "visible"
-    )
-      return;
-    const nav = navigator as Navigator & {
-      wakeLock?: { request: (type: "screen") => Promise<{ release: () => Promise<void> }> };
-    };
-    nav.wakeLock
-      ?.request("screen")
-      .then((lock) => {
-        wakeRef.current = lock;
-        // The browser drops the lock when the app is hidden; forget it so it is re-acquired.
-        (lock as unknown as EventTarget).addEventListener?.("release", () => {
-          if (wakeRef.current === lock) wakeRef.current = null;
-        });
-      })
-      .catch(() => {});
-  }, []);
-
-  const stopWatch = useCallback(() => {
-    if (watchRef.current !== null) {
-      watchRef.current();
-      watchRef.current = null;
-    }
-    releaseWakeLock();
-  }, [releaseWakeLock]);
-
-  const startWatch = useCallback(() => {
-    if (watchRef.current !== null) return;
-    watchRef.current = watchLocation(
-      (fix) => {
-        setError(null);
-        const cur = activeRef.current;
-        if (!cur) return;
-        const acc = fix.accuracy;
-        if (acc > MAX_ACCURACY_M) return; // ignore very inaccurate fixes
-        const point = { lat: fix.lat, lon: fix.lon, t: fix.time, acc };
-        if (cur.last) {
-          const d = haversine(cur.last, point);
-          const step = classifyStep(d, (point.t - cur.last.t) / 1000, cur.last.acc, acc);
-          if (step === "move") {
-            persist({ ...cur, km: cur.km + d, last: point, lastMoveAt: Date.now() });
-            return;
-          }
-          // Standing still: the jitter is within the accuracy radius. Keep the
-          // old anchor, but adopt a sharper fix so the threshold can shrink.
-          if (step === "stay") {
-            if (acc < (cur.last.acc ?? Infinity))
-              persist({ ...cur, last: { ...point, lat: cur.last.lat, lon: cur.last.lon } });
-            return;
-          }
-        }
-        persist({ ...cur, last: point });
-      },
-      (err) => {
-        setError(
-          err.message === "no-geolocation"
-            ? "המכשיר או הדפדפן לא תומכים באיתור מיקום."
-            : err.kind === "denied"
-              ? "אין הרשאת מיקום. אשר מיקום, או הזן את הק״מ ידנית בהזנת הכנסה."
-              : "לא הצלחנו לקבל מיקום כרגע. בדוק שה-GPS דלוק.",
-        );
-      },
-      {
-        // Installed app: keeps measuring with the screen locked.
-        background: {
-          title: "נסיעה פעילה",
-          message: "דרייבר מודד ק״מ. פתח את האפליקציה כדי לסיים.",
-        },
-      },
-    );
-    acquireWakeLock();
-  }, [persist, acquireWakeLock]);
-
   const start = useCallback(() => {
     if (activeRef.current) return;
     const now = Date.now();
+    // TripWatcher (root layout) starts measuring as soon as the trip is stored.
     persist({ startedAt: now, date: todayISO(), time: nowHHMM(), km: 0, lastMoveAt: now });
     setAskStart(false);
     requestNotifyPermission();
-    startWatch();
     playSound("turbo-start");
     toast.success("נסיעת עבודה התחילה");
-  }, [persist, startWatch]);
+  }, [persist]);
 
   // driving mode is always silent
   useEffect(() => {
@@ -188,7 +104,8 @@ export function TripTracker({
     (endAt?: number) => {
       const cur = activeRef.current;
       if (!cur) return;
-      stopWatch();
+      // GPS pauses while the end form is open; closing it resumes the trip.
+      persist({ ...cur, pausedAt: Date.now() });
       setAskWait(false);
       setAskForgot(false);
       const until = Math.max(cur.startedAt, Math.min(Date.now(), endAt ?? Date.now()));
@@ -201,7 +118,7 @@ export function TripTracker({
         waitSeconds: Math.min(seconds, Math.round(cur.waitSeconds ?? 0)),
       });
     },
-    [stopWatch],
+    [persist],
   );
 
   const finishEnding = () => {
@@ -213,7 +130,7 @@ export function TripTracker({
   const resumeAfterCancel = () => {
     // closed the popup without choosing — keep the trip running
     setEnding(null);
-    if (activeRef.current) startWatch();
+    if (activeRef.current) persist({ ...activeRef.current, pausedAt: undefined });
   };
 
   const stillDriving = () => {
@@ -237,29 +154,33 @@ export function TripTracker({
     toast("ההמתנה נרשמת · נשאל שוב בעוד 15 דקות");
   };
 
-  // restore an active trip after a reload / accidental close / auto-detection
+  // Show the trip TripWatcher measures (also one started by auto-detection while
+  // this screen is open). A trip left paused by an end form that is no longer
+  // open (reload, left the screen) resumes.
   useEffect(() => {
     const saved = readActive();
-    if (saved) {
+    if (saved?.pausedAt) persist({ ...saved, pausedAt: undefined });
+    else if (saved) {
       activeRef.current = saved;
       setActive(saved);
-      startWatch();
-    } else if (autoStart) {
-      setAskStart(true);
-    }
-    return () => stopWatch();
+    } else if (autoStart) setAskStart(true);
+    const sync = () => {
+      const t = readActive();
+      activeRef.current = t;
+      setActive(t);
+    };
+    const syncError = () => setError(readGpsError());
+    syncError();
+    window.addEventListener(ACTIVE_EVENT, sync);
+    window.addEventListener("storage", sync);
+    window.addEventListener(GPS_ERROR_EVENT, syncError);
+    return () => {
+      window.removeEventListener(ACTIVE_EVENT, sync);
+      window.removeEventListener("storage", sync);
+      window.removeEventListener(GPS_ERROR_EVENT, syncError);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // The screen lock is released whenever the app goes to the background.
-  useEffect(() => {
-    const onVisible = () => {
-      if (document.visibilityState === "visible" && activeRef.current && watchRef.current !== null)
-        acquireWakeLock();
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => document.removeEventListener("visibilitychange", onVisible);
-  }, [acquireWakeLock]);
 
   // live timer + waiting check
   useEffect(() => {
@@ -269,6 +190,10 @@ export function TripTracker({
       const cur = activeRef.current;
       if (!cur || ending) return;
       const now = Date.now();
+      const stoodMs = now - (cur.lastMoveAt ?? cur.startedAt);
+      // The car moved again: put the prompts away by themselves.
+      if (stoodMs < WAIT_ASK_MS) setAskWait(false);
+      if (!looksForgotten(cur, now)) setAskForgot(false);
       if (looksForgotten(cur, now)) {
         setAskWait(false);
         setAskForgot((was) => {
@@ -278,7 +203,6 @@ export function TripTracker({
         return;
       }
       if (!askWaiting) return;
-      const stoodMs = now - (cur.lastMoveAt ?? cur.startedAt);
       if (stoodMs >= WAIT_ASK_MS && now >= (cur.waitSnoozeUntil ?? 0)) {
         setAskWait((was) => {
           if (!was) {
@@ -530,8 +454,7 @@ export function TripTracker({
                     label: "ביטול",
                     onClick: () => {
                       if (activeRef.current) return;
-                      persist(cancelled);
-                      startWatch();
+                      persist({ ...cancelled, pausedAt: undefined });
                     },
                   }
                 : undefined,

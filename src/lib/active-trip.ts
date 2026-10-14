@@ -11,6 +11,7 @@ export type ActiveTrip = {
   lastMoveAt?: number; // epoch ms of last real movement
   waitSnoozeUntil?: number; // don't ask about waiting before this time
   forgotSnoozeUntil?: number; // don't ask "forgot to end?" before this time
+  pausedAt?: number; // epoch ms the end form opened; GPS is paused until it closes
   last?: { lat: number; lon: number; t: number; acc?: number }; // acc = accuracy in meters
 };
 
