@@ -153,54 +153,61 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
                     : categoryLabel((r.item as Expense).category);
 
                 return (
-                  <div key={r.item.id} className="flex items-center gap-3 p-3">
-                    <span
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isIncome ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}
+                  <div key={r.item.id} className="flex items-center">
+                    <button
+                      type="button"
+                      onClick={() => setEditing(r)}
+                      aria-label={`פרטי ${title}`}
+                      className="flex min-w-0 flex-1 items-center gap-3 p-3 text-start active:bg-muted/40"
                     >
-                      {isIncome ? (
-                        <TrendingUp className="h-4 w-4" />
-                      ) : (
-                        <TrendingDown className="h-4 w-4" />
-                      )}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-medium">{title}</span>
-                        {km > 0 && (
-                          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                            {km.toLocaleString("he-IL", { maximumFractionDigits: 1 })} ק״מ
-                          </span>
+                      <span
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isIncome ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}
+                      >
+                        {isIncome ? (
+                          <TrendingUp className="h-4 w-4" />
+                        ) : (
+                          <TrendingDown className="h-4 w-4" />
                         )}
-                        {trip && trip.seconds > 0 && (
-                          <span className="num rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                            {Math.max(1, Math.round(trip.seconds / 60))} דק׳
-                          </span>
-                        )}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-medium">{title}</span>
+                          {km > 0 && (
+                            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              {km.toLocaleString("he-IL", { maximumFractionDigits: 1 })} ק״מ
+                            </span>
+                          )}
+                          {trip && trip.seconds > 0 && (
+                            <span className="num rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              {Math.max(1, Math.round(trip.seconds / 60))} דק׳
+                            </span>
+                          )}
+                        </div>
+                        <div className="truncate text-xs text-muted-foreground">
+                          {[
+                            manyDays
+                              ? ""
+                              : new Date(r.item.date).toLocaleDateString("he-IL", {
+                                  day: "numeric",
+                                  month: "short",
+                                }),
+                            trip?.time ?? r.item.time,
+                            km > 0 ? `דלק משוער ${fmt(energy, c)}` : "",
+                            r.item.note && r.item.note !== "נסיעת GPS" ? r.item.note : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </div>
                       </div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {[
-                          manyDays
-                            ? ""
-                            : new Date(r.item.date).toLocaleDateString("he-IL", {
-                                day: "numeric",
-                                month: "short",
-                              }),
-                          trip?.time ?? r.item.time,
-                          km > 0 ? `דלק משוער ${fmt(energy, c)}` : "",
-                          r.item.note && r.item.note !== "נסיעת GPS" ? r.item.note : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </div>
-                    </div>
 
-                    <div
-                      className={`text-sm font-bold ${isIncome ? "text-success" : "text-destructive"}`}
-                    >
-                      {isIncome ? "+" : "−"}
-                      {fmt(amount, c)}
-                    </div>
-                    <div className="flex shrink-0 gap-1">
+                      <div
+                        className={`text-sm font-bold ${isIncome ? "text-success" : "text-destructive"}`}
+                      >
+                        {isIncome ? "+" : "−"}
+                        {fmt(amount, c)}
+                      </div>
+                    </button>
+                    <div className="flex shrink-0 gap-1 pe-3">
                       <Button
                         size="icon"
                         variant="ghost"
@@ -269,10 +276,16 @@ function EditDialog({
   if (!row) return null;
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-sm">
+      <DialogContent
+        className="max-h-[92vh] max-w-sm overflow-y-auto"
+        // Opened by a tap to look at the record: don't jump into the first field.
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
-          <DialogTitle>עריכת רשומה</DialogTitle>
+          <DialogTitle>פרטי רשומה</DialogTitle>
         </DialogHeader>
+        <DetailSummary row={row} />
+        <h3 className="text-xs font-semibold text-muted-foreground">עריכה</h3>
         {row.type === "income" ? (
           <IncomeEdit item={row.item as Income} onSave={onSaveIncome} />
         ) : (
@@ -280,6 +293,105 @@ function EditDialog({
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+const localDate = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d);
+};
+
+/** What the record is made of: the gross, commission and tip, and for a trip its km, time and fuel. */
+function DetailSummary({ row }: { row: Row }) {
+  const { data } = useAppData();
+  const c = data.settings.currency;
+  const item = row.item;
+  const income = row.type === "income" ? (row.item as Income) : null;
+  const expense = row.type === "expense" ? (row.item as Expense) : null;
+  const trip = income?.tripId ? data.trips.find((t) => t.id === income.tripId) : undefined;
+  const time = trip?.time ?? item.time;
+  const km = trip ? trip.km : income?.km || 0;
+  const fuel = (() => {
+    if (!income || km <= 0) return 0;
+    const { price, consumption } = effectiveFuelParams(
+      income.date,
+      data.vehicle,
+      data.settings,
+      income.time,
+    );
+    return (km / (consumption > 0 ? consumption : 1)) * price;
+  })();
+
+  const lines: { label: string; value: string; strong?: boolean; tone?: "good" | "bad" }[] = [];
+  if (income) {
+    const commission = (income.amount * income.commissionPct) / 100;
+    lines.push({ label: "ברוטו", value: fmt(income.amount, c) });
+    if (income.commissionPct > 0)
+      lines.push({
+        label: `עמלה ${income.commissionPct}%`,
+        value: `−${fmt(commission, c)}`,
+        tone: "bad",
+      });
+    if (income.tip > 0) lines.push({ label: "טיפ", value: `+${fmt(income.tip, c)}`, tone: "good" });
+    lines.push({ label: "נטו", value: fmt(netFromIncome(income), c), strong: true });
+    if (km > 0)
+      lines.push({ label: "ק״מ", value: km.toLocaleString("he-IL", { maximumFractionDigits: 1 }) });
+    if (trip && trip.seconds > 0)
+      lines.push({
+        label: "זמן נסיעה",
+        value: `${Math.max(1, Math.round(trip.seconds / 60))} דק׳`,
+      });
+    if (trip && (trip.waitSeconds ?? 0) > 0)
+      lines.push({ label: "המתנה", value: `${Math.round((trip.waitSeconds ?? 0) / 60)} דק׳` });
+    if (income.hours > 0) lines.push({ label: "שעות", value: String(income.hours) });
+    if (km > 0) {
+      lines.push({ label: "דלק משוער", value: `−${fmt(fuel, c)}`, tone: "bad" });
+      lines.push({
+        label: "נטו אחרי דלק",
+        value: fmt(netFromIncome(income) - fuel, c),
+        strong: true,
+      });
+    }
+  } else if (expense) {
+    lines.push({ label: "קטגוריה", value: categoryLabel(expense.category) });
+    lines.push({ label: "סכום", value: fmt(expense.amount, c), strong: true });
+    if (expense.quantity)
+      lines.push({ label: "כמות", value: expense.quantity.toLocaleString("he-IL") });
+    if (expense.pricePerUnit)
+      lines.push({ label: "מחיר ליחידה", value: fmt(expense.pricePerUnit, c) });
+    if (expense.odometer)
+      lines.push({ label: "מונה ק״מ", value: expense.odometer.toLocaleString("he-IL") });
+  }
+
+  return (
+    <div className="space-y-2 rounded-xl bg-muted/50 p-3">
+      <div className="text-xs font-semibold text-muted-foreground">
+        {localDate(item.date).toLocaleDateString("he-IL", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+        })}
+        {time ? ` · ${time}` : ""}
+      </div>
+      <dl className="num space-y-1 text-sm">
+        {lines.map((l) => (
+          <div key={l.label} className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">{l.label}</dt>
+            <dd
+              dir="ltr"
+              className={`${l.strong ? "font-extrabold" : "font-semibold"} ${
+                l.tone === "good" ? "text-success" : l.tone === "bad" ? "text-destructive" : ""
+              }`}
+            >
+              {l.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {item.note && item.note !== "נסיעת GPS" && (
+        <p className="border-t border-border pt-2 text-xs text-muted-foreground">{item.note}</p>
+      )}
+    </div>
   );
 }
 
