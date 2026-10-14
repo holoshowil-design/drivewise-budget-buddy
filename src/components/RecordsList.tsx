@@ -56,7 +56,12 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
   const rows: Row[] = [
     ...incomes.map((item) => ({ type: "income" as const, item })),
     ...expenses.map((item) => ({ type: "expense" as const, item })),
-  ].sort((a, b) => (a.item.date < b.item.date ? 1 : a.item.date > b.item.date ? -1 : 0));
+  ].sort((a, b) => {
+    // Newest first: by date, then by time within the day.
+    const ka = `${a.item.date} ${a.item.time ?? ""}`;
+    const kb = `${b.item.date} ${b.item.time ?? ""}`;
+    return ka < kb ? 1 : ka > kb ? -1 : 0;
+  });
 
   const del = (r: Row) => {
     if (r.type === "income") removeIncome(r.item.id);
