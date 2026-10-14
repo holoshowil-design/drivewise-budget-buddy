@@ -35,6 +35,7 @@ import { validateExpense, validateIncome, type FieldErrors } from "@/lib/validat
 import { useRollingDate } from "@/hooks/use-today";
 import { CommissionChips } from "@/components/CommissionChips";
 import { DayRecords } from "@/components/DayRecords";
+import { CommonAmounts } from "@/components/CommonAmounts";
 
 const searchSchema = z.object({
   tab: z.enum(["income", "expense", "fuel"]).optional(),
@@ -226,9 +227,6 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
     <Card className="mt-4">
       <CardContent className="p-4 space-y-3">
         <LiveReaction kind="income" amount={amountNum} />
-        <Field label="תאריך">
-          <DateInput value={form.date} onChange={(date) => set({ date })} error={errors.date} />
-        </Field>
         <Field label="סכום ברוטו ₪">
           <NumberField
             id="income-amount"
@@ -249,6 +247,7 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
           onPick={bump}
           onClear={() => set({ amount: "" })}
         />
+        <CommonAmounts onPick={(amount) => set({ amount })} />
         {amountNum > 0 && (
           <div className="num text-sm font-medium text-primary">
             נטו אחרי עמלה: {fmt(previewNet, c)}
@@ -296,6 +295,10 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
             />
           </Field>
         </div>
+
+        <Field label="תאריך">
+          <DateInput value={form.date} onChange={(date) => set({ date })} error={errors.date} />
+        </Field>
 
         <button
           type="button"
