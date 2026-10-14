@@ -80,6 +80,10 @@ function CalendarPage() {
 
   const sel = selected ? dayOf(calcDays, selected, data) : null;
   const selectedNet = sel?.net ?? 0;
+  // A trip with an income shows as one row in the records list; only the rest show here.
+  const looseTrips = sel
+    ? sel.trips.filter((t) => !sel.incomes.some((i) => i.tripId === t.id))
+    : [];
 
   return (
     <div className="mx-auto max-w-xl">
@@ -207,10 +211,10 @@ function CalendarPage() {
                 </Link>
               </div>
             </div>
-            {sel.trips.length > 0 && (
+            {looseTrips.length > 0 && (
               <Card>
                 <CardContent className="divide-y p-0">
-                  {sel.trips.map((t) => (
+                  {looseTrips.map((t) => (
                     <div key={t.id} className="flex items-center gap-3 p-3 text-sm">
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <MapPin className="h-4 w-4" />
