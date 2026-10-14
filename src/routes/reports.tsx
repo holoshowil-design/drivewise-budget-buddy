@@ -18,6 +18,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { RecordsList } from "@/components/RecordsList";
+import { BestHoursCard } from "@/components/BestHoursCard";
 
 // recharts loads only when the expense breakdown is shown.
 const ExpensePie = lazy(() => import("@/components/ExpensePie"));
@@ -205,6 +206,7 @@ function Reports() {
             </CardContent>
           </Card>
         )}
+        <BestHoursCard data={data} />
         <div>
           <h3 className="mb-2 px-1 text-sm font-semibold">
             רשומות בטווח ({incomes.length + expenses.length})
