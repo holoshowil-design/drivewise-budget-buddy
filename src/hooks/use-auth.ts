@@ -1,22 +1,32 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
 import type { SyncEngine } from "@/lib/sync";
+
+const getSupabase = () => import("@/integrations/supabase/client").then((m) => m.supabase);
 
 export function useAuthUser() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
-      setLoading(false);
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+    void getSupabase().then((supabase) => {
+      if (cancelled) return;
+      supabase.auth.getSession().then(({ data }) => {
+        setUser(data.session?.user ?? null);
+        setLoading(false);
+      });
+      const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      });
+      unsubscribe = () => sub.subscription.unsubscribe();
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, []);
 
   return { user, loading };
@@ -53,15 +63,20 @@ export function useCloudSync() {
     window.addEventListener("pagehide", onOnline);
     document.addEventListener("visibilitychange", onVisibility);
 
-    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user?.id ?? null));
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "TOKEN_REFRESHED") return;
-      setUser(session?.user?.id ?? null);
+    let unsubscribe: (() => void) | undefined;
+    void getSupabase().then((supabase) => {
+      if (cancelled) return;
+      supabase.auth.getSession().then(({ data }) => setUser(data.session?.user?.id ?? null));
+      const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "TOKEN_REFRESHED") return;
+        setUser(session?.user?.id ?? null);
+      });
+      unsubscribe = () => sub.subscription.unsubscribe();
     });
 
     return () => {
       cancelled = true;
-      sub.subscription.unsubscribe();
+      unsubscribe?.();
       window.removeEventListener("driver-data-local-change", onLocalChange);
       window.removeEventListener("online", onOnline);
       window.removeEventListener("pagehide", onOnline);

@@ -1,4 +1,3 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   type ErrorComponentProps,
   Outlet,
@@ -75,7 +74,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRouteWithContext()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -144,11 +143,10 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
   useCloudSync();
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <div className="relative min-h-screen text-foreground pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
         <Outlet />
       </div>
@@ -159,6 +157,6 @@ function RootComponent() {
       <SoundDirector />
       <BottomNav />
       <Toaster position="top-center" richColors />
-    </QueryClientProvider>
+    </>
   );
 }
