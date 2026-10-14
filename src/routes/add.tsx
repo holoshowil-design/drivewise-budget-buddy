@@ -34,6 +34,7 @@ import { numberOr, parseNumber } from "@/lib/number";
 import { validateExpense, validateIncome, type FieldErrors } from "@/lib/validate";
 import { useRollingDate } from "@/hooks/use-today";
 import { CommissionChips } from "@/components/CommissionChips";
+import { DayRecords } from "@/components/DayRecords";
 
 const searchSchema = z.object({
   tab: z.enum(["income", "expense", "fuel"]).optional(),
@@ -350,6 +351,7 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
             </div>
           </div>
         )}
+        <DayRecords date={form.date} kind="income" />
       </CardContent>
     </Card>
   );
@@ -470,6 +472,7 @@ function ExpenseForm({ initialDate }: { initialDate?: string }) {
         <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">
           שמירת הוצאה
         </Button>
+        <DayRecords date={form.date} kind="expense" />
       </CardContent>
     </Card>
   );
@@ -571,6 +574,7 @@ function FuelForm({ initialDate }: { initialDate?: string }) {
         <Button onClick={submit} className="w-full h-12 text-base font-semibold" size="lg">
           שמירה
         </Button>
+        <DayRecords date={form.date} kind="fuel" />
       </CardContent>
     </Card>
   );
