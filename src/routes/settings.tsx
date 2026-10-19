@@ -234,6 +234,7 @@ function SettingsPage() {
             </div>
             <Field label="סוג רכב">
               <Select
+                dir="rtl"
                 value={v.type}
                 onValueChange={(val) => setV({ ...v, type: val as VehicleType })}
               >

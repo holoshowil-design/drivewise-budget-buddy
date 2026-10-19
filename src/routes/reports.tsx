@@ -121,7 +121,7 @@ function Reports() {
       />
 
       <div className="px-4 space-y-4">
-        <Tabs value={range} onValueChange={(v) => setRange(v as Range)}>
+        <Tabs dir="rtl" value={range} onValueChange={(v) => setRange(v as Range)}>
           <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="today">היום</TabsTrigger>
             <TabsTrigger value="week">שבוע</TabsTrigger>
