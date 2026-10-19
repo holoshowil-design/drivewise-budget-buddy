@@ -107,8 +107,6 @@ export function webViewOptions(url: string, privateMode = false) {
     url,
     toolbarType: "navigation",
     showReloadButton: true,
-    // Pull down to refresh: works even when the toolbar button seems to do nothing.
-    enableReloadGesture: true,
     visibleTitle: true,
     // Links that ask for a new window, and links to the X app, stay in this window.
     openBlankTargetInWebView: true,

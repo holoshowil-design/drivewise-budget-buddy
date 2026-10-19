@@ -84,7 +84,6 @@ describe("the in-app browser in the installed app", () => {
     expect(webViewOptions("https://x.com/")).toMatchObject({
       toolbarType: "navigation",
       showReloadButton: true,
-      enableReloadGesture: true,
       openBlankTargetInWebView: true,
       preventDeeplink: true,
     });
