@@ -22,6 +22,8 @@ function read(kind: Kind, amount: number): { mood: MascotMood; prop: MascotProp;
   return { mood: "grumble", prop: "none", line: amount > 200 ? "כבד! שומרים על הכיס 😤" : "קטן, נעבור את זה", tone: "warn" };
 }
 
+const BACKDROP: Record<Kind, string> = { income: "street", expense: "garage", fuel: "road" };
+
 /** Character reacts live while the driver types an amount — pure presentation. */
 export function LiveReaction({ kind, amount }: { kind: Kind; amount: number }) {
   const state = read(kind, amount);
@@ -38,9 +40,9 @@ export function LiveReaction({ kind, amount }: { kind: Kind; amount: number }) {
     return () => window.clearTimeout(t);
   }, [state.mood]);
   return (
-    <div className={`live-reaction live-reaction-${state.tone}`} aria-hidden="true">
+    <div className={`live-reaction stage-bg stage-${BACKDROP[kind]} live-reaction-${state.tone}`} aria-hidden="true">
       <CaptainArt mood={state.mood} prop={state.prop} className="live-reaction-mascot" />
-      <ComicBubble key={pop} tone={state.tone} className="live-reaction-bubble">{state.line}</ComicBubble>
+      <ComicBubble key={pop} side="start" tone={state.tone} className="live-reaction-bubble">{state.line}</ComicBubble>
       {state.word && <span key={`w-${pop}`} className="comic-word">{state.word}</span>}
     </div>
   );
