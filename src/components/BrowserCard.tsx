@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { ACTIVE_EVENT, isDrivingNow, readActive } from "@/lib/active-trip";
 import {
   START_PAGES,
-  browserMode,
   clearBrowserLogins,
+  hasInAppBrowser,
   normalizeAddress,
   openInBrowser,
 } from "@/lib/inapp-browser";
@@ -41,17 +41,13 @@ export function BrowserCard() {
   const driving = useDriving();
   const [text, setText] = useState("");
   // Known only in the browser, after the first render (the bridge is not there on the server).
-  const [mode, setMode] = useState<"inapp" | "needs-update" | "tab">("tab");
-  useEffect(() => setMode(browserMode()), []);
-  const inApp = mode === "inapp";
+  const [inApp, setInApp] = useState(false);
+  useEffect(() => setInApp(hasInAppBrowser()), []);
 
   const open = async (address: string) => {
     // Read it again at the tap: the card may not have caught up with a trip that just started.
     if (isDrivingNow(readActive())) return;
-    const result = await openInBrowser(address);
-    if (result === "needs-update")
-      toast.error("האפליקציה המותקנת ישנה. התקן את הגרסה החדשה כדי לפתוח דפים בתוכה.");
-    else if (result === "failed") toast.error("לא הצלחנו לפתוח את הדפדפן");
+    if ((await openInBrowser(address)) === "failed") toast.error("לא הצלחנו לפתוח את הדפדפן");
   };
 
   const submit = (event: FormEvent) => {
@@ -74,11 +70,9 @@ export function BrowserCard() {
             <Globe className="h-4 w-4 text-primary" /> דפדפן
           </h3>
           <p className="text-xs text-muted-foreground">
-            {mode === "inapp"
+            {inApp
               ? "נפתח בתוך האפליקציה, נפרד מכרום: ההתחברויות שלך בכרום לא משותפות."
-              : mode === "needs-update"
-                ? "האפליקציה המותקנת ישנה ואין בה דפדפן פנימי. התקן את הגרסה החדשה (בהתקנה מעל הקיימת הנתונים נשמרים)."
-                : "באתר נפתח בלשונית חדשה. הדפדפן הפנימי פועל באפליקציה המותקנת."}
+              : "באתר נפתח בלשונית חדשה. הדפדפן הפנימי פועל באפליקציה המותקנת."}
           </p>
         </div>
 

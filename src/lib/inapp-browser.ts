@@ -9,11 +9,6 @@
  *
  * In a plain browser there is no such window (sites like X refuse to be shown inside
  * another page), so the page opens in a new tab.
- *
- * Inside the installed app, a page is never handed to another browser app: an app build
- * without the plugin asks to be updated instead. (Capacitor sends any link to another host
- * to the system browser, which would open Chrome, share its logins, and need a browser
- * installed at all.)
  */
 
 type Bridge = {
@@ -33,20 +28,6 @@ function bridge(): Bridge | null {
 export function hasInAppBrowser(): boolean {
   const b = bridge();
   return Boolean(b?.isNativePlatform?.() && b.Plugins?.[PLUGIN] && b.nativePromise);
-}
-
-/** True inside the installed app (Capacitor native shell), with or without the plugin. */
-export function isNativeApp(): boolean {
-  return Boolean(bridge()?.isNativePlatform?.());
-}
-
-/**
- * How a page would open here: "inapp" in the app's own window; "needs-update" in an installed
- * app that was built without the plugin; "tab" in a plain browser.
- */
-export function browserMode(): "inapp" | "needs-update" | "tab" {
-  if (hasInAppBrowser()) return "inapp";
-  return isNativeApp() ? "needs-update" : "tab";
 }
 
 /** Pages offered with one tap. */
@@ -94,17 +75,13 @@ export function webViewOptions(url: string) {
 }
 
 /**
- * Opens a page: in the app's own browser window when the installed app has one; in a new tab
- * on the web; never in another browser app (an installed app without the plugin gives
- * "needs-update"). "failed" for an address that is not http(s) or when the window did not open.
+ * Opens a page: in the app's own browser window when the installed app has one, else in a
+ * new tab. Resolves "failed" for an address that is not http(s) or when the window did not open.
  */
-export async function openInBrowser(
-  address: string,
-): Promise<"inapp" | "tab" | "needs-update" | "failed"> {
+export async function openInBrowser(address: string): Promise<"inapp" | "tab" | "failed"> {
   const url = normalizeAddress(address);
   if (!url) return "failed";
-  const mode = browserMode();
-  if (mode === "inapp") {
+  if (hasInAppBrowser()) {
     try {
       await bridge()!.nativePromise!(PLUGIN, "openWebView", webViewOptions(url));
       return "inapp";
@@ -112,7 +89,6 @@ export async function openInBrowser(
       return "failed";
     }
   }
-  if (mode === "needs-update") return "needs-update";
   // noopener makes window.open return null even when it worked, so it can't be checked.
   window.open(url, "_blank", "noopener,noreferrer");
   return "tab";
