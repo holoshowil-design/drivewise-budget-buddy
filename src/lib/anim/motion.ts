@@ -1,4 +1,4 @@
-import { readActive } from "@/lib/active-trip";
+import { isDrivingNow, readActive } from "@/lib/active-trip";
 
 const reducedMotion = () =>
   window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
@@ -11,7 +11,7 @@ export function motionAllowed() {
   if (typeof window === "undefined" || reducedMotion()) return false;
   if (document.visibilityState === "hidden") return false;
   if (document.querySelector(".drive-hud")) return false;
-  return !readActive();
+  return !isDrivingNow(readActive());
 }
 
 /**

@@ -12,8 +12,9 @@ import {
   type Trip,
 } from "@/lib/store";
 import { dayLabel, groupByDay } from "@/lib/day-groups";
+import { isBetween } from "@/lib/between-trip";
 
-/** The last 30 finished trips, grouped by day, with edit and delete. */
+/** The last 60 finished trips, grouped by day, with edit and delete. */
 export const TripHistory = memo(function TripHistory({
   data,
   onEdit,
@@ -43,7 +44,7 @@ export const TripHistory = memo(function TripHistory({
           <p className="text-xs text-muted-foreground">עדיין אין נסיעות שמורות.</p>
         ) : (
           <ul className="divide-y">
-            {groupByDay(trips.slice(0, 30), (t) => t.date).map((day) => (
+            {groupByDay(trips.slice(0, 60), (t) => t.date).map((day) => (
               <Fragment key={day.date}>
                 <li className="pb-1 pt-3 text-xs font-semibold text-muted-foreground">
                   {dayLabel(day.date, today)}
@@ -62,6 +63,11 @@ export const TripHistory = memo(function TripHistory({
                         onClick={() => onEdit(t)}
                       >
                         <div className="num text-sm font-semibold">
+                          {isBetween(t) && (
+                            <span className="me-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              בין נסיעות
+                            </span>
+                          )}
                           {t.km.toFixed(1)} ק״מ · {fmtDuration(t.seconds)}
                           {inc && <span className="text-success"> · {fmt(inc.amount, c)}</span>}
                         </div>

@@ -220,7 +220,9 @@ function CalendarPage() {
                         <MapPin className="h-4 w-4" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium">נסיעת GPS</div>
+                        <div className="font-medium">
+                          {t.kind === "between" ? "בין נסיעות" : "נסיעת GPS"}
+                        </div>
                         <div className="num text-xs text-muted-foreground">
                           {t.time ?? ""} · {t.km.toFixed(1)} ק״מ · {fmtDuration(t.seconds)}
                         </div>

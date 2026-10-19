@@ -12,6 +12,8 @@ export type ActiveTrip = {
   waitSnoozeUntil?: number; // don't ask about waiting before this time
   forgotSnoozeUntil?: number; // don't ask "forgot to end?" before this time
   pausedAt?: number; // epoch ms the end form opened; GPS is paused until it closes
+  /** "between": measuring the drive between work trips; missing means a work trip. */
+  kind?: "work" | "between";
   last?: { lat: number; lon: number; t: number; acc?: number }; // acc = accuracy in meters
 };
 
@@ -30,6 +32,17 @@ export function writeActive(t: ActiveTrip | null) {
   if (t) localStorage.setItem(ACTIVE_KEY, JSON.stringify(t));
   else localStorage.removeItem(ACTIVE_KEY);
   window.dispatchEvent(new Event(ACTIVE_EVENT));
+}
+
+/**
+ * Whether the driver is driving right now, for things that stay quiet while driving
+ * (films, sounds). A work trip counts as driving until it ends. A between-trips
+ * measurement runs all day, so it only counts while the car actually moves.
+ */
+export function isDrivingNow(trip: ActiveTrip | null, now = Date.now()) {
+  if (!trip) return false;
+  if (trip.kind !== "between") return true;
+  return now - (trip.lastMoveAt ?? trip.startedAt) < 60_000;
 }
 
 /** Great-circle distance between two coordinates, in kilometers. */

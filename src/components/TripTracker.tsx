@@ -46,6 +46,7 @@ import { calculateWorkStreak, tripMotivation } from "@/lib/motivation";
 import { looksForgotten } from "@/lib/gps";
 import { hasBackgroundTracking } from "@/lib/location";
 import { GPS_ERROR_EVENT, readGpsError } from "@/lib/trip-gps";
+import { betweenToTrip, isBetween, startBetween, trackBetweenOn } from "@/lib/between-trip";
 
 const WAIT_ASK_MS = 4 * 60 * 1000;
 const WAIT_SNOOZE_MS = 15 * 60 * 1000;
@@ -65,8 +66,15 @@ export function TripTracker({
   stage?: ReactNode;
 }) {
   const navigate = useNavigate();
-  const { data, ready, removeTrip, restoreRecords, saveTripWithIncome, updateTripWithIncome } =
-    useAppData();
+  const {
+    data,
+    ready,
+    addTrip,
+    removeTrip,
+    restoreRecords,
+    saveTripWithIncome,
+    updateTripWithIncome,
+  } = useAppData();
   const [active, setActive] = useState<ActiveTrip | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -85,8 +93,21 @@ export function TripTracker({
     writeActive(t);
   }, []);
 
+  /** Saves the between-trips drive so far (nothing when it was too short). */
+  const closeBetween = useCallback(
+    (cur: ActiveTrip, endAt = Date.now()) => {
+      const trip = betweenToTrip(cur, endAt);
+      if (trip) addTrip(trip);
+    },
+    [addTrip],
+  );
+
   const start = useCallback(() => {
-    if (activeRef.current) return;
+    // Read the stored trip: a between measurement may have been closed or opened elsewhere.
+    const cur = readActive();
+    if (cur && !isBetween(cur)) return;
+    // Starting a work trip ends the drive that led to it.
+    if (cur) closeBetween(cur);
     const now = Date.now();
     // TripWatcher (root layout) starts measuring as soon as the trip is stored.
     persist({ startedAt: now, date: todayISO(), time: nowHHMM(), km: 0, lastMoveAt: now });
@@ -100,7 +121,22 @@ export function TripTracker({
         },
       },
     });
-  }, [persist]);
+  }, [persist, closeBetween]);
+
+  /** Measures km and time between work trips, for the fuel indication. */
+  const startBetweenNow = () => {
+    if (activeRef.current) return;
+    persist(startBetween(Date.now(), todayISO(), nowHHMM()));
+    toast.success("מודד ק״מ וזמן בין נסיעות");
+  };
+
+  const stopBetween = () => {
+    const cur = readActive();
+    if (!cur || !isBetween(cur)) return;
+    persist(null);
+    closeBetween(cur);
+    toast(`המדידה נשמרה · ${cur.km.toFixed(1)} ק״מ בין נסיעות`);
+  };
 
   // driving mode is always silent
   useEffect(() => {
@@ -171,7 +207,7 @@ export function TripTracker({
   useEffect(() => {
     const saved = readActive();
     if (saved?.pausedAt) persist({ ...saved, pausedAt: undefined });
-    else if (saved) {
+    else if (saved && !(autoStart && isBetween(saved))) {
       activeRef.current = saved;
       setActive(saved);
     } else if (autoStart) {
@@ -209,6 +245,12 @@ export function TripTracker({
       setElapsed(Math.round((Date.now() - active.startedAt) / 1000));
       const cur = activeRef.current;
       if (!cur || ending) return;
+      // Standing still between trips is normal; TripWatcher closes the measurement.
+      if (isBetween(cur)) {
+        setAskWait(false);
+        setAskForgot(false);
+        return;
+      }
       const now = Date.now();
       const stoodMs = now - (cur.lastMoveAt ?? cur.startedAt);
       // The car moved again: put the prompts away by themselves.
@@ -278,6 +320,8 @@ export function TripTracker({
           : "trip";
     // the trip is over before its reward plays, so the Captain's film may start
     finishEnding();
+    // The drive to the next customer is measured too (a work trip started next closes it).
+    if (trackBetweenOn(data.settings)) persist(startBetween(Date.now(), todayISO(), nowHHMM()));
     celebrate(kind, trigger, income?.amount, data.settings.currency, {
       title: kind === "streak" ? `רצף של ${nextStreak.current} ימים` : feedback.title,
       message: feedback.message,
@@ -292,6 +336,7 @@ export function TripTracker({
 
   if (!ready) return null;
 
+  const betweenNow = isBetween(active);
   const liveParams = effectiveFuelParams(todayISO(), data.vehicle, data.settings, nowHHMM());
   const liveCost = active ? (active.km / (liveParams.consumption || 1)) * liveParams.price : 0;
   const avgSpeed = active && elapsed > 0 ? active.km / (elapsed / 3600) : 0;
@@ -319,11 +364,13 @@ export function TripTracker({
               <span
                 className={`h-2.5 w-2.5 rounded-full ${active ? "animate-pulse bg-hud-accent" : "bg-hud-muted"}`}
               />
-              {active
-                ? hasBackgroundTracking()
-                  ? "GPS פעיל · ממשיך גם כשהמסך נעול"
-                  : "GPS פעיל · המסך נשאר דלוק"
-                : "מוכן לנסיעה"}
+              {betweenNow
+                ? "מודד בין נסיעות"
+                : active
+                  ? hasBackgroundTracking()
+                    ? "GPS פעיל · ממשיך גם כשהמסך נעול"
+                    : "GPS פעיל · המסך נשאר דלוק"
+                  : "מוכן לנסיעה"}
             </div>
             <Link to="/trip" search={{}} aria-label="צא ממצב נהיגה" className="hud-icon-button">
               <Minimize2 className="h-5 w-5" />
@@ -354,7 +401,7 @@ export function TripTracker({
               </div>
             </div>
           </div>
-          {active ? (
+          {active && !betweenNow ? (
             <Button
               variant="destructive"
               className="h-20 w-full rounded-2xl text-xl font-extrabold"
@@ -481,6 +528,7 @@ export function TripTracker({
             waitSeconds: editing.waitSeconds ?? 0,
           }}
           initialIncome={editIncome}
+          betweenTrip={isBetween(editing)}
           onOpenChange={(o) => {
             if (!o) setEditing(null);
           }}
@@ -497,9 +545,42 @@ export function TripTracker({
       )}
 
       {/* Live tracker */}
-      <Card className="border-2" style={active ? { borderColor: "var(--success)" } : undefined}>
+      <Card
+        className="border-2"
+        style={active && !betweenNow ? { borderColor: "var(--success)" } : undefined}
+      >
         <CardContent className="p-5">
-          {active ? (
+          {betweenNow && active ? (
+            <>
+              <div className="flex items-center justify-center gap-2 text-xs font-bold tracking-wide text-muted-foreground">
+                <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-muted-foreground" />
+                בדרך לנסיעה הבאה · מודד ק״מ וזמן
+              </div>
+              <div className="num mt-3 grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl bg-muted/50 p-2.5">
+                  <div className="text-[11px] text-muted-foreground">ק״מ</div>
+                  <div className="text-2xl font-extrabold">{active.km.toFixed(1)}</div>
+                </div>
+                <div className="rounded-xl bg-muted/50 p-2.5">
+                  <div className="text-[11px] text-muted-foreground">זמן</div>
+                  <div className="text-2xl font-extrabold">{fmtDuration(elapsed)}</div>
+                </div>
+                <div className="rounded-xl bg-muted/50 p-2.5">
+                  <div className="text-[11px] text-muted-foreground">דלק משוער</div>
+                  <div className="text-2xl font-extrabold">{fmt(liveCost, c)}</div>
+                </div>
+              </div>
+              <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                נשמר לחישוב הדלק, לא כנסיעת עבודה. נסגר מעצמו אחרי חצי שעה בלי תנועה.
+              </p>
+              <Button className="mt-3 h-20 w-full text-xl font-extrabold" onClick={start}>
+                <Play className="ms-2 h-7 w-7" /> התחל נסיעת עבודה
+              </Button>
+              <Button variant="ghost" className="mt-1 h-10 w-full" onClick={stopBetween}>
+                עצור מדידה
+              </Button>
+            </>
+          ) : active ? (
             <>
               <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wide text-success">
                 <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-success" /> נסיעה פעילה
@@ -544,6 +625,9 @@ export function TripTracker({
               </p>
               <Button className="mt-4 h-20 w-full text-xl font-extrabold" onClick={start}>
                 <Play className="ms-2 h-7 w-7" /> התחל נסיעת עבודה
+              </Button>
+              <Button variant="outline" className="mt-2 h-11 w-full" onClick={startBetweenNow}>
+                מדוד גם בין נסיעות (לא עבודה)
               </Button>
             </>
           )}

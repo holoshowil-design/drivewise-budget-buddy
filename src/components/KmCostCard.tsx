@@ -113,6 +113,15 @@ export function KmCostCard({ data }: { data: AppData }) {
             <span>עלות אנרגיה משוערת לק״מ</span>
             <span className="num font-semibold text-foreground">{fmtPrecise(costPerKm, c)}</span>
           </div>
+          {month.betweenKm > 0 && (
+            <div className="flex justify-between">
+              <span>מתוכם בין נסיעות (ללא נוסע)</span>
+              <span className="num font-semibold text-foreground">
+                {Math.round(month.betweenKm).toLocaleString("he-IL")} ק״מ ·{" "}
+                {fmt(month.fuelEstimated * (month.betweenKm / month.km), c)}
+              </span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span>תדלוקים בפועל החודש</span>
             <span className="num font-semibold text-foreground">{fmt(cmp.actual, c)}</span>

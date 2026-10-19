@@ -33,6 +33,8 @@ type Props = {
   initialIncome?: Income | null;
   onSave: (trip: TripFormValues, income: Omit<Income, "id" | "km" | "tripId"> | null) => void;
   onDiscard?: () => void;
+  /** A drive between work trips: only km and time, no income. */
+  betweenTrip?: boolean;
   /** End mode: save, then start the next trip right away (back-to-back rides). */
   onSaveAndNext?: (
     trip: TripFormValues,
@@ -49,6 +51,7 @@ export function TripEndDialog({
   onSave,
   onDiscard,
   onSaveAndNext,
+  betweenTrip = false,
 }: Props) {
   const { data, ready } = useAppData();
   const c = data.settings.currency;
@@ -62,7 +65,7 @@ export function TripEndDialog({
   const [commission, setCommission] = useState("");
   const [showErrors, setShowErrors] = useState(false);
   // The trip details were measured; at the end of a trip only the amount is new.
-  const [showDetails, setShowDetails] = useState(mode === "edit");
+  const [showDetails, setShowDetails] = useState(mode === "edit" || betweenTrip);
 
   // Reset the form only when the dialog opens for another trip — not on every
   // parent render (the parent passes `initial` as a fresh object each time).
@@ -75,7 +78,7 @@ export function TripEndDialog({
   useEffect(() => {
     if (!open || !ready) return;
     setShowErrors(false);
-    setShowDetails(mode === "edit");
+    setShowDetails(mode === "edit" || betweenTrip);
     setDate(initial.date);
     setTime(initial.time);
     setKm(initial.km ? initial.km.toFixed(1) : "0");
@@ -146,72 +149,82 @@ export function TripEndDialog({
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-md" dir="rtl">
         <DialogHeader className="text-right">
           <DialogTitle className="text-xl font-extrabold">
-            {mode === "end" ? "הנסיעה הסתיימה" : "עריכת נסיעה"}
+            {betweenTrip ? "נסיעה בין נסיעות" : mode === "end" ? "הנסיעה הסתיימה" : "עריכת נסיעה"}
           </DialogTitle>
           <DialogDescription>
-            {mode === "end" ? "הק״מ והזמן נמדדו. נשאר רק להוסיף סכום." : "אפשר לתקן כל פרט."}
+            {betweenTrip
+              ? "נשמר לחישוב הדלק, לא כנסיעת עבודה. אפשר לתקן ק״מ וזמן."
+              : mode === "end"
+                ? "הק״מ והזמן נמדדו. נשאר רק להוסיף סכום."
+                : "אפשר לתקן כל פרט."}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-3">
-          <F label={`סכום שקיבלת (${c})`}>
-            <NumberField
-              autoFocus={mode === "end"}
-              placeholder="0"
-              className="h-14 text-2xl font-bold"
-              value={amount}
-              onValueChange={setAmount}
-              error={err("amount")}
-              enterKeyHint="done"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && amountN > 0) save(true);
-              }}
-            />
-          </F>
-          <F label={`טיפ (${c})`}>
-            <NumberField
-              placeholder="0"
-              className="h-14 text-xl"
-              value={tip}
-              onValueChange={setTip}
-              error={err("tip")}
-            />
-          </F>
-        </div>
-        <CommonAmounts onPick={setAmount} />
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">עמלה:</span>
-          <CommissionChips
-            value={commission}
-            defaultPct={defaultCommission}
-            onPick={setCommission}
-          />
-        </div>
+        {!betweenTrip && (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <F label={`סכום שקיבלת (${c})`}>
+                <NumberField
+                  autoFocus={mode === "end"}
+                  placeholder="0"
+                  className="h-14 text-2xl font-bold"
+                  value={amount}
+                  onValueChange={setAmount}
+                  error={err("amount")}
+                  enterKeyHint="done"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && amountN > 0) save(true);
+                  }}
+                />
+              </F>
+              <F label={`טיפ (${c})`}>
+                <NumberField
+                  placeholder="0"
+                  className="h-14 text-xl"
+                  value={tip}
+                  onValueChange={setTip}
+                  error={err("tip")}
+                />
+              </F>
+            </div>
+            <CommonAmounts onPick={setAmount} />
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">עמלה:</span>
+              <CommissionChips
+                value={commission}
+                defaultPct={defaultCommission}
+                onPick={setCommission}
+              />
+            </div>
 
-        <div className="num flex items-center justify-between rounded-2xl bg-muted/60 px-4 py-3 text-sm">
-          <span className="text-muted-foreground">דלק משוער {fmt(fuel, c)}</span>
-          <span
-            className={`text-lg font-extrabold ${net >= 0 ? "text-success" : "text-destructive"}`}
+            <div className="num flex items-center justify-between rounded-2xl bg-muted/60 px-4 py-3 text-sm">
+              <span className="text-muted-foreground">דלק משוער {fmt(fuel, c)}</span>
+              <span
+                className={`text-lg font-extrabold ${net >= 0 ? "text-success" : "text-destructive"}`}
+              >
+                נטו {fmt(net, c)}
+              </span>
+            </div>
+          </>
+        )}
+
+        {!betweenTrip && (
+          <button
+            type="button"
+            onClick={() => setShowDetails((v) => !v)}
+            aria-expanded={showDetails}
+            className="num flex w-full items-center justify-between rounded-xl border border-border px-3 py-2 text-xs text-muted-foreground"
           >
-            נטו {fmt(net, c)}
-          </span>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setShowDetails((v) => !v)}
-          aria-expanded={showDetails}
-          className="num flex w-full items-center justify-between rounded-xl border border-border px-3 py-2 text-xs text-muted-foreground"
-        >
-          <span className="font-semibold text-foreground">פרטי הנסיעה</span>
-          <span className="flex items-center gap-1">
-            {kmN.toFixed(1)} ק״מ · {Math.round(totalS / 60)} דק׳ · עמלה {comN}%
-            <ChevronDown
-              className={`h-3.5 w-3.5 transition-transform ${showDetails ? "rotate-180" : ""}`}
-            />
-          </span>
-        </button>
-        {showDetails && (
+            <span className="font-semibold text-foreground">פרטי הנסיעה</span>
+            <span className="flex items-center gap-1">
+              {kmN.toFixed(1)} ק״מ · {Math.round(totalS / 60)} דק׳ · עמלה {comN}%
+              <ChevronDown
+                className={`h-3.5 w-3.5 transition-transform ${showDetails ? "rotate-180" : ""}`}
+              />
+            </span>
+          </button>
+        )}
+        {(showDetails || betweenTrip) && (
           <div className="grid grid-cols-2 gap-3">
             <F label="תאריך">
               <Input
@@ -248,24 +261,33 @@ export function TripEndDialog({
                 error={err("waitMin")}
               />
             </F>
-            <F label="עמלה %">
-              <NumberField
-                value={commission}
-                onValueChange={setCommission}
-                error={err("commission")}
-              />
-            </F>
+            {!betweenTrip && (
+              <F label="עמלה %">
+                <NumberField
+                  value={commission}
+                  onValueChange={setCommission}
+                  error={err("commission")}
+                />
+              </F>
+            )}
           </div>
         )}
 
         <div className="grid gap-2">
-          <Button
-            className="reward-action h-14 text-lg font-bold"
-            onClick={() => save(true)}
-            disabled={amountN <= 0}
-          >
-            שמור עם הסכום
-          </Button>
+          {betweenTrip && (
+            <Button className="h-14 text-lg font-bold" onClick={() => save(false)}>
+              שמור
+            </Button>
+          )}
+          {!betweenTrip && (
+            <Button
+              className="reward-action h-14 text-lg font-bold"
+              onClick={() => save(true)}
+              disabled={amountN <= 0}
+            >
+              שמור עם הסכום
+            </Button>
+          )}
           {mode === "end" && onSaveAndNext && (
             <Button
               variant="secondary"
@@ -276,9 +298,15 @@ export function TripEndDialog({
               שמור והתחל נסיעה הבאה
             </Button>
           )}
-          <Button variant="outline" className="reward-action h-12" onClick={() => save(false)}>
-            {mode === "end" ? "שמור בלי סכום" : initialIncome ? "שמור והסר סכום" : "שמור בלי סכום"}
-          </Button>
+          {!betweenTrip && (
+            <Button variant="outline" className="reward-action h-12" onClick={() => save(false)}>
+              {mode === "end"
+                ? "שמור בלי סכום"
+                : initialIncome
+                  ? "שמור והסר סכום"
+                  : "שמור בלי סכום"}
+            </Button>
+          )}
           {onDiscard && (
             <Button variant="ghost" className="h-10 text-destructive" onClick={onDiscard}>
               {mode === "end" ? "בטל נסיעה (לא לשמור)" : "מחק נסיעה"}

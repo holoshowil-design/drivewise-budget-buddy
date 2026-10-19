@@ -1,4 +1,4 @@
-import { readActive } from "@/lib/active-trip";
+import { isDrivingNow, readActive } from "@/lib/active-trip";
 import { ambientAllowed, canPlay, type Cue, type SoundName } from "./cues";
 import { readSoundPref, writeSoundPref } from "./prefs";
 import type { Voice } from "./synth";
@@ -138,7 +138,15 @@ export function playCues(cues: readonly Cue[], { ambient = false } = {}): CueHan
 /** May an idle film on the stage have sound right now? Claims the slot if so. */
 export function claimAmbient(force = false): boolean {
   const now = Date.now();
-  if (!ambientAllowed({ now, lastGesture, lastAmbient, tripActive: readActive() !== null, force }))
+  if (
+    !ambientAllowed({
+      now,
+      lastGesture,
+      lastAmbient,
+      tripActive: isDrivingNow(readActive()),
+      force,
+    })
+  )
     return false;
   lastAmbient = now;
   return true;

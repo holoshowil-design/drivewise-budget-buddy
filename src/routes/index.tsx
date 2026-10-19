@@ -17,6 +17,8 @@ import { Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccountBadge } from "@/components/AccountBadge";
 import { useEffect, useState } from "react";
+import { ACTIVE_EVENT, readActive } from "@/lib/active-trip";
+import { isBetween } from "@/lib/between-trip";
 
 // recharts is heavy: load the chart cards only when the dashboard renders them.
 const charts = () => import("@/components/DashboardCharts");
@@ -56,10 +58,15 @@ function Dashboard() {
   const days = useDays(data);
   const [tripActive, setTripActive] = useState(false);
   useEffect(() => {
-    const check = () => setTripActive(Boolean(localStorage.getItem("driver-active-trip")));
+    // Only a work trip counts: a between-trips measurement still lets the button start one.
+    const check = () => setTripActive(Boolean(readActive() && !isBetween(readActive())));
     check();
     window.addEventListener("storage", check);
-    return () => window.removeEventListener("storage", check);
+    window.addEventListener(ACTIVE_EVENT, check);
+    return () => {
+      window.removeEventListener("storage", check);
+      window.removeEventListener(ACTIVE_EVENT, check);
+    };
   }, []);
   if (!ready) return null;
 
