@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  browserMode,
   clearBrowserLogins,
   hasInAppBrowser,
+  isNativeApp,
   normalizeAddress,
   openInBrowser,
   webViewOptions,
@@ -100,6 +102,24 @@ describe("the in-app browser in the installed app", () => {
     const { calls } = installBridge();
     expect(await clearBrowserLogins()).toBe(true);
     expect(calls).toEqual([{ plugin: "InAppBrowser", method: "clearAllCookies", options: {} }]);
+  });
+});
+
+describe("an installed app built without the plugin", () => {
+  it("is told apart from the web and from an app with the plugin", () => {
+    expect(browserMode()).toBe("tab");
+    installBridge();
+    expect(browserMode()).toBe("inapp");
+    installBridge({ Plugins: {} });
+    expect(isNativeApp()).toBe(true);
+    expect(browserMode()).toBe("needs-update");
+  });
+
+  it("never hands the page to another browser app", async () => {
+    const { open, calls } = installBridge({ Plugins: {} });
+    expect(await openInBrowser("https://x.com")).toBe("needs-update");
+    expect(open).not.toHaveBeenCalled();
+    expect(calls).toEqual([]);
   });
 });
 
