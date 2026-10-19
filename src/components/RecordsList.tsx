@@ -518,6 +518,7 @@ function ExpenseEdit({
       </F>
       <F label="קטגוריה">
         <Select
+          dir="rtl"
           value={f.category}
           onValueChange={(v) => setF({ ...f, category: v as ExpenseCategory })}
         >

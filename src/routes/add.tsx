@@ -75,7 +75,7 @@ function AddPage() {
     <div className="mx-auto max-w-xl">
       <PageHeader title="הוספת רשומה" subtitle="מהיר וקל — שלוש שניות וזה נשמר" />
       <div className="px-4">
-        <Tabs value={active} onValueChange={setActive}>
+        <Tabs dir="rtl" value={active} onValueChange={setActive}>
           <TabsList className="grid w-full grid-cols-3 h-11">
             <TabsTrigger value="income" className="text-sm font-semibold">
               הכנסה
@@ -119,6 +119,7 @@ function QuickAmounts({
           key={s}
           type="button"
           onClick={() => onPick(s)}
+          dir="ltr"
           className="num rounded-full border border-border bg-muted/50 px-3 py-1.5 text-sm font-semibold text-foreground active:bg-muted"
         >
           +{s}
