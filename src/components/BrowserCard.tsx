@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { ACTIVE_EVENT, isDrivingNow, readActive } from "@/lib/active-trip";
 import {
   START_PAGES,
@@ -11,6 +13,8 @@ import {
   clearBrowserLogins,
   normalizeAddress,
   openInBrowser,
+  readPrivateMode,
+  writePrivateMode,
 } from "@/lib/inapp-browser";
 
 /** True while the driver is driving: a work trip is on, or the car is moving between trips. */
@@ -44,11 +48,17 @@ export function BrowserCard() {
   const [mode, setMode] = useState<"inapp" | "needs-update" | "tab">("tab");
   useEffect(() => setMode(browserMode()), []);
   const inApp = mode === "inapp";
+  const [privateMode, setPrivateMode] = useState(false);
+  useEffect(() => setPrivateMode(readPrivateMode()), []);
+  const togglePrivate = (on: boolean) => {
+    setPrivateMode(on);
+    writePrivateMode(on);
+  };
 
   const open = async (address: string) => {
     // Read it again at the tap: the card may not have caught up with a trip that just started.
     if (isDrivingNow(readActive())) return;
-    const result = await openInBrowser(address);
+    const result = await openInBrowser(address, { privateMode });
     if (result === "needs-update")
       toast.error("האפליקציה המותקנת ישנה. התקן את הגרסה החדשה כדי לפתוח דפים בתוכה.");
     else if (result === "failed") toast.error("לא הצלחנו לפתוח את הדפדפן");
@@ -56,7 +66,7 @@ export function BrowserCard() {
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    if (!normalizeAddress(text)) return;
+    if (!normalizeAddress(text, privateMode ? "duckduckgo" : "google")) return;
     void open(text);
     setText("");
   };
@@ -92,7 +102,7 @@ export function BrowserCard() {
               {START_PAGES.map((page) => (
                 <Button
                   key={page.url}
-                  className="h-12 flex-1 text-base font-bold"
+                  className="h-12 flex-1 text-sm font-bold"
                   onClick={() => void open(page.url)}
                 >
                   פתח את {page.name}
@@ -111,12 +121,30 @@ export function BrowserCard() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
               />
-              <Button type="submit" variant="secondary" disabled={!normalizeAddress(text)}>
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={!normalizeAddress(text, privateMode ? "duckduckgo" : "google")}
+              >
                 פתח
               </Button>
             </form>
           </>
         )}
+
+        <div className="flex items-start justify-between gap-3 rounded-xl bg-muted/50 p-3">
+          <div className="min-w-0">
+            <Label htmlFor="browser-private" className="text-sm font-semibold">
+              מצב פרטי
+            </Label>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              כל פתיחה וסגירה מתחילות נקי: עוגיות והתחברויות נמחקות, החיפוש ב-DuckDuckGo ונשלחת בקשת
+              &quot;אל תעקוב&quot;. זה לא מסתיר את כתובת ה-IP שלך. לזה צריך VPN בטלפון, והדפדפן
+              הפנימי יעבוד דרכו.
+            </p>
+          </div>
+          <Switch id="browser-private" checked={privateMode} onCheckedChange={togglePrivate} />
+        </div>
 
         {inApp && (
           <button
