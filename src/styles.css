@@ -591,6 +591,44 @@ h2.font-display, h3 { font-family: "Secular One", var(--font-display); }
 .stage-road { --backdrop: url("/backdrops/road.webp"); }
 .stage-promenade { --backdrop: url("/backdrops/promenade.webp"); }
 .stage-garage { --backdrop: url("/backdrops/garage.webp"); }
+/* ---- the light outside: <html data-sky> (SkyClock) tints the painting, never the cast.
+   Paper-world rules hold: one flat tone multiplied over the painting, and hard-edged flat
+   shapes on the frame layer (moon, stars, a lit lamp and its pool of light). No glow, no
+   colour gradient (a gradient here is a single flat colour or a hard-edged disc), no motion. */
+:is([data-sky="dawn"], [data-sky="dusk"], [data-sky="night"]) .stage-bg::before {
+  background-image: linear-gradient(var(--sky-tone), var(--sky-tone)), var(--backdrop);
+  background-blend-mode: multiply, normal;
+}
+[data-sky="dawn"] .stage-bg { --sky-tone: #ffe2c2; }
+[data-sky="dusk"] .stage-bg { --sky-tone: #f2a688; }
+[data-sky="night"] .stage-bg {
+  --sky-tone: #3d4a88;
+  --sky-lamp: linear-gradient(transparent, transparent);
+}
+[data-sky="night"] .stage-bg::after {
+  background:
+    var(--sky-lamp),
+    radial-gradient(circle at 17% 17%, #f6ecc8 0 8px, transparent 8.5px),
+    radial-gradient(circle at 6% 9%, #fff 0 1px, transparent 1.5px),
+    radial-gradient(circle at 29% 8%, #fff 0 1.2px, transparent 1.7px),
+    radial-gradient(circle at 36% 21%, #fff 0 .9px, transparent 1.4px),
+    radial-gradient(circle at 9% 27%, #fff 0 .9px, transparent 1.4px),
+    radial-gradient(circle at 45% 11%, #fff 0 1px, transparent 1.5px),
+    radial-gradient(circle at 25% 30%, #fff 0 .8px, transparent 1.3px);
+}
+/* the lamp each painting has: the street lamp, the work light in the garage (no sky indoors) */
+[data-sky="night"] .stage-street {
+  --sky-lamp:
+    radial-gradient(circle at 63% 66%, #ffe08a 0 4.5px, transparent 5px),
+    radial-gradient(ellipse 12% 7% at 63% 90%, rgb(255 214 120 / .3) 0 99%, transparent 100%);
+}
+[data-sky="night"] .stage-garage::after {
+  background:
+    radial-gradient(ellipse 4% 3% at 72.5% 15%, #ffe08a 0 99%, transparent 100%),
+    radial-gradient(ellipse 22% 8% at 72% 90%, rgb(255 214 120 / .3) 0 99%, transparent 100%);
+}
+[data-sky="night"] .stage-bg :is(.mascot, .taxi) { filter: brightness(.92) saturate(.9); }
+
 .page-stage { --frame-top: 2.6rem; position: relative; height: 12.4rem; margin-top: .6rem; }
 .page-stage-mascot { position: absolute; bottom: 5px; inset-inline-start: .3rem; width: 8.5rem !important; height: 10.2rem !important; }
 /* the taxi stands about as tall as the captain's shoulders */
