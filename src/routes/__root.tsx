@@ -18,6 +18,7 @@ import { TripWatcher } from "@/components/TripWatcher";
 import { RewardEffects } from "@/components/RewardEffects";
 import { SoundDirector } from "@/components/SoundDirector";
 import { InkWorld } from "@/components/InkWorld";
+import { SkyClock } from "@/components/SkyClock";
 import { useCloudSync } from "@/hooks/use-auth";
 
 function NotFoundComponent() {
@@ -153,6 +154,7 @@ function RootComponent() {
       <TripWatcher />
       <DriveDetector />
       <InkWorld />
+      <SkyClock />
       <RewardEffects />
       <SoundDirector />
       <BottomNav />
