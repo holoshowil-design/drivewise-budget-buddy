@@ -95,9 +95,10 @@ export function DailyProfitGauge({
               );
             })}
           </g>
+          {/* A pointer on the rim, so the big number below stays clear. */}
           <g className="gauge-needle" style={{ transform: `rotate(${-90 + targetPct * 1.8}deg)` }}>
-            <path d="M107 108 L110 46 L113 108 Z" />
-            <circle cx="110" cy="108" r="7" />
+            <path d="M110 50 L104 16 L116 16 Z" />
+            <circle cx="110" cy="16" r="3" />
           </g>
           <circle cx="30" cy="108" r="3" fill="var(--hud-accent)" />
           <circle cx="190" cy="108" r="3" fill="var(--hud-good)" />
@@ -443,7 +444,14 @@ export function InteractiveWeeklyEarnings({ data }: { data: AppData }) {
                 height: `${height}%`,
                 ...(negative ? { transformOrigin: "top", borderRadius: "3px 3px 8px 8px" } : {}),
               }}
-            />
+            >
+              {/* The amount sits right on its bar: above a profit, below a loss. */}
+              <span
+                className={`weekly-bar-value num ${active ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+              >
+                {Math.round(item.net)}
+              </span>
+            </span>
           );
           return (
             <button
@@ -454,11 +462,6 @@ export function InteractiveWeeklyEarnings({ data }: { data: AppData }) {
               aria-pressed={active}
               onClick={() => setSelected(index)}
             >
-              <span
-                className={`num text-[9px] font-semibold transition-opacity ${active ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-              >
-                {Math.round(item.net)}
-              </span>
               <span className="flex w-full min-h-0 flex-1 flex-col items-center">
                 <span
                   className="flex w-full items-end justify-center"
