@@ -15,6 +15,7 @@ import {
   RadialBarChart,
   RadialBar,
   PolarAngleAxis,
+  ReferenceDot,
 } from "recharts";
 import { CalendarRange, LineChart as LineChartIcon, Gauge } from "lucide-react";
 import {
@@ -28,18 +29,19 @@ import {
   type AppData,
 } from "@/lib/store";
 import { buildDays, monthForecast } from "@/lib/calc";
+import {
+  INK_GRID,
+  INK_TICK,
+  INK_TOOLTIP,
+  InkBar,
+  InkKey,
+  inkPatterns,
+} from "@/components/chart-ink";
 
 const iso = (d: Date) =>
   new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
-const tooltipStyle = {
-  background: "var(--card)",
-  border: "1px solid var(--border)",
-  borderRadius: 12,
-  fontSize: 12,
-  boxShadow: "var(--shadow-card)",
-  direction: "rtl" as const,
-};
+const tooltipStyle = INK_TOOLTIP;
 
 function SectionTitle({
   icon,
@@ -127,20 +129,14 @@ export function MonthPaceCard({ data }: { data: AppData }) {
         </div>
         <div className="h-44">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={series} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
-              <defs>
-                <linearGradient id="cumFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <AreaChart data={series} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+              {inkPatterns()}
+              <CartesianGrid {...INK_GRID} vertical={false} />
               <XAxis
                 dataKey="day"
-                stroke="var(--muted-foreground)"
-                fontSize={10}
+                tick={INK_TICK}
                 tickLine={false}
-                axisLine={false}
+                axisLine={{ stroke: "var(--ink)", strokeWidth: 1.2 }}
                 interval={4}
               />
               <Tooltip
@@ -151,18 +147,37 @@ export function MonthPaceCard({ data }: { data: AppData }) {
               <Area
                 type="monotone"
                 dataKey="pace"
-                stroke="var(--muted-foreground)"
-                strokeDasharray="4 4"
+                stroke="var(--ink)"
+                strokeOpacity={0.55}
+                strokeDasharray="5 5"
                 strokeWidth={1.5}
                 fill="none"
+                activeDot={false}
               />
               <Area
                 type="monotone"
                 dataKey="cum"
                 stroke="var(--primary)"
                 strokeWidth={2.5}
-                fill="url(#cumFill)"
+                fill="url(#ink-hatch)"
+                fillOpacity={1}
                 connectNulls
+                activeDot={{
+                  r: 4.5,
+                  fill: "var(--mustard)",
+                  stroke: "var(--ink)",
+                  strokeWidth: 1.4,
+                }}
+              />
+              {/* today: where the line stands now */}
+              <ReferenceDot
+                x={today}
+                y={cum}
+                r={5}
+                fill="var(--mustard)"
+                stroke="var(--ink)"
+                strokeWidth={1.5}
+                ifOverflow="extendDomain"
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -219,19 +234,19 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
                 margin={{ top: 4, right: 4, left: 4, bottom: 0 }}
                 stackOffset="sign"
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <CartesianGrid {...INK_GRID} vertical={false} />
                 <XAxis
                   dataKey="day"
-                  stroke="var(--muted-foreground)"
-                  fontSize={10}
+                  tick={INK_TICK}
                   tickLine={false}
                   axisLine={false}
                   interval={2}
                 />
                 <YAxis hide />
-                <ReferenceLine y={0} stroke="var(--border)" />
+                <ReferenceLine y={0} stroke="var(--ink)" strokeWidth={1.2} />
                 <Tooltip
                   contentStyle={tooltipStyle}
+                  cursor={{ fill: "var(--mustard-tint)", fillOpacity: 0.45 }}
                   formatter={(v: number, n) => [
                     fmt(Math.abs(v), c),
                     n === "income" ? "הכנסה" : n === "expense" ? "הוצאה" : "נטו",
@@ -240,23 +255,29 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
                 <Bar
                   dataKey="income"
                   stackId="a"
-                  fill="var(--success)"
-                  radius={[4, 4, 0, 0]}
+                  fill="var(--green-tint)"
+                  shape={(p: unknown) => <InkBar {...(p as object)} />}
                   maxBarSize={16}
                 />
                 <Bar
                   dataKey="expense"
                   stackId="a"
-                  fill="var(--destructive)"
-                  radius={[0, 0, 4, 4]}
+                  fill="var(--vermilion)"
+                  shape={(p: unknown) => <InkBar {...(p as object)} />}
                   maxBarSize={16}
                 />
                 <Line
                   type="monotone"
                   dataKey="net"
-                  stroke="var(--chart-2)"
-                  strokeWidth={2}
-                  dot={false}
+                  stroke="var(--ink)"
+                  strokeWidth={1.8}
+                  dot={{ r: 2.4, fill: "var(--mustard)", stroke: "var(--ink)", strokeWidth: 1 }}
+                  activeDot={{
+                    r: 4,
+                    fill: "var(--mustard)",
+                    stroke: "var(--ink)",
+                    strokeWidth: 1.4,
+                  }}
                 />
               </ComposedChart>
             </ResponsiveContainer>
@@ -264,10 +285,10 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
         ) : (
           <Empty />
         )}
-        <div className="mt-3 flex items-center justify-center gap-4 text-[11px] text-muted-foreground">
-          <Dot color="var(--success)" label="הכנסות" />
-          <Dot color="var(--destructive)" label="הוצאות" />
-          <Dot color="var(--chart-2)" label="נטו" />
+        <div className="mt-3 flex items-center justify-center gap-4 text-[11px] font-semibold text-muted-foreground">
+          <InkKey fill="var(--green-tint)" label="הכנסות" />
+          <InkKey fill="var(--vermilion)" label="הוצאות" />
+          <InkKey fill="var(--mustard)" label="נטו" line />
         </div>
       </CardContent>
     </Card>
@@ -316,12 +337,19 @@ export function ProfitabilityGauge({ data }: { data: AppData }) {
                 dataKey="value"
                 cornerRadius={12}
                 fill={tone}
-                background={{ fill: "var(--muted)" }}
+                stroke="var(--ink)"
+                strokeWidth={1.2}
+                background={{
+                  fill: "var(--paper-shade)",
+                  stroke: "var(--ink)",
+                  strokeWidth: 1,
+                  strokeOpacity: 0.35,
+                }}
               />
             </RadialBarChart>
           </ResponsiveContainer>
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <span className="num text-xl font-extrabold" style={{ color: tone }}>
+            <span className="num font-display text-xl font-extrabold" style={{ color: tone }}>
               {pct}%
             </span>
           </div>
@@ -339,15 +367,6 @@ export function ProfitabilityGauge({ data }: { data: AppData }) {
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-function Dot({ color, label }: { color: string; label: string }) {
-  return (
-    <span className="flex items-center gap-1.5">
-      <span className="h-2 w-2 rounded-full" style={{ background: color }} />
-      {label}
-    </span>
   );
 }
 
