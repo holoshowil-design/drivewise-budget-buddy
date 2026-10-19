@@ -4,7 +4,6 @@ import { dayOf, monthForecast, sumDays, useDays } from "@/lib/calc";
 import { Card, CardContent } from "@/components/ui/card";
 import { InsightsCard } from "@/components/InsightsCard";
 import { KmCostCard } from "@/components/KmCostCard";
-import { BrowserCard } from "@/components/BrowserCard";
 import { lazy, Suspense } from "react";
 import {
   DailyProfitGauge,
@@ -197,8 +196,6 @@ function Dashboard() {
             </Link>
           </Button>
         </div>
-
-        <BrowserCard />
 
         {/* Month summary */}
         <Card>
