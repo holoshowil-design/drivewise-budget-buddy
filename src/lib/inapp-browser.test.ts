@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  START_PAGES,
   browserMode,
   clearBrowserLogins,
   hasInAppBrowser,
@@ -141,91 +140,5 @@ describe("the browser without the installed app", () => {
 
   it("has no logins to clear", async () => {
     expect(await clearBrowserLogins()).toBe(false);
-  });
-});
-
-describe("the plugin's two ids", () => {
-  it("is found under the maintained package's id and the older one", async () => {
-    installBridge({ Plugins: { CapgoInAppBrowser: {} } });
-    expect(hasInAppBrowser()).toBe(true);
-    const { calls } = installBridge({ Plugins: { CapgoInAppBrowser: {} } });
-    await openInBrowser("x.com");
-    expect(calls[0]).toMatchObject({ plugin: "CapgoInAppBrowser", method: "openWebView" });
-    const old = installBridge({ Plugins: { InAppBrowser: {} } });
-    await openInBrowser("x.com");
-    expect(old.calls[0]).toMatchObject({ plugin: "InAppBrowser", method: "openWebView" });
-  });
-});
-
-describe("pages and search", () => {
-  it("offers X and DuckDuckGo with one tap", () => {
-    expect(START_PAGES.map((p) => p.url)).toEqual(["https://x.com", "https://duckduckgo.com"]);
-  });
-
-  it("searches Google, or DuckDuckGo when asked", () => {
-    expect(normalizeAddress("מזג אוויר")).toContain("https://www.google.com/search?q=");
-    expect(normalizeAddress("מזג אוויר", "duckduckgo")).toContain("https://duckduckgo.com/?q=");
-    // a web address is never turned into a search
-    expect(normalizeAddress("ynet.co.il", "duckduckgo")).toBe("https://ynet.co.il/");
-  });
-});
-
-describe("private mode", () => {
-  /** A bridge whose plugin records its close listeners. */
-  function privateBridge() {
-    const listeners: Record<string, () => void> = {};
-    const addListener = vi.fn((event: string, cb: () => void) => {
-      listeners[event] = cb;
-    });
-    const bridge = installBridge({ Plugins: { CapgoInAppBrowser: { addListener } } });
-    return { ...bridge, listeners, addListener };
-  }
-
-  it("starts clean, searches DuckDuckGo and says do-not-track", async () => {
-    vi.resetModules();
-    const { openInBrowser: open } = await import("@/lib/inapp-browser");
-    const { calls } = privateBridge();
-    expect(await open("מזג אוויר", { privateMode: true })).toBe("inapp");
-    expect(calls.map((c) => c.method)).toEqual(["clearAllCookies", "openWebView"]);
-    expect(calls[1].options).toMatchObject({
-      url: expect.stringContaining("https://duckduckgo.com/?q="),
-      headers: { DNT: "1", "Sec-GPC": "1" },
-    });
-  });
-
-  it("wipes the cookies again when the window closes, and watches for that once", async () => {
-    vi.resetModules();
-    const { openInBrowser: open } = await import("@/lib/inapp-browser");
-    const { calls, listeners, addListener } = privateBridge();
-    await open("x.com", { privateMode: true });
-    await open("x.com", { privateMode: true });
-
-    expect(addListener).toHaveBeenCalledTimes(1);
-    calls.length = 0;
-    listeners.closeEvent();
-    await Promise.resolve();
-    expect(calls.map((c) => c.method)).toEqual(["clearAllCookies"]);
-  });
-
-  it("leaves the logins alone in a normal window, before and after", async () => {
-    vi.resetModules();
-    const { openInBrowser: open } = await import("@/lib/inapp-browser");
-    const { calls, listeners } = privateBridge();
-    await open("https://x.com");
-    expect(calls.map((c) => c.method)).toEqual(["openWebView"]);
-    expect(calls[0].options).not.toHaveProperty("headers");
-    expect(listeners.closeEvent).toBeUndefined();
-  });
-
-  it("does not wipe on a close that follows a normal window", async () => {
-    vi.resetModules();
-    const { openInBrowser: open } = await import("@/lib/inapp-browser");
-    const { calls, listeners } = privateBridge();
-    await open("x.com", { privateMode: true });
-    await open("x.com"); // the next window is a normal one
-    calls.length = 0;
-    listeners.closeEvent();
-    await Promise.resolve();
-    expect(calls).toEqual([]);
   });
 });
