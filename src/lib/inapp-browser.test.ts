@@ -174,16 +174,11 @@ describe("private mode", () => {
   /** A bridge whose plugin records its close listeners. */
   function privateBridge() {
     const listeners: Record<string, () => void> = {};
-    const bridge = installBridge({
-      Plugins: {
-        CapgoInAppBrowser: {
-          addListener: vi.fn((event: string, cb: () => void) => {
-            listeners[event] = cb;
-          }),
-        },
-      },
+    const addListener = vi.fn((event: string, cb: () => void) => {
+      listeners[event] = cb;
     });
-    return { ...bridge, listeners };
+    const bridge = installBridge({ Plugins: { CapgoInAppBrowser: { addListener } } });
+    return { ...bridge, listeners, addListener };
   }
 
   it("starts clean, searches DuckDuckGo and says do-not-track", async () => {
@@ -201,11 +196,11 @@ describe("private mode", () => {
   it("wipes the cookies again when the window closes, and watches for that once", async () => {
     vi.resetModules();
     const { openInBrowser: open } = await import("@/lib/inapp-browser");
-    const { calls, listeners, capacitor } = privateBridge();
+    const { calls, listeners, addListener } = privateBridge();
     await open("x.com", { privateMode: true });
     await open("x.com", { privateMode: true });
-    const plugin = capacitor.Plugins.CapgoInAppBrowser as { addListener: ReturnType<typeof vi.fn> };
-    expect(plugin.addListener).toHaveBeenCalledTimes(1);
+
+    expect(addListener).toHaveBeenCalledTimes(1);
     calls.length = 0;
     listeners.closeEvent();
     await Promise.resolve();
