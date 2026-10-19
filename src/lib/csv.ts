@@ -90,7 +90,7 @@ export function buildReportCsv(
   for (const t of r.trips) {
     lines.push(
       row([
-        "נסיעה",
+        t.kind === "between" ? "בין נסיעות" : "נסיעה",
         t.date,
         t.time,
         "GPS",

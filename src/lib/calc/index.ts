@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { isBetween, workTrips } from "../between-trip";
 import {
   drivenKm,
   fuelCostFor,
@@ -22,7 +23,9 @@ export type DayCalc = {
   otherExpenses: number; // non-fuel expenses
   costs: number; // fuelEstimated + otherExpenses
   net: number; // incomeNet - costs
-  km: number; // GPS + manual km not linked to a trip
+  km: number; // GPS + manual km not linked to a trip (between-trips drives included)
+  betweenKm: number; // of km: driven between work trips
+  betweenSeconds: number; // time spent driving between work trips
   hours: number;
   incomes: Income[];
   expenses: Expense[];
@@ -45,6 +48,8 @@ const EMPTY: Totals = {
   costs: 0,
   net: 0,
   km: 0,
+  betweenKm: 0,
+  betweenSeconds: 0,
   hours: 0,
   daysWorked: 0,
   tripCount: 0,
@@ -77,6 +82,8 @@ function calcDay(
     costs,
     net: incomeNet - costs,
     km: drivenKm(incomes, trips),
+    betweenKm: trips.filter(isBetween).reduce((s, t) => s + (t.km || 0), 0),
+    betweenSeconds: trips.filter(isBetween).reduce((s, t) => s + (t.seconds || 0), 0),
     hours: incomes.reduce((s, i) => s + (i.hours || 0), 0),
     incomes,
     expenses,
@@ -120,8 +127,10 @@ export function sumDays(days: Map<string, DayCalc>, from: string, to: string): T
     t.costs += d.costs;
     t.net += d.net;
     t.km += d.km;
+    t.betweenKm += d.betweenKm;
+    t.betweenSeconds += d.betweenSeconds;
     t.hours += d.hours;
-    t.tripCount += d.trips.length;
+    t.tripCount += workTrips(d.trips).length;
     t.recordCount += d.incomes.length + d.expenses.length;
     if (d.incomes.length > 0) t.daysWorked++;
   }

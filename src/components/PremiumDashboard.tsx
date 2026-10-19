@@ -17,6 +17,7 @@ import { CountUp } from "@/components/CountUp";
 import { calculateDailyMomentum, calculateWorkStreak } from "@/lib/motivation";
 import { drivenKm, filterByDate, fmt, fmtPrecise, sumHours, type AppData } from "@/lib/store";
 import { dayOf, useDays } from "@/lib/calc";
+import { workTrips } from "@/lib/between-trip";
 
 const iso = (date: Date) =>
   new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -341,7 +342,14 @@ export function PremiumStats({
       tone: "text-success",
       fill: "green",
     },
-    { label: "הוצאות כולל דלק", value: expense, icon: Zap, badge: badges[1], tone: "text-warning", fill: "mustard" },
+    {
+      label: "הוצאות כולל דלק",
+      value: expense,
+      icon: Zap,
+      badge: badges[1],
+      tone: "text-warning",
+      fill: "mustard",
+    },
     {
       label: "נקודת איזון",
       value: breakEven,
@@ -394,7 +402,7 @@ export function InteractiveWeeklyEarnings({ data }: { data: AppData }) {
         label: date.toLocaleDateString("he-IL", { weekday: "short" }).replace("יום ", ""),
         net: d.net,
         km: d.km,
-        trips: d.trips.length,
+        trips: workTrips(d.trips).length,
         records: d.incomes.length,
       };
     });

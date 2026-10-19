@@ -316,6 +316,19 @@ function SettingsPage() {
             </div>
             <div className="flex items-center justify-between gap-3">
               <div>
+                <Label htmlFor="track-between">מדוד גם בין נסיעות</Label>
+                <p className="text-xs text-muted-foreground">
+                  אחרי סיום נסיעה נמדדים ק״מ וזמן עד הנסיעה הבאה, לחישוב הדלק (לא נחשב נסיעת עבודה)
+                </p>
+              </div>
+              <Switch
+                id="track-between"
+                checked={data.settings.trackBetween !== false}
+                onCheckedChange={(v) => updateSettings({ trackBetween: v })}
+              />
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <div>
                 <Label htmlFor="ask-wait">שאל על המתנה</Label>
                 <p className="text-xs text-muted-foreground">אחרי 4 דקות עמידה במקום בזמן נסיעה</p>
               </div>

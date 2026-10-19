@@ -12,6 +12,7 @@ import {
   requestNotifyPermission,
 } from "@/lib/active-trip";
 import { watchLocation } from "@/lib/location";
+import { startBetween, trackBetweenOn } from "@/lib/between-trip";
 
 const SNOOZE_KEY = "driver-detect-snooze";
 const MIN_SPEED_KMH = 15;
@@ -98,6 +99,12 @@ export function DriveDetector() {
     navigate({ to: "/trip", search: { mode: "drive" } });
   };
 
+  // Driving, but not a work trip: measure the km and time for the fuel indication only.
+  const between = () => {
+    setPrompt(false);
+    writeActive(startBetween(Date.now(), todayISO(), nowHHMM()));
+  };
+
   const no = () => {
     setPrompt(false);
     localStorage.setItem(SNOOZE_KEY, String(Date.now() + 60 * 60 * 1000));
@@ -120,6 +127,11 @@ export function DriveDetector() {
           <Button className="h-16 text-lg font-bold" onClick={yes}>
             <Play className="h-6 w-6" /> כן, התחל לחשב
           </Button>
+          {trackBetweenOn(data.settings) && (
+            <Button variant="secondary" className="h-14 text-base" onClick={between}>
+              <Car className="h-5 w-5" /> בדרך לנסיעה (רק למדוד ק״מ)
+            </Button>
+          )}
           <Button variant="outline" className="h-14 text-base" onClick={no}>
             <X className="h-5 w-5" /> לא, נסיעה פרטית
           </Button>

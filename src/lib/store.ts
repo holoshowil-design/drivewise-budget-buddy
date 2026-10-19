@@ -66,6 +66,7 @@ export type Settings = {
   fuelPriceHistory?: FuelPriceEntry[]; // historical price+consumption changes
   autoDetectTrip?: boolean; // prompt automatically when driving is detected
   askWaiting?: boolean; // ask after a few standing minutes whether it's a wait
+  trackBetween?: boolean; // keep measuring km and time between work trips (default on)
 };
 
 /** A tracked work trip recorded by the live GPS tracker. */
@@ -77,6 +78,11 @@ export type Trip = {
   seconds: number;
   endedAt?: string; // ISO timestamp
   waitSeconds?: number; // standing/waiting time inside the trip
+  /**
+   * "between": driving between work trips (after dropping a customer, on the way to the
+   * next one). It counts for km and fuel, not as a work trip. Missing means "work".
+   */
+  kind?: "work" | "between";
   incomeId?: string; // linked income record created from the end-of-trip form
   note?: string;
   updatedAt?: string; // ISO — last local change, used by sync
