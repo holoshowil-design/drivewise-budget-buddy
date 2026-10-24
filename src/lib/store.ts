@@ -123,22 +123,36 @@ const defaultData: AppData = {
   },
 };
 
+/**
+ * The last parsed copy, keyed by the stored text. Every screen part reads the data on each
+ * change; with the cache the text is parsed once per change, and all of them share one object,
+ * so their memos and the sorted price-history cache keep working. Nobody mutates it.
+ */
+let parsedCache: { raw: string; data: AppData } | null = null;
+
 export function load(): AppData {
   if (typeof window === "undefined") return defaultData;
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaultData;
-    const parsed = JSON.parse(raw);
-    return normalizeMeta({
-      ...defaultData,
-      ...parsed,
-      trips: Array.isArray(parsed.trips) ? parsed.trips : [],
-      settings: { ...defaultData.settings, ...parsed.settings },
-      vehicle: { ...defaultData.vehicle, ...parsed.vehicle },
-    });
+    if (parsedCache?.raw === raw) return parsedCache.data;
+    const data = parse(raw);
+    parsedCache = { raw, data };
+    return data;
   } catch {
     return defaultData;
   }
+}
+
+function parse(raw: string): AppData {
+  const parsed = JSON.parse(raw);
+  return normalizeMeta({
+    ...defaultData,
+    ...parsed,
+    trips: Array.isArray(parsed.trips) ? parsed.trips : [],
+    settings: { ...defaultData.settings, ...parsed.settings },
+    vehicle: { ...defaultData.vehicle, ...parsed.vehicle },
+  });
 }
 
 // ---------- local persistence ----------

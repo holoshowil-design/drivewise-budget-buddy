@@ -185,7 +185,15 @@ export function fuelComparison(t: Totals, data: AppData) {
   };
 }
 
+/** One per-day calculation per data object, shared by every card that reads the same data. */
+const daysCache = new WeakMap<AppData, Map<string, DayCalc>>();
+export function daysOf(data: AppData): Map<string, DayCalc> {
+  let days = daysCache.get(data);
+  if (!days) daysCache.set(data, (days = buildDays(data)));
+  return days;
+}
+
 /** Memoized per-day calculation for a component. */
 export function useDays(data: AppData) {
-  return useMemo(() => buildDays(data), [data]);
+  return useMemo(() => daysOf(data), [data]);
 }
