@@ -1,4 +1,4 @@
-import { Fragment, memo, useMemo } from "react";
+import { Fragment, memo, useMemo, useState } from "react";
 import { Fuel, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,10 @@ import {
 import { dayLabel, groupByDay } from "@/lib/day-groups";
 import { isBetween } from "@/lib/between-trip";
 
-/** The last 60 finished trips, grouped by day, with edit and delete. */
+/** Trips shown before "show more"; the last day shown is always complete. */
+const PAGE_TRIPS = 12;
+
+/** Finished trips, newest first and grouped by day, with edit, delete and "show more". */
 export const TripHistory = memo(function TripHistory({
   data,
   onEdit,
@@ -34,6 +37,10 @@ export const TripHistory = memo(function TripHistory({
       ),
     [data.trips],
   );
+  const [shown, setShown] = useState(PAGE_TRIPS);
+  let end = Math.min(shown, trips.length);
+  while (end > 0 && end < trips.length && trips[end].date === trips[end - 1].date) end++;
+  const hidden = trips.length - end;
   return (
     <Card>
       <CardContent className="p-4">
@@ -44,7 +51,7 @@ export const TripHistory = memo(function TripHistory({
           <p className="text-xs text-muted-foreground">עדיין אין נסיעות שמורות.</p>
         ) : (
           <ul className="divide-y">
-            {groupByDay(trips.slice(0, 60), (t) => t.date).map((day) => (
+            {groupByDay(trips.slice(0, end), (t) => t.date).map((day) => (
               <Fragment key={day.date}>
                 <li className="pb-1 pt-3 text-xs font-semibold text-muted-foreground">
                   {dayLabel(day.date, today)}
@@ -100,6 +107,15 @@ export const TripHistory = memo(function TripHistory({
               </Fragment>
             ))}
           </ul>
+        )}
+        {hidden > 0 && (
+          <button
+            type="button"
+            onClick={() => setShown(end + PAGE_TRIPS * 2)}
+            className="w-full pt-3 text-center text-sm font-semibold text-primary"
+          >
+            הצג עוד ({hidden} נסיעות)
+          </button>
         )}
       </CardContent>
     </Card>
