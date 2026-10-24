@@ -18,17 +18,8 @@ import {
   ReferenceDot,
 } from "recharts";
 import { CalendarRange, LineChart as LineChartIcon, Gauge } from "lucide-react";
-import {
-  filterByDate,
-  filterByRange,
-  monthRange,
-  netProfit,
-  sumIncomes,
-  totalCosts,
-  fmt,
-  type AppData,
-} from "@/lib/store";
-import { buildDays, monthForecast } from "@/lib/calc";
+import { filterByRange, monthRange, sumIncomes, totalCosts, fmt, type AppData } from "@/lib/store";
+import { daysOf, monthForecast } from "@/lib/calc";
 import {
   INK_GRID,
   INK_TICK,
@@ -73,18 +64,13 @@ export function MonthPaceCard({ data }: { data: AppData }) {
 
   const { series, cum, target, projected } = useMemo(() => {
     const goalMonth = data.settings.dailyGoal * data.settings.workDaysPerMonth;
+    const days = daysOf(data);
     let running = 0;
     const series: { day: number; cum: number | null; pace: number }[] = [];
     for (let d = 1; d <= daysInMonth; d++) {
       const date = iso(new Date(now.getFullYear(), now.getMonth(), d));
       if (d <= today) {
-        running += netProfit(
-          filterByDate(data.incomes, date),
-          filterByDate(data.expenses, date),
-          data.vehicle,
-          data.settings,
-          filterByDate(data.trips ?? [], date),
-        );
+        running += days.get(date)?.net ?? 0;
       }
       series.push({
         day: d,
@@ -93,7 +79,7 @@ export function MonthPaceCard({ data }: { data: AppData }) {
       });
     }
     // Same forecast as the dashboard summary (one definition in lib/calc).
-    const projected = Math.round(monthForecast(buildDays(data), data).forecast);
+    const projected = Math.round(monthForecast(days, data).forecast);
     return { series, cum: Math.round(running), target: goalMonth, projected };
   }, [data, daysInMonth, today]);
 
@@ -191,21 +177,15 @@ export function MonthPaceCard({ data }: { data: AppData }) {
 export function IncomeVsExpenseCard({ data }: { data: AppData }) {
   const c = data.settings.currency;
   const series = useMemo(() => {
+    const days = daysOf(data);
     const out: { day: string; income: number; expense: number; net: number }[] = [];
     for (let i = 13; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const date = iso(d);
-      const inc = filterByDate(data.incomes, date);
-      const exp = filterByDate(data.expenses, date);
-      const income = sumIncomes(inc);
-      const expense = totalCosts(
-        inc,
-        exp,
-        data.vehicle,
-        data.settings,
-        filterByDate(data.trips ?? [], date),
-      );
+      const day = days.get(date);
+      const income = day?.incomeNet ?? 0;
+      const expense = day?.costs ?? 0;
       out.push({
         day: d.toLocaleDateString("he-IL", { day: "numeric", month: "numeric" }),
         income: Math.round(income),
