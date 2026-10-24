@@ -33,6 +33,7 @@ import { numberOr, parseNumber } from "@/lib/number";
 import { validateExpense, validateIncome, type FieldErrors } from "@/lib/validate";
 import { useRollingDate } from "@/hooks/use-today";
 import { CommissionChips } from "@/components/CommissionChips";
+import { commissionChoices } from "@/lib/commission";
 import { DayRecords } from "@/components/DayRecords";
 import { CommonAmounts } from "@/components/CommonAmounts";
 
@@ -180,6 +181,27 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
   const dayKm = dayIncomes.reduce((s, i) => s + (i.km || 0), 0);
 
   const amountNum = numberOr(form.amount, 0);
+  // The % field lives under "more details"; it stays in view while closed only for a
+  // commission the chips don't offer, or an error to show.
+  const customCommission =
+    !showMore &&
+    (!commissionChoices(data.settings.defaultCommissionPct).includes(
+      numberOr(form.commissionPct, Number.NaN),
+    ) ||
+      Boolean(errors.commissionPct));
+  const commissionField = (
+    <Field label="עמלה %">
+      <NumberField
+        id="income-commission"
+        value={form.commissionPct}
+        onValueChange={(commissionPct) => {
+          commissionTouched.current = true;
+          set({ commissionPct });
+        }}
+        error={errors.commissionPct}
+      />
+    </Field>
+  );
   const commission = numberOr(form.commissionPct, 0);
   const previewNet = amountNum > 0 ? amountNum * (1 - commission / 100) + numberOr(form.tip, 0) : 0;
 
@@ -271,18 +293,8 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
             }}
           />
         </div>
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="עמלה %">
-            <NumberField
-              id="income-commission"
-              value={form.commissionPct}
-              onValueChange={(commissionPct) => {
-                commissionTouched.current = true;
-                set({ commissionPct });
-              }}
-              error={errors.commissionPct}
-            />
-          </Field>
+        <div className={`grid gap-3 ${customCommission ? "grid-cols-3" : "grid-cols-2"}`}>
+          {customCommission && commissionField}
           <Field label="שעות">
             <NumberField
               id="income-hours"
@@ -319,6 +331,7 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
         </button>
         {showMore && (
           <div className="space-y-3 pt-1">
+            {!customCommission && commissionField}
             <Field label="תשר ₪">
               <NumberField
                 id="income-tip"
