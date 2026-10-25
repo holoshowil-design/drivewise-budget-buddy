@@ -78,9 +78,16 @@ describe("isDrivingNow", () => {
   });
 
   it("counts a between measurement as driving only while the car moves", () => {
-    const cur = between({ lastMoveAt: T0 });
+    const cur = between({ km: 0.4, lastMoveAt: T0 });
     expect(isDrivingNow(cur, T0 + 30_000)).toBe(true);
     expect(isDrivingNow(cur, T0 + 61_000)).toBe(false);
+  });
+
+  it("does not count a between measurement that has not moved yet (a trip was just saved)", () => {
+    const fresh = between();
+    expect(fresh.km).toBe(0);
+    expect(isDrivingNow(fresh, T0)).toBe(false);
+    expect(isDrivingNow(fresh, T0 + 5_000)).toBe(false);
   });
 
   it("is false with no trip", () => {
