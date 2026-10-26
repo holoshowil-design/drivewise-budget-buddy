@@ -712,6 +712,13 @@ export function netProfit(
   return sumIncomes(incomes) - totalCosts(incomes, expenses, vehicle, settings, trips);
 }
 
-export function sumHours(list: Income[]) {
-  return list.reduce((s, i) => s + (i.hours || 0), 0);
+/**
+ * Work hours: the hours on the incomes (a GPS trip puts its own time there) plus the time
+ * measured between trips, which is work time too (waiting for the next customer).
+ */
+export function sumHours(list: Income[], trips: Pick<Trip, "kind" | "seconds">[] = []) {
+  const between = trips
+    .filter((t) => t.kind === "between")
+    .reduce((s, t) => s + (t.seconds || 0), 0);
+  return list.reduce((s, i) => s + (i.hours || 0), 0) + between / 3600;
 }

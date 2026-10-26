@@ -323,7 +323,10 @@ export function PremiumStats({
   forecast: number;
 }) {
   const c = data.settings.currency;
-  const hours = sumHours(filterByDate(data.incomes, iso(new Date())));
+  const hours = sumHours(
+    filterByDate(data.incomes, iso(new Date())),
+    filterByDate(data.trips ?? [], iso(new Date())),
+  );
   const km = drivenKm(
     filterByDate(data.incomes, iso(new Date())),
     filterByDate(data.trips ?? [], iso(new Date())),
