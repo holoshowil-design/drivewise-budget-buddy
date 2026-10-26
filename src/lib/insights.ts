@@ -1,4 +1,12 @@
-import { drivenKm, filterByRange, netProfit, fmt, fmtPrecise, type AppData } from "./store";
+import {
+  drivenKm,
+  filterByRange,
+  netProfit,
+  fmt,
+  fmtPrecise,
+  sumHours,
+  type AppData,
+} from "./store";
 
 export type Insight = {
   id: string;
@@ -52,7 +60,7 @@ export function buildInsights(data: AppData): Insight[] {
   const exp30 = filterByRange(data.expenses, from30, isoOffset(0));
   const trips30 = filterByRange(data.trips ?? [], from30, isoOffset(0));
   const net30 = netProfit(inc30, exp30, data.vehicle, data.settings, trips30);
-  const hours30 = inc30.reduce((s, i) => s + (i.hours || 0), 0);
+  const hours30 = sumHours(inc30, trips30);
   const km30 = drivenKm(inc30, trips30); // GPS + manual km
 
   if (hours30 > 0) {
