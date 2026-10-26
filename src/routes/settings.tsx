@@ -319,7 +319,8 @@ function SettingsPage() {
               <div>
                 <Label htmlFor="track-between">מדוד גם בין נסיעות</Label>
                 <p className="text-xs text-muted-foreground">
-                  אחרי סיום נסיעה נמדדים ק״מ וזמן עד הנסיעה הבאה, לחישוב הדלק (לא נחשב נסיעת עבודה)
+                  אחרי סיום נסיעה הזמן והק״מ ממשיכים להימדד עד הנסיעה הבאה או עד "סיימתי לעבוד" (לא
+                  נחשב נסיעת עבודה)
                 </p>
               </div>
               <Switch

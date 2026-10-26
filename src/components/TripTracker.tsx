@@ -46,7 +46,13 @@ import { calculateWorkStreak, tripMotivation } from "@/lib/motivation";
 import { looksForgotten } from "@/lib/gps";
 import { hasBackgroundTracking } from "@/lib/location";
 import { GPS_ERROR_EVENT, readGpsError } from "@/lib/trip-gps";
-import { betweenToTrip, isBetween, startBetween, trackBetweenOn } from "@/lib/between-trip";
+import {
+  betweenToTrip,
+  isBetween,
+  startBetween,
+  trackBetweenOn,
+  workSecondsOn,
+} from "@/lib/between-trip";
 
 const WAIT_ASK_MS = 4 * 60 * 1000;
 const WAIT_SNOOZE_MS = 15 * 60 * 1000;
@@ -123,19 +129,21 @@ export function TripTracker({
     });
   }, [persist, closeBetween]);
 
-  /** Measures km and time between work trips, for the fuel indication. */
+  /** Measures km and time between work trips, for the fuel indication and the work time. */
   const startBetweenNow = () => {
     if (activeRef.current) return;
     persist(startBetween(Date.now(), todayISO(), nowHHMM()));
     toast.success("מודד ק״מ וזמן בין נסיעות");
   };
 
+  /** "Finished work": the time between trips stops here and is saved. */
   const stopBetween = () => {
     const cur = readActive();
     if (!cur || !isBetween(cur)) return;
     persist(null);
     closeBetween(cur);
-    toast(`המדידה נשמרה · ${cur.km.toFixed(1)} ק״מ בין נסיעות`);
+    const seconds = Math.round((Date.now() - cur.startedAt) / 1000);
+    toast(`יום העבודה נסגר · ${fmtDuration(seconds)} בין נסיעות · ${cur.km.toFixed(1)} ק״מ`);
   };
 
   // driving mode is always silent
@@ -347,6 +355,12 @@ export function TripTracker({
     0,
   );
   const liveNet = grossToday - liveCost;
+  // Work time today: work trips and the time between them, the running one included.
+  const workToday = workSecondsOn(
+    data.trips,
+    today,
+    active ? { date: active.date, seconds: elapsed } : null,
+  );
 
   const editIncome = editing?.incomeId
     ? (data.incomes.find((i) => i.id === editing.incomeId) ?? null)
@@ -554,7 +568,7 @@ export function TripTracker({
             <>
               <div className="flex items-center justify-center gap-2 text-xs font-bold tracking-wide text-muted-foreground">
                 <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-muted-foreground" />
-                בדרך לנסיעה הבאה · מודד ק״מ וזמן
+                בין נסיעות · הזמן ממשיך לרוץ
               </div>
               <div className="num mt-3 grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-xl bg-muted/50 p-2.5">
@@ -570,14 +584,18 @@ export function TripTracker({
                   <div className="text-2xl font-extrabold">{fmt(liveCost, c)}</div>
                 </div>
               </div>
-              <p className="mt-2 text-center text-[11px] text-muted-foreground">
-                נשמר לחישוב הדלק, לא כנסיעת עבודה. נסגר מעצמו אחרי חצי שעה בלי תנועה.
+              <p className="num mt-2 text-center text-sm font-semibold">
+                זמן עבודה היום {fmtDuration(workToday)}
+              </p>
+              <p className="mt-1 text-center text-[11px] text-muted-foreground">
+                רץ עד הנסיעה הבאה או עד שתלחץ "סיימתי לעבוד". לא נחשב נסיעת עבודה. אם שכחת, נעצר לבד
+                אחרי 4 שעות בלי תנועה.
               </p>
               <Button className="mt-3 h-20 w-full text-xl font-extrabold" onClick={start}>
                 <Play className="ms-2 h-7 w-7" /> התחל נסיעת עבודה
               </Button>
-              <Button variant="ghost" className="mt-1 h-10 w-full" onClick={stopBetween}>
-                עצור מדידה
+              <Button variant="outline" className="mt-2 h-12 w-full" onClick={stopBetween}>
+                <Flag className="ms-2 h-5 w-5" /> סיימתי לעבוד
               </Button>
             </>
           ) : active ? (
