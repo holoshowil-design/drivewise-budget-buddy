@@ -16,6 +16,7 @@ import {
 import { Zap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccountBadge } from "@/components/AccountBadge";
+import { WorkStatus } from "@/components/WorkStatus";
 import { useEffect, useState } from "react";
 import { ACTIVE_EVENT, readActive } from "@/lib/active-trip";
 import { isBetween } from "@/lib/between-trip";
@@ -126,6 +127,10 @@ function Dashboard() {
         </div>
         <AccountBadge />
       </header>
+
+      <div className="px-4 pb-3">
+        <WorkStatus />
+      </div>
 
       <div className="stagger space-y-4 px-4">
         <DailyProfitGauge
