@@ -58,11 +58,14 @@ export function writeActive(t: ActiveTrip | null) {
 /**
  * Whether the driver is driving right now, for things that stay quiet while driving
  * (films, sounds). A work trip counts as driving until it ends. A between-trips
- * measurement runs all day, so it only counts while the car actually moves.
+ * measurement runs all day, so it only counts while the car actually moves; one that has
+ * not measured any movement yet (it starts when a trip is saved, at the customer's door)
+ * is a parked car.
  */
 export function isDrivingNow(trip: ActiveTrip | null, now = Date.now()) {
   if (!trip) return false;
   if (trip.kind !== "between" && trip.kind !== "private") return true;
+  if (trip.km <= 0) return false;
   return now - (trip.lastMoveAt ?? trip.startedAt) < 60_000;
 }
 
