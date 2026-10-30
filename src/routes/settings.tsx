@@ -26,6 +26,8 @@ import { parseBackup, planRestore, applyRestore } from "@/lib/backup";
 import { NumberField } from "@/components/NumberField";
 import { parseNumber } from "@/lib/number";
 import { checkNumber } from "@/lib/validate";
+import { hasBackgroundTracking } from "@/lib/location";
+import { EngineSettings } from "@/components/EngineSettings";
 
 type NumText = {
   dailyGoal: string;
@@ -295,11 +297,13 @@ function SettingsPage() {
 
         <Card>
           <CardContent className="p-4 space-y-4">
-            <h3 className="font-semibold">זיהוי נסיעות אוטומטי</h3>
+            <h3 className="font-semibold">זיהוי נסיעות, עצירות ומנוע</h3>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label htmlFor="auto-detect">שאל כשמזוהה נסיעה</Label>
-                <p className="text-xs text-muted-foreground">כשהאפליקציה פתוחה ומזוהה תנועה ברכב</p>
+                <Label htmlFor="auto-detect">התחל למדוד לבד כשמזוהה נסיעה</Label>
+                <p className="text-xs text-muted-foreground">
+                  אם שכחת ללחוץ, המדידה מתחילה מרגע שהרכב זז, ובסוף נשאל אם זו הייתה נסיעת עבודה
+                </p>
               </div>
               <Switch
                 id="auto-detect"
@@ -315,11 +319,27 @@ function SettingsPage() {
                 }}
               />
             </div>
+            {hasBackgroundTracking() && data.settings.autoDetectTrip === true && (
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <Label htmlFor="detect-background">זהה גם כשהאפליקציה סגורה</Label>
+                  <p className="text-xs text-muted-foreground">
+                    מציג התראה קבועה למעלה ומשתמש קצת יותר בסוללה
+                  </p>
+                </div>
+                <Switch
+                  id="detect-background"
+                  checked={data.settings.detectInBackground === true}
+                  onCheckedChange={(v) => updateSettings({ detectInBackground: v })}
+                />
+              </div>
+            )}
             <div className="flex items-center justify-between gap-3">
               <div>
                 <Label htmlFor="track-between">מדוד גם בין נסיעות</Label>
                 <p className="text-xs text-muted-foreground">
-                  אחרי סיום נסיעה נמדדים ק״מ וזמן עד הנסיעה הבאה, לחישוב הדלק (לא נחשב נסיעת עבודה)
+                  אחרי סיום נסיעה הזמן והק״מ ממשיכים להימדד עד הנסיעה הבאה או עד "סיימתי לעבוד" (לא
+                  נחשב נסיעת עבודה)
                 </p>
               </div>
               <Switch
@@ -339,6 +359,7 @@ function SettingsPage() {
                 onCheckedChange={(v) => updateSettings({ askWaiting: v })}
               />
             </div>
+            <EngineSettings />
           </CardContent>
         </Card>
 

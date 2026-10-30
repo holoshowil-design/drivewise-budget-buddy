@@ -4,10 +4,12 @@ import { isDrivingNow } from "@/lib/active-trip";
 import {
   BETWEEN_IDLE_MS,
   MIN_BETWEEN_KM,
+  MIN_BETWEEN_SECONDS,
   betweenIdleEnd,
   betweenToTrip,
   startBetween,
   trackBetweenOn,
+  workSecondsOn,
   workTrips,
 } from "@/lib/between-trip";
 
@@ -35,9 +37,15 @@ describe("betweenToTrip", () => {
     expect(trip.seconds).toBe(120);
   });
 
-  it("drops a measurement under the minimum km", () => {
-    expect(betweenToTrip(between({ km: MIN_BETWEEN_KM - 0.01 }), T0 + 60_000)).toBeNull();
-    expect(betweenToTrip(between({ km: MIN_BETWEEN_KM }), T0 + 60_000)).not.toBeNull();
+  it("drops a measurement that is both under the minimum km and under a minute", () => {
+    const short = T0 + (MIN_BETWEEN_SECONDS - 1) * 1000;
+    expect(betweenToTrip(between({ km: MIN_BETWEEN_KM - 0.01 }), short, short)).toBeNull();
+    expect(betweenToTrip(between({ km: MIN_BETWEEN_KM }), short, short)).not.toBeNull();
+  });
+
+  it("keeps the time spent waiting for the next customer without driving", () => {
+    const trip = betweenToTrip(between(), T0 + 40 * 60_000, T0 + 40 * 60_000);
+    expect(trip).toMatchObject({ kind: "between", km: 0, seconds: 40 * 60 });
   });
 
   it("never counts more waiting than the whole time", () => {
@@ -47,6 +55,10 @@ describe("betweenToTrip", () => {
 });
 
 describe("betweenIdleEnd", () => {
+  it("keeps counting while the car stands for an hour (waiting for a customer)", () => {
+    expect(betweenIdleEnd(between(), T0 + 60 * 60_000)).toBeNull();
+  });
+
   it("closes at the last movement once the car stood still long enough", () => {
     const cur = between({ lastMoveAt: T0 + 1000 });
     expect(betweenIdleEnd(cur, T0 + 1000 + BETWEEN_IDLE_MS - 1)).toBeNull();
@@ -56,6 +68,19 @@ describe("betweenIdleEnd", () => {
   it("never closes a work trip", () => {
     const work: ActiveTrip = { ...between(), kind: undefined };
     expect(betweenIdleEnd(work, T0 + 10 * BETWEEN_IDLE_MS)).toBeNull();
+  });
+});
+
+describe("workSecondsOn", () => {
+  it("adds the day's trips of both kinds and the running measurement", () => {
+    const trips = [
+      { date: "2026-10-19", seconds: 600 },
+      { date: "2026-10-19", seconds: 300, kind: "between" },
+      { date: "2026-10-18", seconds: 9999 },
+    ];
+    expect(workSecondsOn(trips, "2026-10-19")).toBe(900);
+    expect(workSecondsOn(trips, "2026-10-19", { date: "2026-10-19", seconds: 60 })).toBe(960);
+    expect(workSecondsOn(trips, "2026-10-19", { date: "2026-10-18", seconds: 60 })).toBe(900);
   });
 });
 

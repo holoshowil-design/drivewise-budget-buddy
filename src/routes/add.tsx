@@ -4,6 +4,7 @@ import {
   useAppData,
   todayISO,
   sumIncomes,
+  sumHours,
   fmt,
   type Expense,
   type ExpenseCategory,
@@ -177,7 +178,13 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
   const dayIncomes = data.incomes.filter((i) => i.date === form.date);
   const dayNet = sumIncomes(dayIncomes);
   const dayGross = dayIncomes.reduce((s, i) => s + i.amount, 0);
-  const dayHours = dayIncomes.reduce((s, i) => s + (i.hours || 0), 0);
+  const dayHours =
+    Math.round(
+      sumHours(
+        dayIncomes,
+        (data.trips ?? []).filter((t) => t.date === form.date),
+      ) * 10,
+    ) / 10;
   const dayKm = dayIncomes.reduce((s, i) => s + (i.km || 0), 0);
 
   const amountNum = numberOr(form.amount, 0);
