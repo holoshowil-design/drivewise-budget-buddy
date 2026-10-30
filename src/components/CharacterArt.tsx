@@ -34,14 +34,26 @@ const src = (name: string) => `/characters/${name}.webp`;
 // up (when the phone is idle), so the poses don't compete with the app's own loading.
 if (typeof window !== "undefined") {
   const warmPoses = () => {
-    for (const name of [...new Set([...Object.values(CAPTAIN), ...Object.values(TAXI)])]) new Image().src = src(name);
+    for (const name of [...new Set([...Object.values(CAPTAIN), ...Object.values(TAXI)])])
+      new Image().src = src(name);
   };
   if ("requestIdleCallback" in window) window.requestIdleCallback(warmPoses, { timeout: 4000 });
   else setTimeout(warmPoses, 2000);
 }
 
-/** `films`: the drawn film each reward plays, once it has loaded (none by default), see reward-films.ts. */
-export function CaptainArt({ mood, className = "", reactive = true, films = {} }: { mood: MascotMood; prop?: MascotProp; className?: string; reactive?: boolean; films?: RewardFilms }) {
+export function CaptainArt({
+  mood,
+  className = "",
+  reactive = true,
+  films = {},
+}: {
+  mood: MascotMood;
+  prop?: MascotProp;
+  className?: string;
+  reactive?: boolean;
+  /** The drawn film each reward plays, once it has loaded (none by default), see reward-films.ts. */
+  films?: RewardFilms;
+}) {
   const [pose, setPose] = useState<MascotMood>(mood);
   const [beat, setBeat] = useState(0);
   const [film, setFilm] = useState<Clip | null>(null);
@@ -58,7 +70,10 @@ export function CaptainArt({ mood, className = "", reactive = true, films = {} }
       timer = window.setTimeout(() => setPose(mood), 3400);
     };
     window.addEventListener("driver-reward", onReward);
-    return () => { window.removeEventListener("driver-reward", onReward); window.clearTimeout(timer); };
+    return () => {
+      window.removeEventListener("driver-reward", onReward);
+      window.clearTimeout(timer);
+    };
   }, [mood, reactive]);
   // a reward plays its drawn film once that has loaded; the film outlasts mood changes
   useEffect(() => {
@@ -76,21 +91,51 @@ export function CaptainArt({ mood, className = "", reactive = true, films = {} }
     // one after another, the likeliest first, and only the films this form can play
     const strips = filmsToWarm(films);
     const warm = strips.length ? window.setTimeout(() => void warmClips(strips), 1500) : undefined;
-    return () => { window.removeEventListener("driver-reward", onReward); window.clearTimeout(timer); window.clearTimeout(warm); };
+    return () => {
+      window.removeEventListener("driver-reward", onReward);
+      window.clearTimeout(timer);
+      window.clearTimeout(warm);
+    };
   }, [reactive, films]);
 
   return (
-    <span className={`mascot art-captain art-pose-${pose} ${film ? "art-filmed" : ""} ${className}`} key={film ? `film-${beat}` : `${pose}-${beat}`} aria-hidden="true">
-      {film ? <FrameStrip clip={film} className="art-film" /> : <img src={src(CAPTAIN[pose])} alt="" draggable={false} decoding="async" />}
+    <span
+      className={`mascot art-captain art-pose-${pose} ${film ? "art-filmed" : ""} ${className}`}
+      key={film ? `film-${beat}` : `${pose}-${beat}`}
+      aria-hidden="true"
+    >
+      {film ? (
+        <FrameStrip clip={film} className="art-film" />
+      ) : (
+        <img src={src(CAPTAIN[pose])} alt="" draggable={false} decoding="async" />
+      )}
     </span>
   );
 }
 
 /** `film` puts Turbo in a drawn film instead of his still pose (the stage moves him along). */
-export function TaxiArt({ mood = "happy", driving = false, film, className = "" }: { mood?: TaxiMood; driving?: boolean; film?: Clip; className?: string }) {
+export function TaxiArt({
+  mood = "happy",
+  driving = false,
+  film,
+  className = "",
+}: {
+  mood?: TaxiMood;
+  driving?: boolean;
+  film?: Clip;
+  className?: string;
+}) {
   return (
-    <span className={`taxi art-taxi art-taxi-${mood} ${driving ? "taxi-driving" : ""} ${film ? "art-filmed" : ""} ${className}`} key={film ? film.src : mood} aria-hidden="true">
-      {film ? <FrameStrip clip={film} className="art-film" /> : <img src={src(TAXI[mood])} alt="" draggable={false} decoding="async" />}
+    <span
+      className={`taxi art-taxi art-taxi-${mood} ${driving ? "taxi-driving" : ""} ${film ? "art-filmed" : ""} ${className}`}
+      key={film ? film.src : mood}
+      aria-hidden="true"
+    >
+      {film ? (
+        <FrameStrip clip={film} className="art-film" />
+      ) : (
+        <img src={src(TAXI[mood])} alt="" draggable={false} decoding="async" />
+      )}
     </span>
   );
 }

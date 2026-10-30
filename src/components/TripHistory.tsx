@@ -8,11 +8,13 @@ import {
   fmt,
   fmtDuration,
   todayISO,
+  tripEnergy,
   type AppData,
   type Trip,
 } from "@/lib/store";
 import { dayLabel, groupByDay } from "@/lib/day-groups";
-import { isBetween } from "@/lib/between-trip";
+import { isBetween, isPrivate } from "@/lib/between-trip";
+import { stopsText } from "@/lib/trip-stops";
 
 /** Trips shown before "show more"; the last day shown is always complete. */
 const PAGE_TRIPS = 12;
@@ -58,7 +60,7 @@ export const TripHistory = memo(function TripHistory({
                 </li>
                 {day.rows.map((t) => {
                   const p = effectiveFuelParams(t.date, data.vehicle, data.settings, t.time);
-                  const units = t.km / (p.consumption || 1);
+                  const units = tripEnergy(t, data.vehicle, data.settings).units;
                   const inc = t.incomeId
                     ? data.incomes.find((i) => i.id === t.incomeId)
                     : undefined;
@@ -75,6 +77,11 @@ export const TripHistory = memo(function TripHistory({
                               בין נסיעות
                             </span>
                           )}
+                          {isPrivate(t) && (
+                            <span className="me-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              פרטית
+                            </span>
+                          )}
                           {t.km.toFixed(1)} ק״מ · {fmtDuration(t.seconds)}
                           {inc && <span className="text-success"> · {fmt(inc.amount, c)}</span>}
                         </div>
@@ -83,6 +90,10 @@ export const TripHistory = memo(function TripHistory({
                           {units.toFixed(1)} {unit})
                           {(t.waitSeconds ?? 0) > 0 &&
                             ` · המתנה ${Math.round((t.waitSeconds ?? 0) / 60)} ד׳`}
+                          {(t.idleSeconds ?? 0) >= 60 &&
+                            ` · מנוע דלוק בעמידה ${Math.round((t.idleSeconds ?? 0) / 60)} ד׳`}
+                          {stopsText(t.stops) && ` · ${stopsText(t.stops)}`}
+                          {t.auto && " · זוהתה לבד"}
                         </div>
                       </button>
                       <Button

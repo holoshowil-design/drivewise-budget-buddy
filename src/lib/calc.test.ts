@@ -47,6 +47,19 @@ describe("daily calculation", () => {
   });
 });
 
+describe("work hours", () => {
+  it("adds the time between trips to the hours on the incomes, not the work trips again", () => {
+    const d = appData({
+      incomes: [income({ date: "2026-10-03", amount: 200, hours: 1 })],
+      trips: [
+        trip({ date: "2026-10-03", seconds: 3600 }), // its time is already in the income hours
+        trip({ date: "2026-10-03", kind: "between", seconds: 1800 }),
+      ],
+    });
+    expect(buildDays(d).get("2026-10-03")!.hours).toBeCloseTo(1.5);
+  });
+});
+
 describe("monthly forecast", () => {
   it("earned so far + average per work day × work days left", () => {
     const d = appData({

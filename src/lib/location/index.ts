@@ -110,6 +110,13 @@ type NativeLocation = {
   time: number | null;
 };
 
+/**
+ * The plugin runs one tracking session for the whole app. The newest watch owns it,
+ * so an older watch that stops late (the drive detector handing over to the trip)
+ * does not stop the session the new one started.
+ */
+let nativeOwner = 0;
+
 /** Exported for tests. */
 export function watchNative(
   b: Bridge,
@@ -118,6 +125,7 @@ export function watchNative(
   notification: { title: string; message: string },
 ): () => void {
   let stopped = false;
+  const me = ++nativeOwner;
   // The plugin runs one tracking session: stop a leftover one (e.g. after a
   // reload) before starting, and only then start.
   const ready = b.nativePromise!(PLUGIN, "stop").catch(() => undefined);
@@ -157,6 +165,8 @@ export function watchNative(
   return () => {
     if (stopped) return;
     stopped = true;
-    void ready.then(() => b.nativePromise!(PLUGIN, "stop").catch(() => undefined));
+    void ready.then(() => {
+      if (nativeOwner === me) return b.nativePromise!(PLUGIN, "stop").catch(() => undefined);
+    });
   };
 }
