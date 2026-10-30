@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { lazy, Suspense, useState, useMemo } from "react";
 import {
   useAppData,
@@ -16,7 +16,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Map as MapIcon } from "lucide-react";
 import { RecordsList } from "@/components/RecordsList";
 import { BestHoursCard } from "@/components/BestHoursCard";
 
@@ -112,10 +112,18 @@ function Reports() {
         title="דוחות"
         subtitle={range === "all" ? "כל הרשומות" : `${fmtDateShort(from)} – ${fmtDateShort(to)}`}
         action={
-          <Button size="sm" variant="outline" onClick={exportCSV}>
-            <Download className="h-4 w-4 ml-1" />
-            ייצוא
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link to="/map">
+                <MapIcon className="h-4 w-4 ml-1" />
+                מפה
+              </Link>
+            </Button>
+            <Button size="sm" variant="outline" onClick={exportCSV}>
+              <Download className="h-4 w-4 ml-1" />
+              ייצוא
+            </Button>
+          </div>
         }
         scene={{ mood: "smirk", prop: "chart", line: "בוא נראה לאן הלך כל שקל 🧐" }}
       />

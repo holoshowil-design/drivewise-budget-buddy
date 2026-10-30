@@ -97,6 +97,8 @@ export type Trip = {
   /** Started by itself when driving was detected. */
   auto?: boolean;
   note?: string;
+  /** The drawn route, [lat, lon] pairs (trip-path.ts). Trips from before the map have none. */
+  path?: [number, number][];
   updatedAt?: string; // ISO — last local change, used by sync
 };
 

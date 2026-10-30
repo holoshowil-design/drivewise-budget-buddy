@@ -34,6 +34,8 @@ export type ActiveTrip = {
   /** Finished stops, seconds per reason (waiting goes to waitSeconds). */
   stops?: StopSeconds;
   last?: { lat: number; lon: number; t: number; acc?: number }; // acc = accuracy in meters
+  /** The route so far, for the trips map (see trip-path.ts). */
+  path?: [number, number][];
 };
 
 export function readActive(): ActiveTrip | null {
