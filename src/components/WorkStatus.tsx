@@ -8,6 +8,7 @@ const DOT = {
   work: "bg-success",
   "between-driving": "bg-primary",
   "between-waiting": "bg-primary",
+  private: "bg-muted-foreground",
   off: "bg-muted-foreground/50",
 } as const;
 

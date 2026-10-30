@@ -14,15 +14,7 @@ import {
 } from "@/lib/active-trip";
 import { hasBackgroundTracking, watchLocation } from "@/lib/location";
 import { trackBetweenOn } from "@/lib/between-trip";
-import {
-  PRIVATE_QUIET_MS,
-  autoToBetween,
-  confirmAuto,
-  discardAuto,
-  isUnconfirmedAuto,
-  snoozeDetect,
-  snoozedUntil,
-} from "@/lib/auto-trip";
+import { autoToSide, confirmAuto, isUnconfirmedAuto } from "@/lib/auto-trip";
 
 const MIN_SPEED_KMH = 15;
 const SUSTAIN_MS = 20_000;
@@ -109,13 +101,6 @@ export function DriveDetector() {
         if (speed == null) return;
         const driving = speed >= MIN_SPEED_KMH && speed < 220;
         const now = Date.now();
-        const snooze = snoozedUntil();
-        if (now < snooze) {
-          // After "private drive": stay quiet for as long as that drive goes on.
-          if (driving) snoozeDetect(Math.max(snooze, now + PRIVATE_QUIET_MS));
-          runRef.current = null;
-          return;
-        }
         if (!driving) {
           runRef.current = null;
           return;
@@ -159,20 +144,14 @@ export function DriveDetector() {
     toast.success("נסיעת עבודה · ממשיך למדוד");
   };
   const no = () => {
-    discardAuto();
-    toast("נסיעה פרטית · לא נשמר", {
+    writeActive(autoToSide(cur, "private"));
+    toast("נסיעה פרטית · נמדדים ק״מ ודלק, לא נכנס לחישובי העבודה. נשמר לבד כשהרכב חונה.", {
       duration: 8000,
-      action: {
-        label: "ביטול",
-        onClick: () => {
-          if (!readActive()) writeActive(cur);
-          snoozeDetect(0);
-        },
-      },
+      action: { label: "ביטול", onClick: () => writeActive(cur) },
     });
   };
   const between = () => {
-    writeActive(autoToBetween(cur));
+    writeActive(autoToSide(cur, "between"));
     toast("נמדד כנסיעה בין נסיעות (רק ק״מ וזמן)");
   };
 

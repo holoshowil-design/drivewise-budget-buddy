@@ -31,6 +31,7 @@ import {
   fmt,
   fmtDuration,
   effectiveFuelParams,
+  idlePerHour,
   type Trip,
 } from "@/lib/store";
 import {
@@ -54,6 +55,8 @@ import { GPS_ERROR_EVENT, readGpsError } from "@/lib/trip-gps";
 import {
   betweenToTrip,
   isBetween,
+  isPrivate,
+  isSideDrive,
   startBetween,
   trackBetweenOn,
   workSecondsOn,
@@ -66,7 +69,8 @@ import {
   type StopReason,
   type StopSeconds,
 } from "@/lib/trip-stops";
-import { autoToBetween, confirmAuto, discardAuto, isUnconfirmedAuto } from "@/lib/auto-trip";
+import { autoToSide, confirmAuto, isUnconfirmedAuto } from "@/lib/auto-trip";
+import { EngineChip } from "@/components/EngineChip";
 
 const WAIT_ASK_MS = 4 * 60 * 1000;
 const WAIT_SNOOZE_MS = 15 * 60 * 1000;
@@ -106,7 +110,7 @@ export function TripTracker({
   /** The stop-reason picker; `from` starts the stop back when the car stopped. */
   const [picking, setPicking] = useState<{ from?: number } | null>(null);
   /** What the end form does not edit but the saved trip keeps. */
-  const endingMetaRef = useRef<{ stops?: StopSeconds; auto?: boolean }>({});
+  const endingMetaRef = useRef<{ stops?: StopSeconds; auto?: boolean; idleSeconds?: number }>({});
   const [ending, setEnding] = useState<TripFormValues | null>(null);
   const [editing, setEditing] = useState<Trip | null>(null);
   const activeRef = useRef<ActiveTrip | null>(null);
@@ -132,7 +136,7 @@ export function TripTracker({
   const start = useCallback(() => {
     // Read the stored trip: a between measurement may have been closed or opened elsewhere.
     const cur = readActive();
-    if (cur && !isBetween(cur)) return;
+    if (cur && !isSideDrive(cur)) return;
     // Starting a work trip ends the drive that led to it.
     if (cur) closeBetween(cur);
     const now = Date.now();
@@ -160,11 +164,15 @@ export function TripTracker({
   /** "Finished work": the time between trips stops here and is saved. */
   const stopBetween = () => {
     const cur = readActive();
-    if (!cur || !isBetween(cur)) return;
+    if (!cur || !isSideDrive(cur)) return;
     persist(null);
     closeBetween(cur);
     const seconds = Math.round((Date.now() - cur.startedAt) / 1000);
-    toast(`יום העבודה נסגר · ${fmtDuration(seconds)} בין נסיעות · ${cur.km.toFixed(1)} ק״מ`);
+    toast(
+      isPrivate(cur)
+        ? `נסיעה פרטית נשמרה · ${cur.km.toFixed(1)} ק״מ`
+        : `יום העבודה נסגר · ${fmtDuration(seconds)} בין נסיעות · ${cur.km.toFixed(1)} ק״מ`,
+    );
   };
 
   // driving mode is always silent
@@ -189,8 +197,13 @@ export function TripTracker({
       setAskForgot(false);
       setAskAuto(false);
       setPicking(null);
-      endingMetaRef.current = { stops: cleanStops(cur.stops), auto: cur.auto !== undefined };
+
       const seconds = Math.round((until - cur.startedAt) / 1000);
+      endingMetaRef.current = {
+        stops: cleanStops(cur.stops),
+        auto: cur.auto !== undefined,
+        idleSeconds: cur.idleSeconds ? Math.min(seconds, Math.round(cur.idleSeconds)) : undefined,
+      };
       setEnding({
         date: cur.date,
         time: cur.time,
@@ -256,19 +269,14 @@ export function TripTracker({
     const cur = activeRef.current;
     setAskAuto(false);
     if (!cur) return;
+    const stoppedAt = cur.lastMoveAt ?? Date.now();
     if (answer === "private") {
-      discardAuto();
-      toast("נסיעה פרטית · לא נשמרה", {
-        duration: 8000,
-        action: {
-          label: "ביטול",
-          onClick: () => {
-            if (!readActive()) persist(cur);
-          },
-        },
-      });
+      // Parked: saved now as a private drive (km and fuel, outside the work numbers).
+      persist(null);
+      closeBetween(autoToSide(cur, "private", stoppedAt), stoppedAt);
+      toast.success(`נסיעה פרטית נשמרה · ${cur.km.toFixed(1)} ק״מ`);
     } else if (answer === "between") {
-      persist(autoToBetween(cur, cur.lastMoveAt ?? Date.now()));
+      persist(autoToSide(cur, "between", stoppedAt));
     } else if (answer === "wait") {
       persist(startStop(confirmAuto(cur), "wait", cur.lastMoveAt ?? Date.now()));
     } else {
@@ -283,7 +291,7 @@ export function TripTracker({
   useEffect(() => {
     const saved = readActive();
     if (saved?.pausedAt) persist({ ...saved, pausedAt: undefined });
-    else if (saved && !(autoStart && isBetween(saved))) {
+    else if (saved && !(autoStart && isSideDrive(saved))) {
       activeRef.current = saved;
       setActive(saved);
     } else if (autoStart) {
@@ -322,7 +330,7 @@ export function TripTracker({
       const cur = activeRef.current;
       if (!cur || ending) return;
       // Standing still between trips is normal; TripWatcher closes the measurement.
-      if (isBetween(cur)) {
+      if (isSideDrive(cur)) {
         setAskWait(false);
         setAskForgot(false);
         setAskAuto(false);
@@ -410,6 +418,7 @@ export function TripTracker({
         ...trip,
         ...(meta.stops ? { stops: meta.stops } : {}),
         ...(meta.auto ? { auto: true } : {}),
+        ...(meta.idleSeconds ? { idleSeconds: meta.idleSeconds } : {}),
         endedAt: new Date().toISOString(),
       },
       income,
@@ -443,9 +452,14 @@ export function TripTracker({
 
   if (!ready) return null;
 
-  const betweenNow = isBetween(active);
+  const betweenNow = isSideDrive(active);
+  const privateNow = isPrivate(active);
   const liveParams = effectiveFuelParams(todayISO(), data.vehicle, data.settings, nowHHMM());
-  const liveCost = active ? (active.km / (liveParams.consumption || 1)) * liveParams.price : 0;
+  const liveCost = active
+    ? (active.km / (liveParams.consumption || 1) +
+        ((active.idleSeconds ?? 0) / 3600) * idlePerHour(data.vehicle, data.settings)) *
+      liveParams.price
+    : 0;
   const avgSpeed = active && elapsed > 0 ? active.km / (elapsed / 3600) : 0;
   const today = todayISO();
   const todayIncomes = data.incomes.filter((item) => item.date === today);
@@ -477,13 +491,15 @@ export function TripTracker({
               <span
                 className={`h-2.5 w-2.5 rounded-full ${active ? "animate-pulse bg-hud-accent" : "bg-hud-muted"}`}
               />
-              {betweenNow
-                ? "מודד בין נסיעות"
-                : active
-                  ? hasBackgroundTracking()
-                    ? "GPS פעיל · ממשיך גם כשהמסך נעול"
-                    : "GPS פעיל · המסך נשאר דלוק"
-                  : "מוכן לנסיעה"}
+              {privateNow
+                ? "נסיעה פרטית"
+                : betweenNow
+                  ? "מודד בין נסיעות"
+                  : active
+                    ? hasBackgroundTracking()
+                      ? "GPS פעיל · ממשיך גם כשהמסך נעול"
+                      : "GPS פעיל · המסך נשאר דלוק"
+                    : "מוכן לנסיעה"}
             </div>
             <Link to="/trip" search={{}} aria-label="צא ממצב נהיגה" className="hud-icon-button">
               <Minimize2 className="h-5 w-5" />
@@ -719,7 +735,8 @@ export function TripTracker({
           }}
           initialIncome={editIncome}
           stops={editing.stops}
-          betweenTrip={isBetween(editing)}
+          betweenTrip={isSideDrive(editing)}
+          privateTrip={isPrivate(editing)}
           onOpenChange={(o) => {
             if (!o) setEditing(null);
           }}
@@ -745,7 +762,7 @@ export function TripTracker({
             <>
               <div className="flex items-center justify-center gap-2 text-xs font-bold tracking-wide text-muted-foreground">
                 <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-muted-foreground" />
-                בין נסיעות · הזמן ממשיך לרוץ
+                {privateNow ? "נסיעה פרטית · ק״מ ודלק בלבד" : "בין נסיעות · הזמן ממשיך לרוץ"}
               </div>
               <div className="num mt-3 grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-xl bg-muted/50 p-2.5">
@@ -761,19 +778,40 @@ export function TripTracker({
                   <div className="text-2xl font-extrabold">{fmt(liveCost, c)}</div>
                 </div>
               </div>
-              <p className="num mt-2 text-center text-sm font-semibold">
-                זמן עבודה היום {fmtDuration(workToday)}
-              </p>
+              {!privateNow && (
+                <p className="num mt-2 text-center text-sm font-semibold">
+                  זמן עבודה היום {fmtDuration(workToday)}
+                  {(active.waitSeconds ?? 0) >= 60 &&
+                    ` · ממתין לנסיעה ${fmtDuration(active.waitSeconds ?? 0)}`}
+                </p>
+              )}
+              <EngineChip active={active} byCharger={data.settings.engineByCharger === true} />
               <p className="mt-1 text-center text-[11px] text-muted-foreground">
-                רץ עד הנסיעה הבאה או עד שתלחץ "סיימתי לעבוד". לא נחשב נסיעת עבודה. אם שכחת, נעצר לבד
-                אחרי 4 שעות בלי תנועה.
+                {privateNow
+                  ? "לא נכנס לחישובי העבודה. נשמר לבד אחרי 10 דקות חניה."
+                  : 'רץ עד הנסיעה הבאה או עד שתלחץ "סיימתי לעבוד". לא נחשב נסיעת עבודה. אם שכחת, נעצר לבד אחרי 4 שעות בלי תנועה.'}
               </p>
               <Button className="mt-3 h-20 w-full text-xl font-extrabold" onClick={start}>
                 <Play className="ms-2 h-7 w-7" /> התחל נסיעת עבודה
               </Button>
-              <Button variant="outline" className="mt-2 h-12 w-full" onClick={stopBetween}>
-                <Flag className="ms-2 h-5 w-5" /> סיימתי לעבוד
-              </Button>
+              {privateNow ? (
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    className="h-12"
+                    onClick={() => persist({ ...active, kind: undefined })}
+                  >
+                    זו נסיעת עבודה
+                  </Button>
+                  <Button variant="outline" className="h-12" onClick={stopBetween}>
+                    <Flag className="ms-2 h-5 w-5" /> סיים ושמור
+                  </Button>
+                </div>
+              ) : (
+                <Button variant="outline" className="mt-2 h-12 w-full" onClick={stopBetween}>
+                  <Flag className="ms-2 h-5 w-5" /> סיימתי לעבוד
+                </Button>
+              )}
             </>
           ) : active ? (
             <>
@@ -810,6 +848,7 @@ export function TripTracker({
                 )}
                 <span>דלק משוער {fmt(liveCost, c)}</span>
               </div>
+              <EngineChip active={active} byCharger={data.settings.engineByCharger === true} />
               {active.stop ? (
                 <div className="mt-3 rounded-2xl border-2 border-primary/40 bg-primary/5 p-3 text-center">
                   <div className="num text-sm font-bold">
@@ -866,7 +905,7 @@ export function TripTracker({
 
       {stage}
 
-      <StopsSummary trips={data.trips} />
+      <StopsSummary data={data} />
 
       {/* History: memoized, so the one-second timer does not redraw it */}
       <TripHistory data={data} onEdit={setEditing} onDelete={onDelete} />

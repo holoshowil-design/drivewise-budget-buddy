@@ -13,6 +13,20 @@ export function InkWorld() {
 }
 
 /** Comic speech bubble with an inked tail. */
-export function ComicBubble({ children, side = "start", tone = "default", className = "" }: { children: React.ReactNode; side?: "start" | "end"; tone?: "default" | "warn" | "win"; className?: string }) {
-  return <div className={`comic-bubble comic-bubble-${side} comic-bubble-${tone} ${className}`}>{children}</div>;
+export function ComicBubble({
+  children,
+  side = "start",
+  tone = "default",
+  className = "",
+}: {
+  children: React.ReactNode;
+  side?: "start" | "end";
+  tone?: "default" | "warn" | "win";
+  className?: string;
+}) {
+  return (
+    <div className={`comic-bubble comic-bubble-${side} comic-bubble-${tone} ${className}`}>
+      {children}
+    </div>
+  );
 }

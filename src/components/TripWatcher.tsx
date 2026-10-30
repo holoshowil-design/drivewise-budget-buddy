@@ -5,6 +5,7 @@ import { watchLocation } from "@/lib/location";
 import { useAppData } from "@/lib/store";
 import { applyFix, setGpsError } from "@/lib/trip-gps";
 import { resumeIfDriving } from "@/lib/trip-stops";
+import { chargingNow, countStanding, engineOn } from "@/lib/engine";
 
 type WakeLock = { release: () => Promise<void> };
 
@@ -16,6 +17,10 @@ const NOTIFICATION = {
   between: {
     title: "מדידה בין נסיעות",
     message: "דרייבר מודד ק״מ וזמן בין הנסיעות. פתח את האפליקציה כדי להתחיל נסיעה.",
+  },
+  private: {
+    title: "נסיעה פרטית",
+    message: "דרייבר מודד ק״מ ודלק. נשמר לבד כשהרכב חונה.",
   },
 } as const;
 
@@ -31,13 +36,15 @@ const NOTIFICATION = {
  * for a while, saving the drive at the moment the car last moved.
  */
 export function TripWatcher() {
-  const { addTrip } = useAppData();
+  const { data, addTrip } = useAppData();
   const addTripRef = useRef(addTrip);
   addTripRef.current = addTrip;
+  const byChargerRef = useRef(false);
+  byChargerRef.current = data.settings.engineByCharger === true;
 
   useEffect(() => {
     let stop: (() => void) | null = null;
-    let watchKind: "work" | "between" | null = null;
+    let watchKind: "work" | "between" | "private" | null = null;
     let wake: WakeLock | null = null;
 
     const acquireWake = () => {
@@ -48,7 +55,7 @@ export function TripWatcher() {
       nav.wakeLock
         ?.request("screen")
         .then((lock) => {
-          if (!stop || watchKind === "between") {
+          if (!stop || watchKind !== "work") {
             lock.release().catch(() => {});
             return;
           }
@@ -69,7 +76,7 @@ export function TripWatcher() {
     const sync = () => {
       const cur = readActive();
       const want = Boolean(cur && !cur.pausedAt);
-      const kind = cur?.kind === "between" ? "between" : "work";
+      const kind = cur?.kind === "between" || cur?.kind === "private" ? cur.kind : "work";
       // Stop when nothing is to be measured, or restart when the kind changed (the
       // background notification names what is being measured).
       if (stop && (!want || kind !== watchKind)) {
@@ -111,8 +118,13 @@ export function TripWatcher() {
     const closeIdleBetween = () => {
       const cur = readActive();
       if (!cur || cur.pausedAt) return;
-      const end = betweenIdleEnd(cur, Date.now());
-      if (end === null) return;
+      const now = Date.now();
+      const end = betweenIdleEnd(cur, now);
+      if (end === null) {
+        // Standing time: waiting for the next ride, and idle fuel when the engine runs.
+        writeActive(countStanding(cur, now, engineOn(cur, byChargerRef.current, chargingNow())));
+        return;
+      }
       writeActive(null);
       const trip = betweenToTrip(cur, end);
       if (trip) addTripRef.current(trip);

@@ -8,7 +8,7 @@ import {
   stopsText,
   sumStops,
 } from "@/lib/trip-stops";
-import { autoToBetween, confirmAuto, isUnconfirmedAuto } from "@/lib/auto-trip";
+import { autoToSide, confirmAuto, isUnconfirmedAuto } from "@/lib/auto-trip";
 
 const base: ActiveTrip = { startedAt: 0, date: "2026-10-30", time: "10:00", km: 3, lastMoveAt: 0 };
 
@@ -60,9 +60,9 @@ describe("auto-started trips", () => {
   });
 
   it("turns into a drive between trips", () => {
-    const t = autoToBetween({ ...startStop({ ...base, auto: true }, "fuel", 0) }, 60_000);
+    const t = autoToSide({ ...startStop({ ...base, auto: true }, "fuel", 0) }, "between", 60_000);
     expect(t.kind).toBe("between");
-    expect(t.auto).toBeUndefined();
+    expect(t.auto).toBe(false);
     expect(t.stop).toBeUndefined();
     expect(isUnconfirmedAuto(t)).toBe(false);
   });

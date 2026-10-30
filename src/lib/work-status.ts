@@ -7,12 +7,17 @@ import { isBetween } from "@/lib/between-trip";
  */
 export type WorkStatus =
   | { kind: "off" }
-  | { kind: "work" | "between-driving" | "between-waiting"; seconds: number; km: number };
+  | {
+      kind: "work" | "between-driving" | "between-waiting" | "private";
+      seconds: number;
+      km: number;
+    };
 
 export function workStatus(active: ActiveTrip | null, now = Date.now()): WorkStatus {
   if (!active) return { kind: "off" };
   const seconds = Math.max(0, Math.round((now - active.startedAt) / 1000));
   const km = active.km;
+  if (active.kind === "private") return { kind: "private", seconds, km };
   if (!isBetween(active)) return { kind: "work", seconds, km };
   return { kind: isDrivingNow(active, now) ? "between-driving" : "between-waiting", seconds, km };
 }
@@ -21,5 +26,6 @@ export const WORK_STATUS_LABEL: Record<WorkStatus["kind"], string> = {
   work: "בנסיעת עבודה",
   "between-driving": "בין נסיעות · נוהג",
   "between-waiting": "בין נסיעות · ממתין",
+  private: "נסיעה פרטית",
   off: "לא מודד כרגע",
 };

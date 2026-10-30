@@ -19,13 +19,23 @@ export const MIN_BETWEEN_SECONDS = 60;
 
 export const isBetween = (trip: { kind?: string } | null | undefined) => trip?.kind === "between";
 
+/** A private drive (the driver's own): measured for km and fuel only. */
+export const isPrivate = (trip: { kind?: string } | null | undefined) => trip?.kind === "private";
+
+/** Not a work trip: between trips or private. Such a measurement runs without questions. */
+export const isSideDrive = (trip: { kind?: string } | null | undefined) =>
+  isBetween(trip) || isPrivate(trip);
+
+/** A private drive closes once the car has stood this long (it was parked). */
+export const PRIVATE_IDLE_MS = 10 * 60 * 1000;
+
 /** Between-trips measuring is on unless the driver turned it off. */
 export const trackBetweenOn = (settings: Pick<Settings, "trackBetween">) =>
   settings.trackBetween !== false;
 
 /** Only the work trips (a trip without a kind is a work trip). */
 export const workTrips = <T extends { kind?: string }>(trips: T[]) =>
-  trips.filter((t) => t.kind !== "between");
+  trips.filter((t) => !t.kind || t.kind === "work");
 
 export function startBetween(now: number, date: string, time: string): ActiveTrip {
   return { kind: "between", startedAt: now, date, time, km: 0, lastMoveAt: now };
@@ -44,29 +54,33 @@ export function betweenToTrip(
   const seconds = Math.round((until - cur.startedAt) / 1000);
   if (cur.km < MIN_BETWEEN_KM && seconds < MIN_BETWEEN_SECONDS) return null;
   return {
-    kind: "between",
+    kind: isPrivate(cur) ? "private" : "between",
     date: cur.date,
     time: cur.time,
     km: Math.round(cur.km * 100) / 100,
     seconds,
     waitSeconds: Math.min(seconds, Math.round(cur.waitSeconds ?? 0)),
+    ...(cur.idleSeconds ? { idleSeconds: Math.min(seconds, Math.round(cur.idleSeconds)) } : {}),
+    ...(cur.auto !== undefined ? { auto: true } : {}),
     endedAt: new Date(until).toISOString(),
   };
 }
 
 /** When a between measurement has stood still long enough to close: the last move, else null. */
 export function betweenIdleEnd(cur: ActiveTrip, now: number): number | null {
-  if (!isBetween(cur)) return null;
+  if (!isSideDrive(cur)) return null;
   const last = cur.lastMoveAt ?? cur.startedAt;
-  return now - last >= BETWEEN_IDLE_MS ? last : null;
+  return now - last >= (isPrivate(cur) ? PRIVATE_IDLE_MS : BETWEEN_IDLE_MS) ? last : null;
 }
 
 /** Work time on `date` so far: saved trips of both kinds, plus the running one (seconds). */
 export function workSecondsOn(
-  trips: Pick<Trip, "date" | "seconds">[],
+  trips: { date: string; seconds: number; kind?: string }[],
   date: string,
   running?: { date: string; seconds: number } | null,
 ) {
-  const saved = trips.filter((t) => t.date === date).reduce((s, t) => s + (t.seconds || 0), 0);
+  const saved = trips
+    .filter((t) => t.date === date && !isPrivate(t))
+    .reduce((s, t) => s + (t.seconds || 0), 0);
   return saved + (running && running.date === date ? running.seconds : 0);
 }

@@ -1,8 +1,8 @@
 import { memo, useMemo } from "react";
 import { Pause } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { fmtDuration, todayISO, type Trip } from "@/lib/store";
-import { workTrips } from "@/lib/between-trip";
+import { fmt, fmtDuration, todayISO, tripEnergy, type AppData } from "@/lib/store";
+import { isBetween, isPrivate, workTrips } from "@/lib/between-trip";
 import { STOP_REASONS, sumStops } from "@/lib/trip-stops";
 
 const DAYS = 7;
@@ -13,27 +13,53 @@ function daysAgoISO(days: number) {
   return d.toISOString().slice(0, 10);
 }
 
-/** Where the stopped time of the last week went: waiting, fuel, food, prayer... */
-export const StopsSummary = memo(function StopsSummary({ trips }: { trips: Trip[] }) {
-  const rows = useMemo(() => {
-    const sums = sumStops(workTrips(trips ?? []), daysAgoISO(DAYS - 1));
-    return STOP_REASONS.map((r) => ({ ...r, seconds: Math.round(sums[r.id] ?? 0) }))
+/**
+ * The last week outside the driving itself: waiting for a ride, stops inside trips
+ * (fuel, food, prayer...), standing with the engine on, and private drives.
+ */
+export const StopsSummary = memo(function StopsSummary({ data }: { data: AppData }) {
+  const s = useMemo(() => {
+    const from = daysAgoISO(DAYS - 1);
+    const week = (data.trips ?? []).filter((t) => t.date >= from);
+    const sums = sumStops(workTrips(week), from);
+    const rows = [
+      {
+        id: "between-wait",
+        label: "ממתין לנסיעה (בין נסיעות)",
+        seconds: week.filter(isBetween).reduce((n, t) => n + (t.waitSeconds ?? 0), 0),
+      },
+      ...STOP_REASONS.map((r) => ({ id: r.id, label: r.label, seconds: sums[r.id] ?? 0 })),
+    ]
+      .map((r) => ({ ...r, seconds: Math.round(r.seconds) }))
       .filter((r) => r.seconds >= 60)
       .sort((a, b) => b.seconds - a.seconds);
-  }, [trips]);
-  if (rows.length === 0) return null;
-  const total = rows.reduce((s, r) => s + r.seconds, 0);
+    const work = week.filter((t) => !isPrivate(t));
+    const idleSeconds = work.reduce((n, t) => n + (t.idleSeconds ?? 0), 0);
+    const idleCost = work.reduce(
+      (n, t) => n + tripEnergy({ ...t, km: 0 }, data.vehicle, data.settings).cost,
+      0,
+    );
+    const priv = week.filter(isPrivate);
+    const privKm = priv.reduce((n, t) => n + (t.km || 0), 0);
+    const privCost = priv.reduce((n, t) => n + tripEnergy(t, data.vehicle, data.settings).cost, 0);
+    return { rows, idleSeconds, idleCost, privCount: priv.length, privKm, privCost };
+  }, [data.trips, data.vehicle, data.settings]);
+  if (s.rows.length === 0 && s.idleSeconds < 60 && s.privCount === 0) return null;
+  const total = s.rows.reduce((n, r) => n + r.seconds, 0);
+  const c = data.settings.currency;
   return (
     <Card>
       <CardContent className="p-4">
         <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
-          <Pause className="h-4 w-4 text-primary" /> עצירות ב-{DAYS} הימים האחרונים
-          <span className="num ms-auto text-xs font-normal text-muted-foreground">
-            סה״כ {fmtDuration(total)}
-          </span>
+          <Pause className="h-4 w-4 text-primary" /> המתנות ועצירות ב-{DAYS} הימים האחרונים
+          {total > 0 && (
+            <span className="num ms-auto text-xs font-normal text-muted-foreground">
+              סה״כ {fmtDuration(total)}
+            </span>
+          )}
         </h3>
         <ul className="space-y-1.5">
-          {rows.map((r) => (
+          {s.rows.map((r) => (
             <li key={r.id} className="num text-xs">
               <div className="flex justify-between">
                 <span>{r.label}</span>
@@ -48,6 +74,17 @@ export const StopsSummary = memo(function StopsSummary({ trips }: { trips: Trip[
             </li>
           ))}
         </ul>
+        {s.idleSeconds >= 60 && (
+          <p className="num mt-3 text-xs text-muted-foreground">
+            מנוע דלוק בעמידה {fmtDuration(s.idleSeconds)} · ≈ {fmt(s.idleCost, c)} דלק
+          </p>
+        )}
+        {s.privCount > 0 && (
+          <p className="num mt-1 text-xs text-muted-foreground">
+            נסיעות פרטיות: {s.privCount} · {s.privKm.toFixed(1)} ק״מ · ≈ {fmt(s.privCost, c)} דלק
+            (לא נכנס לחישובי העבודה)
+          </p>
+        )}
       </CardContent>
     </Card>
   );

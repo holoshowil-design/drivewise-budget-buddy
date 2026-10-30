@@ -27,6 +27,7 @@ import { NumberField } from "@/components/NumberField";
 import { parseNumber } from "@/lib/number";
 import { checkNumber } from "@/lib/validate";
 import { hasBackgroundTracking } from "@/lib/location";
+import { EngineSettings } from "@/components/EngineSettings";
 
 type NumText = {
   dailyGoal: string;
@@ -296,7 +297,7 @@ function SettingsPage() {
 
         <Card>
           <CardContent className="p-4 space-y-4">
-            <h3 className="font-semibold">זיהוי נסיעות אוטומטי</h3>
+            <h3 className="font-semibold">זיהוי נסיעות, עצירות ומנוע</h3>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <Label htmlFor="auto-detect">התחל למדוד לבד כשמזוהה נסיעה</Label>
@@ -358,6 +359,7 @@ function SettingsPage() {
                 onCheckedChange={(v) => updateSettings({ askWaiting: v })}
               />
             </div>
+            <EngineSettings />
           </CardContent>
         </Card>
 

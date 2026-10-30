@@ -6,9 +6,19 @@ import { fmt } from "@/lib/store";
 import { type RewardDetail } from "@/lib/rewards";
 
 type Particle = {
-  x: number; y: number; vx: number; vy: number; z: number; vz: number;
-  spin: number; spinSpeed: number; tilt: number; size: number; color: string;
-  shape: "ribbon" | "foil" | "spark" | "coin"; life: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  z: number;
+  vz: number;
+  spin: number;
+  spinSpeed: number;
+  tilt: number;
+  size: number;
+  color: string;
+  shape: "ribbon" | "foil" | "spark" | "coin";
+  life: number;
 };
 type Flash = RewardDetail & { id: number; x: number; y: number };
 
@@ -32,7 +42,9 @@ export function RewardEffects() {
     if (!ctx) return;
     const palette = () => {
       const css = getComputedStyle(document.documentElement);
-      return ["--primary", "--hud-accent", "--warning", "--chart-2", "--card"].map((token) => css.getPropertyValue(token).trim());
+      return ["--primary", "--hud-accent", "--warning", "--chart-2", "--card"].map((token) =>
+        css.getPropertyValue(token).trim(),
+      );
     };
     const rootCss = getComputedStyle(document.documentElement);
     const gold = rootCss.getPropertyValue("--gold").trim() || "gold";
@@ -52,7 +64,9 @@ export function RewardEffects() {
       const dt = Math.min((now - (lastRef.current || now)) / 16.67, 2);
       lastRef.current = now;
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      particlesRef.current = particlesRef.current.filter((p) => p.life > 0 && p.y < window.innerHeight + 40);
+      particlesRef.current = particlesRef.current.filter(
+        (p) => p.life > 0 && p.y < window.innerHeight + 40,
+      );
       for (const p of particlesRef.current) {
         p.vx *= Math.pow(0.992, dt);
         p.vy += 0.15 * dt;
@@ -80,12 +94,24 @@ export function RewardEffects() {
           ctx.ellipse(0, 0, w, h, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
-          if (Math.abs(turn) > 0.45) { ctx.beginPath(); ctx.ellipse(0, 0, w * 0.6, h * 0.6, 0, 0, Math.PI * 2); ctx.stroke(); }
+          if (Math.abs(turn) > 0.45) {
+            ctx.beginPath();
+            ctx.ellipse(0, 0, w * 0.6, h * 0.6, 0, 0, Math.PI * 2);
+            ctx.stroke();
+          }
         } else if (p.shape === "spark") {
           ctx.shadowColor = p.color;
           ctx.shadowBlur = 12;
           ctx.beginPath();
-          ctx.ellipse(0, 0, p.size * perspective * 0.42, p.size * perspective * 0.42, 0, 0, Math.PI * 2);
+          ctx.ellipse(
+            0,
+            0,
+            p.size * perspective * 0.42,
+            p.size * perspective * 0.42,
+            0,
+            0,
+            Math.PI * 2,
+          );
           ctx.fill();
         } else if (p.shape === "ribbon") {
           ctx.strokeStyle = p.color;
@@ -93,15 +119,28 @@ export function RewardEffects() {
           ctx.lineCap = "round";
           ctx.beginPath();
           ctx.moveTo(-p.size * perspective, -p.size * 0.5);
-          ctx.quadraticCurveTo(0, p.size * (1.3 + Math.sin(p.spin)), p.size * perspective, p.size * 0.3);
+          ctx.quadraticCurveTo(
+            0,
+            p.size * (1.3 + Math.sin(p.spin)),
+            p.size * perspective,
+            p.size * 0.3,
+          );
           ctx.stroke();
         } else {
-          ctx.fillRect(-p.size * perspective / 2, -p.size * 0.32 * perspective, Math.max(0.7, p.size * perspective * Math.abs(turn)), p.size * 0.62 * perspective);
+          ctx.fillRect(
+            (-p.size * perspective) / 2,
+            -p.size * 0.32 * perspective,
+            Math.max(0.7, p.size * perspective * Math.abs(turn)),
+            p.size * 0.62 * perspective,
+          );
         }
         ctx.restore();
       }
       if (particlesRef.current.length) frameRef.current = requestAnimationFrame(draw);
-      else { frameRef.current = 0; lastRef.current = 0; }
+      else {
+        frameRef.current = 0;
+        lastRef.current = 0;
+      }
     };
 
     const burst = (x: number, y: number, count: number, colors: string[], power: number) => {
@@ -109,10 +148,16 @@ export function RewardEffects() {
         const angle = -Math.PI / 2 + (Math.random() - 0.5) * 3.9;
         const speed = (3 + Math.random() * 9) * power;
         particlesRef.current.push({
-          x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-          z: (Math.random() - 0.5) * 140, vz: (Math.random() - 0.5) * 4,
-          spin: Math.random() * Math.PI * 2, spinSpeed: (Math.random() - 0.5) * 0.23,
-          tilt: Math.random() * Math.PI * 2, size: 3 + Math.random() * 7,
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          z: (Math.random() - 0.5) * 140,
+          vz: (Math.random() - 0.5) * 4,
+          spin: Math.random() * Math.PI * 2,
+          spinSpeed: (Math.random() - 0.5) * 0.23,
+          tilt: Math.random() * Math.PI * 2,
+          size: 3 + Math.random() * 7,
           color: colors[Math.floor(Math.random() * colors.length)],
           shape: i % 4 === 0 ? "coin" : i % 7 === 0 ? "ribbon" : i % 5 === 0 ? "spark" : "foil",
           life: 58 + Math.random() * 65,
@@ -122,16 +167,37 @@ export function RewardEffects() {
     };
 
     const onReward = (event: Event) => {
-      const { kind, x: requestedX, y: requestedY, amount, currency } = (event as CustomEvent<RewardDetail>).detail;
+      const {
+        kind,
+        x: requestedX,
+        y: requestedY,
+        amount,
+        currency,
+      } = (event as CustomEvent<RewardDetail>).detail;
       const ceremony = kind === "goal" || kind === "streak";
-      const x = ceremony ? window.innerWidth / 2 : requestedX ?? window.innerWidth / 2;
-      const y = ceremony ? window.innerHeight / 2 : requestedY ?? window.innerHeight * 0.38;
+      const x = ceremony ? window.innerWidth / 2 : (requestedX ?? window.innerWidth / 2);
+      const y = ceremony ? window.innerHeight / 2 : (requestedY ?? window.innerHeight * 0.38);
       if (flashTimer.current) clearTimeout(flashTimer.current);
       setFlash({ kind, x, y, amount, currency, id: Date.now() });
-      flashTimer.current = setTimeout(() => setFlash(null), ceremony ? 5200 : kind === "corrective" ? 3600 : 2600);
+      flashTimer.current = setTimeout(
+        () => setFlash(null),
+        ceremony ? 5200 : kind === "corrective" ? 3600 : 2600,
+      );
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const colors = palette();
-      burst(x, ceremony ? y - 45 : y, ceremony ? 135 : kind === "trip" || kind === "break-even" ? 64 : kind === "corrective" ? 18 : 42, colors, ceremony ? 1.3 : kind === "corrective" ? .55 : 1);
+      burst(
+        x,
+        ceremony ? y - 45 : y,
+        ceremony
+          ? 135
+          : kind === "trip" || kind === "break-even"
+            ? 64
+            : kind === "corrective"
+              ? 18
+              : 42,
+        colors,
+        ceremony ? 1.3 : kind === "corrective" ? 0.55 : 1,
+      );
       if (ceremony) {
         window.setTimeout(() => burst(x, y - 80, 90, colors, 1.1), 390);
       }
@@ -146,31 +212,114 @@ export function RewardEffects() {
   }, [mounted]);
 
   if (!mounted) return null;
-  return createPortal(<div className="reward-layer" aria-live="polite">
-    {flash && (flash.kind === "goal" || flash.kind === "streak") && <div key={flash.id} className="reward-ceremony" dir="rtl">
-      <div className="reward-ceremony-card" role="status" aria-label={flash.title ?? "הישג חדש"}>
-        <div className="reward-medal">
-          <span className="reward-medal-orbit" aria-hidden="true" />
-          <span className="reward-medal-core">{flash.kind === "streak" ? <Flame aria-hidden="true" /> : <Trophy aria-hidden="true" />}</span>
+  return createPortal(
+    <div className="reward-layer" aria-live="polite">
+      {flash && (flash.kind === "goal" || flash.kind === "streak") && (
+        <div key={flash.id} className="reward-ceremony" dir="rtl">
+          <div
+            className="reward-ceremony-card"
+            role="status"
+            aria-label={flash.title ?? "הישג חדש"}
+          >
+            <div className="reward-medal">
+              <span className="reward-medal-orbit" aria-hidden="true" />
+              <span className="reward-medal-core">
+                {flash.kind === "streak" ? (
+                  <Flame aria-hidden="true" />
+                ) : (
+                  <Trophy aria-hidden="true" />
+                )}
+              </span>
+            </div>
+            <h2>{flash.title ?? "כל הכבוד!"}</h2>
+            <p>{flash.message ?? "הגעת ליעד היומי שלך!"}</p>
+            {typeof flash.amount === "number" && flash.amount > 0 && (
+              <div className="reward-amount">
+                <span className="reward-amount-label">נשמרו עכשיו</span>
+                <strong dir="ltr">{fmt(flash.amount, flash.currency)}</strong>
+              </div>
+            )}
+            <div className="reward-progress">
+              <div>
+                <span>{flash.kind === "streak" ? "רצף עבודה" : "יעד יומי"}</span>
+                <span>{flash.kind === "streak" ? `${flash.streak ?? 0} ימים` : "100%"}</span>
+              </div>
+              <span className="reward-progress-track">
+                <span />
+              </span>
+            </div>
+            <Button className="reward-continue" onClick={() => setFlash(null)}>
+              המשך לעבודה
+            </Button>
+          </div>
         </div>
-        <h2>{flash.title ?? "כל הכבוד!"}</h2>
-        <p>{flash.message ?? "הגעת ליעד היומי שלך!"}</p>
-        {typeof flash.amount === "number" && flash.amount > 0 &&
-          <div className="reward-amount"><span className="reward-amount-label">נשמרו עכשיו</span><strong dir="ltr">{fmt(flash.amount, flash.currency)}</strong></div>}
-        <div className="reward-progress"><div><span>{flash.kind === "streak" ? "רצף עבודה" : "יעד יומי"}</span><span>{flash.kind === "streak" ? `${flash.streak ?? 0} ימים` : "100%"}</span></div><span className="reward-progress-track"><span /></span></div>
-        <Button className="reward-continue" onClick={() => setFlash(null)}>המשך לעבודה</Button>
-      </div>
-    </div>}
-    <canvas ref={canvasRef} aria-hidden="true" />
-    {flash && flash.kind !== "corrective" && <div key={`burst-${flash.id}`} className="comic-burst" style={{ left: flash.x, top: flash.y }} aria-hidden="true">
-      <svg viewBox="-100 -100 200 200"><path className="comic-burst-star" d="M0 -92 L18 -40 L70 -62 L40 -16 L94 6 L38 22 L60 74 L12 40 L-6 96 L-20 42 L-72 68 L-40 18 L-96 -6 L-42 -22 L-66 -70 L-16 -40 Z" /></svg>
-      <b>{flash.kind === "goal" ? "יֶעַד!" : flash.kind === "streak" ? "רֶצֶף!" : flash.kind === "trip" ? "וְרוּם!" : flash.kind === "break-even" ? "רֶוַח!" : "צ׳ינג!"}</b>
-    </div>}
-    {flash && flash.kind === "corrective" && <div key={`oof-${flash.id}`} className="comic-burst comic-burst-oof" style={{ left: flash.x, top: flash.y }} aria-hidden="true"><b>אוּף!</b></div>}
-    {flash && flash.kind !== "goal" && flash.kind !== "streak" && <div key={flash.id} className={`reward-flash reward-flash-${flash.kind}`} style={{ left: flash.x, top: flash.y }}>
-      <span className="reward-halo" aria-hidden="true" />
-      <span className="reward-ring" aria-hidden="true" />
-      <span className="reward-message">{flash.kind === "corrective" ? <Gauge aria-hidden="true" size={18} /> : <Check aria-hidden="true" size={18} />}<span><b>{flash.title ?? (flash.kind === "trip" ? "נסיעה הושלמה" : flash.kind === "break-even" ? "עברת לרווח" : "ההכנסה נשמרה")}</b>{flash.message && <small>{flash.message}</small>}</span></span>
-    </div>}
-  </div>, document.body);
+      )}
+      <canvas ref={canvasRef} aria-hidden="true" />
+      {flash && flash.kind !== "corrective" && (
+        <div
+          key={`burst-${flash.id}`}
+          className="comic-burst"
+          style={{ left: flash.x, top: flash.y }}
+          aria-hidden="true"
+        >
+          <svg viewBox="-100 -100 200 200">
+            <path
+              className="comic-burst-star"
+              d="M0 -92 L18 -40 L70 -62 L40 -16 L94 6 L38 22 L60 74 L12 40 L-6 96 L-20 42 L-72 68 L-40 18 L-96 -6 L-42 -22 L-66 -70 L-16 -40 Z"
+            />
+          </svg>
+          <b>
+            {flash.kind === "goal"
+              ? "יֶעַד!"
+              : flash.kind === "streak"
+                ? "רֶצֶף!"
+                : flash.kind === "trip"
+                  ? "וְרוּם!"
+                  : flash.kind === "break-even"
+                    ? "רֶוַח!"
+                    : "צ׳ינג!"}
+          </b>
+        </div>
+      )}
+      {flash && flash.kind === "corrective" && (
+        <div
+          key={`oof-${flash.id}`}
+          className="comic-burst comic-burst-oof"
+          style={{ left: flash.x, top: flash.y }}
+          aria-hidden="true"
+        >
+          <b>אוּף!</b>
+        </div>
+      )}
+      {flash && flash.kind !== "goal" && flash.kind !== "streak" && (
+        <div
+          key={flash.id}
+          className={`reward-flash reward-flash-${flash.kind}`}
+          style={{ left: flash.x, top: flash.y }}
+        >
+          <span className="reward-halo" aria-hidden="true" />
+          <span className="reward-ring" aria-hidden="true" />
+          <span className="reward-message">
+            {flash.kind === "corrective" ? (
+              <Gauge aria-hidden="true" size={18} />
+            ) : (
+              <Check aria-hidden="true" size={18} />
+            )}
+            <span>
+              <b>
+                {flash.title ??
+                  (flash.kind === "trip"
+                    ? "נסיעה הושלמה"
+                    : flash.kind === "break-even"
+                      ? "עברת לרווח"
+                      : "ההכנסה נשמרה")}
+              </b>
+              {flash.message && <small>{flash.message}</small>}
+            </span>
+          </span>
+        </div>
+      )}
+    </div>,
+    document.body,
+  );
 }
