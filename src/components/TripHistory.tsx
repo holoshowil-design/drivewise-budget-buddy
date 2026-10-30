@@ -13,6 +13,7 @@ import {
 } from "@/lib/store";
 import { dayLabel, groupByDay } from "@/lib/day-groups";
 import { isBetween } from "@/lib/between-trip";
+import { stopsText } from "@/lib/trip-stops";
 
 /** Trips shown before "show more"; the last day shown is always complete. */
 const PAGE_TRIPS = 12;
@@ -83,6 +84,8 @@ export const TripHistory = memo(function TripHistory({
                           {units.toFixed(1)} {unit})
                           {(t.waitSeconds ?? 0) > 0 &&
                             ` · המתנה ${Math.round((t.waitSeconds ?? 0) / 60)} ד׳`}
+                          {stopsText(t.stops) && ` · ${stopsText(t.stops)}`}
+                          {t.auto && " · זוהתה לבד"}
                         </div>
                       </button>
                       <Button

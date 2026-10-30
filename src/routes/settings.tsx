@@ -26,6 +26,7 @@ import { parseBackup, planRestore, applyRestore } from "@/lib/backup";
 import { NumberField } from "@/components/NumberField";
 import { parseNumber } from "@/lib/number";
 import { checkNumber } from "@/lib/validate";
+import { hasBackgroundTracking } from "@/lib/location";
 
 type NumText = {
   dailyGoal: string;
@@ -298,8 +299,10 @@ function SettingsPage() {
             <h3 className="font-semibold">זיהוי נסיעות אוטומטי</h3>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label htmlFor="auto-detect">שאל כשמזוהה נסיעה</Label>
-                <p className="text-xs text-muted-foreground">כשהאפליקציה פתוחה ומזוהה תנועה ברכב</p>
+                <Label htmlFor="auto-detect">התחל למדוד לבד כשמזוהה נסיעה</Label>
+                <p className="text-xs text-muted-foreground">
+                  אם שכחת ללחוץ, המדידה מתחילה מרגע שהרכב זז, ובסוף נשאל אם זו הייתה נסיעת עבודה
+                </p>
               </div>
               <Switch
                 id="auto-detect"
@@ -315,6 +318,21 @@ function SettingsPage() {
                 }}
               />
             </div>
+            {hasBackgroundTracking() && data.settings.autoDetectTrip === true && (
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <Label htmlFor="detect-background">זהה גם כשהאפליקציה סגורה</Label>
+                  <p className="text-xs text-muted-foreground">
+                    מציג התראה קבועה למעלה ומשתמש קצת יותר בסוללה
+                  </p>
+                </div>
+                <Switch
+                  id="detect-background"
+                  checked={data.settings.detectInBackground === true}
+                  onCheckedChange={(v) => updateSettings({ detectInBackground: v })}
+                />
+              </div>
+            )}
             <div className="flex items-center justify-between gap-3">
               <div>
                 <Label htmlFor="track-between">מדוד גם בין נסיעות</Label>

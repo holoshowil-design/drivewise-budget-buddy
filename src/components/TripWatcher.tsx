@@ -4,6 +4,7 @@ import { betweenIdleEnd, betweenToTrip } from "@/lib/between-trip";
 import { watchLocation } from "@/lib/location";
 import { useAppData } from "@/lib/store";
 import { applyFix, setGpsError } from "@/lib/trip-gps";
+import { resumeIfDriving } from "@/lib/trip-stops";
 
 type WakeLock = { release: () => Promise<void> };
 
@@ -85,8 +86,10 @@ export function TripWatcher() {
             setGpsError(null);
             const trip = readActive();
             if (!trip || trip.pausedAt) return;
-            const next = applyFix(trip, fix, Date.now());
-            if (next) writeActive(next);
+            const now = Date.now();
+            const next = applyFix(trip, fix, now);
+            // A stop (fuel, food...) ends by itself once the car drives on.
+            if (next) writeActive(resumeIfDriving(next, now));
           },
           (err) =>
             setGpsError(

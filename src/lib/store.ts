@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { normalizeMeta, stampChanges, type SyncMeta } from "./sync-meta";
+import type { StopSeconds } from "./trip-stops";
 
 export type EnergyType = "petrol95" | "petrol98" | "diesel" | "electric";
 export type VehicleType = "petrol" | "hybrid" | "electric";
@@ -64,7 +65,8 @@ export type Settings = {
   fuelPrice: number; // ₪ per liter (or per kWh for electric)
   fuelPriceUpdatedAt?: string; // ISO date of last online price sync
   fuelPriceHistory?: FuelPriceEntry[]; // historical price+consumption changes
-  autoDetectTrip?: boolean; // prompt automatically when driving is detected
+  autoDetectTrip?: boolean; // start measuring by itself when driving is detected, ask later
+  detectInBackground?: boolean; // installed app: watch for driving also when the app is closed
   askWaiting?: boolean; // ask after a few standing minutes whether it's a wait
   trackBetween?: boolean; // keep measuring km and time between work trips (default on)
 };
@@ -84,6 +86,10 @@ export type Trip = {
    */
   kind?: "work" | "between";
   incomeId?: string; // linked income record created from the end-of-trip form
+  /** Stops inside the trip by reason, seconds (fuel, food, prayer...); waiting is waitSeconds. */
+  stops?: StopSeconds;
+  /** Started by itself when driving was detected. */
+  auto?: boolean;
   note?: string;
   updatedAt?: string; // ISO — last local change, used by sync
 };

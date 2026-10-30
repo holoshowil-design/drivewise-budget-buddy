@@ -1,3 +1,5 @@
+import type { StopReason, StopSeconds } from "@/lib/trip-stops";
+
 /** Shared state for the currently running GPS trip (kept in localStorage). */
 export const ACTIVE_KEY = "driver-active-trip";
 export const ACTIVE_EVENT = "driver-active-trip-changed";
@@ -14,6 +16,15 @@ export type ActiveTrip = {
   pausedAt?: number; // epoch ms the end form opened; GPS is paused until it closes
   /** "between": measuring the drive between work trips; missing means a work trip. */
   kind?: "work" | "between";
+  /**
+   * Started by itself when driving was detected: true until the driver says it is a
+   * work trip, then false (still known as detected).
+   */
+  auto?: boolean;
+  /** The stop running now (km = the trip's km when it started). */
+  stop?: { reason: StopReason; at: number; km: number };
+  /** Finished stops, seconds per reason (waiting goes to waitSeconds). */
+  stops?: StopSeconds;
   last?: { lat: number; lon: number; t: number; acc?: number }; // acc = accuracy in meters
 };
 

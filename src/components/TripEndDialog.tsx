@@ -16,6 +16,7 @@ import { CommissionChips } from "@/components/CommissionChips";
 import { CommonAmounts } from "@/components/CommonAmounts";
 import { numberOr } from "@/lib/number";
 import { checkDate, checkNumber } from "@/lib/validate";
+import { stopsText, type StopSeconds } from "@/lib/trip-stops";
 
 export type TripFormValues = {
   date: string;
@@ -35,6 +36,8 @@ type Props = {
   onDiscard?: () => void;
   /** A drive between work trips: only km and time, no income. */
   betweenTrip?: boolean;
+  /** Stops inside the trip (shown, not edited here). */
+  stops?: StopSeconds;
   /** End mode: save, then start the next trip right away (back-to-back rides). */
   onSaveAndNext?: (
     trip: TripFormValues,
@@ -52,6 +55,7 @@ export function TripEndDialog({
   onDiscard,
   onSaveAndNext,
   betweenTrip = false,
+  stops,
 }: Props) {
   const { data, ready } = useAppData();
   const c = data.settings.currency;
@@ -271,6 +275,9 @@ export function TripEndDialog({
               </F>
             )}
           </div>
+        )}
+        {(showDetails || betweenTrip) && stopsText(stops) && (
+          <p className="num text-xs text-muted-foreground">עצירות: {stopsText(stops)}</p>
         )}
 
         <div className="grid gap-2">
