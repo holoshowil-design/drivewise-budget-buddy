@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AddRouteImport } from './routes/add'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as MapRouteImport } from './routes/map'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TripRouteImport } from './routes/trip'
@@ -37,6 +38,11 @@ const CalendarRoute = CalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/add': typeof AddRoute
   '/auth': typeof AuthRoute
   '/calendar': typeof CalendarRoute
+  '/map': typeof MapRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/trip': typeof TripRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/add': typeof AddRoute
   '/auth': typeof AuthRoute
   '/calendar': typeof CalendarRoute
+  '/map': typeof MapRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/trip': typeof TripRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/add': typeof AddRoute
   '/auth': typeof AuthRoute
   '/calendar': typeof CalendarRoute
+  '/map': typeof MapRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/trip': typeof TripRoute
@@ -84,15 +93,31 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/add' | '/auth' | '/calendar' | '/reports' | '/settings' | '/trip'
+    | '/'
+    | '/add'
+    | '/auth'
+    | '/calendar'
+    | '/map'
+    | '/reports'
+    | '/settings'
+    | '/trip'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/add' | '/auth' | '/calendar' | '/reports' | '/settings' | '/trip'
+  to:
+    | '/'
+    | '/add'
+    | '/auth'
+    | '/calendar'
+    | '/map'
+    | '/reports'
+    | '/settings'
+    | '/trip'
   id:
     | '__root__'
     | '/'
     | '/add'
     | '/auth'
     | '/calendar'
+    | '/map'
     | '/reports'
     | '/settings'
     | '/trip'
@@ -103,6 +128,7 @@ export interface RootRouteChildren {
   AddRoute: typeof AddRoute
   AuthRoute: typeof AuthRoute
   CalendarRoute: typeof CalendarRoute
+  MapRoute: typeof MapRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   TripRoute: typeof TripRoute
@@ -138,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reports': {
       id: '/reports'
       path: '/reports'
@@ -167,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   AddRoute: AddRoute,
   AuthRoute: AuthRoute,
   CalendarRoute: CalendarRoute,
+  MapRoute: MapRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   TripRoute: TripRoute,

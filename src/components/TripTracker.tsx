@@ -46,6 +46,7 @@ import { calculateWorkStreak, tripMotivation } from "@/lib/motivation";
 import { looksForgotten } from "@/lib/gps";
 import { hasBackgroundTracking } from "@/lib/location";
 import { GPS_ERROR_EVENT, readGpsError } from "@/lib/trip-gps";
+import { finishPath } from "@/lib/trip-path";
 import {
   betweenToTrip,
   isBetween,
@@ -314,7 +315,8 @@ export function TripTracker({
         ])
       : calculateWorkStreak(data.incomes);
     const trigger = document.activeElement;
-    saveTripWithIncome({ ...trip, endedAt: new Date().toISOString() }, income);
+    const path = activeRef.current ? finishPath(activeRef.current) : undefined;
+    saveTripWithIncome({ ...trip, endedAt: new Date().toISOString(), path }, income);
     const firstIncomeToday =
       Boolean(income) &&
       trip.date === todayISO() &&

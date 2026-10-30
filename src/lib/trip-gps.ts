@@ -1,6 +1,7 @@
 import { haversine, type ActiveTrip } from "@/lib/active-trip";
 import { classifyStep, MAX_ACCURACY_M } from "@/lib/gps";
 import type { Fix } from "@/lib/location";
+import { addPathPoint } from "@/lib/trip-path";
 
 /**
  * The active trip after one GPS fix, or null when the fix changes nothing.
@@ -15,14 +16,24 @@ export function applyFix(cur: ActiveTrip, fix: Fix, now: number): ActiveTrip | n
   if (cur.last) {
     const d = haversine(cur.last, point);
     const step = classifyStep(d, (point.t - cur.last.t) / 1000, cur.last.acc, acc, fix.speedKmh);
-    if (step === "move") return { ...cur, km: cur.km + d, last: point, lastMoveAt: now };
+    if (step === "move")
+      return {
+        ...cur,
+        km: cur.km + d,
+        last: point,
+        lastMoveAt: now,
+        path: addPathPoint(cur.path, point),
+      };
     if (step === "stay") {
       return acc < (cur.last.acc ?? Infinity)
         ? { ...cur, last: { ...point, lat: cur.last.lat, lon: cur.last.lon } }
         : null;
     }
   }
-  return { ...cur, last: point };
+  // The first fix starts the route; a jump only moves the anchor.
+  return cur.last
+    ? { ...cur, last: point }
+    : { ...cur, last: point, path: addPathPoint(cur.path, point) };
 }
 
 /** Latest GPS problem of the running trip, for the trip screen to show. */

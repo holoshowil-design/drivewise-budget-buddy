@@ -1007,3 +1007,16 @@ body {
 .art-taxi-honk img { animation: taxi-rev .9s ease-in-out infinite; }
 .art-taxi.taxi-driving img { animation: taxi-drive .3s ease-in-out infinite alternate; }
 @keyframes art-sway { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-2deg) translateY(2px); } }
+
+/* Trips map (routes/map.tsx): street tiles toned to the paper, inked route lines. */
+.trip-map-frame { position: relative; border-bottom: var(--line) solid var(--ink); }
+.trip-map { height: min(62vh, 460px); width: 100%; background: var(--paper); z-index: 0; }
+.trip-map .leaflet-tile-pane { filter: sepia(.45) saturate(.75) contrast(.95) brightness(1.02); }
+.trip-map .leaflet-control-zoom a { color: var(--ink); background: var(--paper); border-color: var(--ink); }
+.trip-map .leaflet-control-attribution { background: color-mix(in oklab, var(--paper) 85%, transparent); font-size: 10px; }
+.trip-map-empty { position: absolute; inset-inline: 1rem; bottom: 1rem; z-index: 500; padding: .6rem .9rem; border: var(--line) solid var(--ink); border-radius: var(--wobble-sm, 12px); background: var(--paper); box-shadow: var(--ink-shadow-sm); font-size: .85rem; font-weight: 600; text-align: center; }
+.map-place { width: auto !important; height: auto !important; background: none; border: 0; }
+.map-place span { display: inline-block; transform: translate(-50%, -150%); white-space: nowrap; padding: .1rem .45rem; border: var(--line) solid var(--ink); border-radius: 999px; background: var(--paper); box-shadow: var(--ink-shadow-sm); color: var(--ink); font: 700 12px/1.3 "Secular One", var(--font-display, sans-serif); }
+.map-place b { color: var(--primary); }
+.map-key { display: inline-block; width: 1.4rem; height: 0; border-top: 4px solid var(--primary); outline: 1.5px solid var(--ink); }
+.map-key-between { border-top: 2px dashed var(--ink); outline: 0; opacity: .7; }

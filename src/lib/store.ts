@@ -85,6 +85,8 @@ export type Trip = {
   kind?: "work" | "between";
   incomeId?: string; // linked income record created from the end-of-trip form
   note?: string;
+  /** The drawn route, [lat, lon] pairs (trip-path.ts). Trips from before the map have none. */
+  path?: [number, number][];
   updatedAt?: string; // ISO — last local change, used by sync
 };
 
