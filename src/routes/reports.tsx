@@ -11,14 +11,12 @@ import {
   type ExpenseCategory,
 } from "@/lib/store";
 import { perKm, sumDays, useDays } from "@/lib/calc";
-import { buildReportCsv } from "@/lib/csv";
-import { exportCsv } from "@/lib/export-file";
-import { toast } from "sonner";
+import { ReportExportMenu } from "@/components/ReportExportMenu";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Download, Map as MapIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, Map as MapIcon } from "lucide-react";
 import { RecordsList } from "@/components/RecordsList";
 import { BestHoursCard } from "@/components/BestHoursCard";
 
@@ -97,18 +95,16 @@ function Reports() {
     value: Math.round(v),
   }));
 
-  const exportCSV = async () => {
-    const csv = buildReportCsv(data, { incomes, expenses, trips });
-    const result = await exportCsv(`driver-report-${from}-to-${to}.csv`, csv);
-    if (result === "copied") toast("הדוח הועתק. אפשר להדביק אותו בגיליון, במייל או בוואטסאפ.");
-    else if (result === "failed") toast("לא הצלחנו לייצא את הדוח מכאן. נסה מהדפדפן.");
-  };
+  const period = range === "all" ? "כל הרשומות" : `${fmtDateShort(from)} – ${fmtDateShort(to)}`;
+  const reportDays = [...days.values()]
+    .filter((d) => d.date >= from && d.date <= to)
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   return (
     <div className="mx-auto max-w-xl">
       <PageHeader
         title="דוחות"
-        subtitle={range === "all" ? "כל הרשומות" : `${fmtDateShort(from)} – ${fmtDateShort(to)}`}
+        subtitle={period}
         action={
           <div className="flex gap-2">
             <Button asChild size="sm" variant="outline">
@@ -117,10 +113,12 @@ function Reports() {
                 מפה
               </Link>
             </Button>
-            <Button size="sm" variant="outline" onClick={exportCSV}>
-              <Download className="h-4 w-4 ml-1" />
-              ייצוא
-            </Button>
+            <ReportExportMenu
+              data={data}
+              from={from}
+              to={to}
+              report={{ period, totals, days: reportDays, incomes, expenses, trips }}
+            />
           </div>
         }
         scene={{ mood: "smirk", prop: "chart", line: "בוא נראה לאן הלך כל שקל 🧐" }}
