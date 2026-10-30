@@ -12,6 +12,8 @@ import {
 } from "@/lib/store";
 import { perKm, sumDays, useDays } from "@/lib/calc";
 import { buildReportCsv } from "@/lib/csv";
+import { exportCsv } from "@/lib/export-file";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -95,15 +97,11 @@ function Reports() {
     value: Math.round(v),
   }));
 
-  const exportCSV = () => {
+  const exportCSV = async () => {
     const csv = buildReportCsv(data, { incomes, expenses, trips });
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `driver-report-${from}-to-${to}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const result = await exportCsv(`driver-report-${from}-to-${to}.csv`, csv);
+    if (result === "copied") toast("הדוח הועתק. אפשר להדביק אותו בגיליון, במייל או בוואטסאפ.");
+    else if (result === "failed") toast("לא הצלחנו לייצא את הדוח מכאן. נסה מהדפדפן.");
   };
 
   return (
