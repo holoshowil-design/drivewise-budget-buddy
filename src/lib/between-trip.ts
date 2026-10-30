@@ -1,5 +1,6 @@
 import type { ActiveTrip } from "@/lib/active-trip";
 import type { Settings, Trip } from "@/lib/store";
+import { finishPath } from "@/lib/trip-path";
 
 /**
  * The time between work trips (after dropping a customer, until the next one or until the
@@ -51,6 +52,7 @@ export function betweenToTrip(
     seconds,
     waitSeconds: Math.min(seconds, Math.round(cur.waitSeconds ?? 0)),
     endedAt: new Date(until).toISOString(),
+    path: finishPath(cur),
   };
 }
 
