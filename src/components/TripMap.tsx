@@ -2,8 +2,9 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { PathPoint } from "@/lib/trip-path";
+import type { Trip } from "@/lib/store";
 
-export type MapTrip = { id: string; kind?: "work" | "between"; path: PathPoint[] };
+export type MapTrip = { id: string; kind?: Trip["kind"]; path: PathPoint[] };
 export type MapPlace = { name: string; lat: number; lon: number; count: number };
 
 /** Israel, for when there is nothing to draw yet. */

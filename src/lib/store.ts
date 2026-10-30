@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { normalizeMeta, stampChanges, type SyncMeta } from "./sync-meta";
+import type { StopSeconds } from "./trip-stops";
 
 export type EnergyType = "petrol95" | "petrol98" | "diesel" | "electric";
 export type VehicleType = "petrol" | "hybrid" | "electric";
@@ -64,9 +65,12 @@ export type Settings = {
   fuelPrice: number; // ₪ per liter (or per kWh for electric)
   fuelPriceUpdatedAt?: string; // ISO date of last online price sync
   fuelPriceHistory?: FuelPriceEntry[]; // historical price+consumption changes
-  autoDetectTrip?: boolean; // prompt automatically when driving is detected
+  autoDetectTrip?: boolean; // start measuring by itself when driving is detected, ask later
+  detectInBackground?: boolean; // installed app: watch for driving also when the app is closed
   askWaiting?: boolean; // ask after a few standing minutes whether it's a wait
   trackBetween?: boolean; // keep measuring km and time between work trips (default on)
+  engineByCharger?: boolean; // the car charger works only with the engine on: charging = engine on
+  idlePerHour?: number; // liters (kWh for electric) per hour standing with the engine on
 };
 
 /** A tracked work trip recorded by the live GPS tracker. */
@@ -80,10 +84,18 @@ export type Trip = {
   waitSeconds?: number; // standing/waiting time inside the trip
   /**
    * "between": driving between work trips (after dropping a customer, on the way to the
-   * next one). It counts for km and fuel, not as a work trip. Missing means "work".
+   * next one). It counts for km and fuel, not as a work trip. "private": a drive of the
+   * driver's own, kept for its km and fuel but left out of every work number. Missing
+   * means "work".
    */
-  kind?: "work" | "between";
+  kind?: "work" | "between" | "private";
+  /** Seconds the car stood with the engine running (idle fuel). */
+  idleSeconds?: number;
   incomeId?: string; // linked income record created from the end-of-trip form
+  /** Stops inside the trip by reason, seconds (fuel, food, prayer...); waiting is waitSeconds. */
+  stops?: StopSeconds;
+  /** Started by itself when driving was detected. */
+  auto?: boolean;
   note?: string;
   /** The drawn route, [lat, lon] pairs (trip-path.ts). Trips from before the map have none. */
   path?: [number, number][];
@@ -616,14 +628,31 @@ export function estimateEnergyCostByDate(incomes: Income[], vehicle: Vehicle, se
   return { units: totalUnits, cost: totalCost, costPerKm, km: totalKm };
 }
 
-/** Total km recorded by the GPS trip tracker. */
+/** Private drives are kept for the driver's own record, never in the work numbers. */
+export const isPrivateTrip = (t: { kind?: string }) => t.kind === "private";
+
+/** Total km recorded by the GPS trip tracker (work and between trips). */
 export function sumTripKm(trips: Trip[]) {
-  return trips.reduce((s, t) => s + (t.km || 0), 0);
+  return trips.reduce((s, t) => s + (isPrivateTrip(t) ? 0 : t.km || 0), 0);
 }
 
-/** Total tracked driving seconds. */
+/** Total tracked driving seconds (work and between trips). */
 export function sumTripSeconds(trips: Trip[]) {
-  return trips.reduce((s, t) => s + (t.seconds || 0), 0);
+  return trips.reduce((s, t) => s + (isPrivateTrip(t) ? 0 : t.seconds || 0), 0);
+}
+
+/** Default use standing with the engine on, per hour (liters, or kWh for electric). */
+export function idlePerHour(vehicle: Vehicle, settings: Settings) {
+  if (settings.idlePerHour != null && settings.idlePerHour >= 0) return settings.idlePerHour;
+  return vehicle.type === "electric" ? 1 : vehicle.type === "hybrid" ? 0.3 : 0.8;
+}
+
+/** Energy of one trip: its km, plus standing with the engine on. */
+export function tripEnergy(t: Trip, vehicle: Vehicle, settings: Settings) {
+  const p = effectiveFuelParams(t.date, vehicle, settings, t.time);
+  const cons = p.consumption > 0 ? p.consumption : 1;
+  const units = (t.km || 0) / cons + ((t.idleSeconds || 0) / 3600) * idlePerHour(vehicle, settings);
+  return { units, cost: units * p.price };
 }
 
 /**
@@ -635,14 +664,11 @@ export function estimateTripEnergyCost(trips: Trip[], vehicle: Vehicle, settings
   let units = 0;
   let km = 0;
   for (const t of trips) {
-    const d = t.km || 0;
-    if (d <= 0) continue;
-    const p = effectiveFuelParams(t.date, vehicle, settings, t.time);
-    const cons = p.consumption > 0 ? p.consumption : 1;
-    const u = d / cons;
-    km += d;
-    units += u;
-    cost += u * p.price;
+    if (isPrivateTrip(t)) continue;
+    const e = tripEnergy(t, vehicle, settings);
+    km += t.km || 0;
+    units += e.units;
+    cost += e.cost;
   }
   return { cost, units, km };
 }

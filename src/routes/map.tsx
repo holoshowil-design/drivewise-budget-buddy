@@ -1,7 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useAppData, filterByRange, fmtDateShort, fmtDuration, monthRange } from "@/lib/store";
+import {
+  useAppData,
+  filterByRange,
+  fmtDateShort,
+  fmtDuration,
+  isPrivateTrip,
+  monthRange,
+} from "@/lib/store";
 import { placeCounts, routedTrips, routeStops } from "@/lib/trip-path";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,7 +61,11 @@ function TripsMapPage() {
     return monthRange(now.getFullYear(), now.getMonth() - back);
   }, [range, back]);
 
-  const inRange = useMemo(() => filterByRange(data.trips ?? [], from, to), [data.trips, from, to]);
+  // Private drives stay off the work map.
+  const inRange = useMemo(
+    () => filterByRange(data.trips ?? [], from, to).filter((t) => !isPrivateTrip(t)),
+    [data.trips, from, to],
+  );
   const drawn = useMemo(() => routedTrips(inRange), [inRange]);
   const work = useMemo(() => drawn.filter((t) => t.kind !== "between"), [drawn]);
   const stops = useMemo(() => routeStops(work), [work]);

@@ -16,6 +16,7 @@ import { CommissionChips } from "@/components/CommissionChips";
 import { CommonAmounts } from "@/components/CommonAmounts";
 import { numberOr } from "@/lib/number";
 import { checkDate, checkNumber } from "@/lib/validate";
+import { stopsText, type StopSeconds } from "@/lib/trip-stops";
 
 export type TripFormValues = {
   date: string;
@@ -35,6 +36,10 @@ type Props = {
   onDiscard?: () => void;
   /** A drive between work trips: only km and time, no income. */
   betweenTrip?: boolean;
+  /** Stops inside the trip (shown, not edited here). */
+  stops?: StopSeconds;
+  /** A private drive: km and fuel only, outside the work numbers. */
+  privateTrip?: boolean;
   /** End mode: save, then start the next trip right away (back-to-back rides). */
   onSaveAndNext?: (
     trip: TripFormValues,
@@ -52,6 +57,8 @@ export function TripEndDialog({
   onDiscard,
   onSaveAndNext,
   betweenTrip = false,
+  stops,
+  privateTrip = false,
 }: Props) {
   const { data, ready } = useAppData();
   const c = data.settings.currency;
@@ -149,14 +156,22 @@ export function TripEndDialog({
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-md" dir="rtl">
         <DialogHeader className="text-right">
           <DialogTitle className="text-xl font-extrabold">
-            {betweenTrip ? "נסיעה בין נסיעות" : mode === "end" ? "הנסיעה הסתיימה" : "עריכת נסיעה"}
+            {privateTrip
+              ? "נסיעה פרטית"
+              : betweenTrip
+                ? "נסיעה בין נסיעות"
+                : mode === "end"
+                  ? "הנסיעה הסתיימה"
+                  : "עריכת נסיעה"}
           </DialogTitle>
           <DialogDescription>
-            {betweenTrip
-              ? "נשמר לחישוב הדלק, לא כנסיעת עבודה. אפשר לתקן ק״מ וזמן."
-              : mode === "end"
-                ? "הק״מ והזמן נמדדו. נשאר רק להוסיף סכום."
-                : "אפשר לתקן כל פרט."}
+            {privateTrip
+              ? "נשמרת לק״מ ולדלק שלך, ולא נכנסת לחישובי העבודה."
+              : betweenTrip
+                ? "נשמר לחישוב הדלק, לא כנסיעת עבודה. אפשר לתקן ק״מ וזמן."
+                : mode === "end"
+                  ? "הק״מ והזמן נמדדו. נשאר רק להוסיף סכום."
+                  : "אפשר לתקן כל פרט."}
           </DialogDescription>
         </DialogHeader>
 
@@ -271,6 +286,9 @@ export function TripEndDialog({
               </F>
             )}
           </div>
+        )}
+        {(showDetails || betweenTrip) && stopsText(stops) && (
+          <p className="num text-xs text-muted-foreground">עצירות: {stopsText(stops)}</p>
         )}
 
         <div className="grid gap-2">

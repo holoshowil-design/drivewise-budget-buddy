@@ -25,7 +25,9 @@ export function InsightsCard({ data }: { data: AppData }) {
             const { cls, Icon } = toneStyles[i.tone];
             return (
               <div key={i.id} className="flex items-start gap-2.5">
-                <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${cls}`}>
+                <span
+                  className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${cls}`}
+                >
                   <Icon className="h-3.5 w-3.5" />
                 </span>
                 <div className="min-w-0">

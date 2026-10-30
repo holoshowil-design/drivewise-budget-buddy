@@ -1,3 +1,5 @@
+import type { StopReason, StopSeconds } from "@/lib/trip-stops";
+
 /** Shared state for the currently running GPS trip (kept in localStorage). */
 export const ACTIVE_KEY = "driver-active-trip";
 export const ACTIVE_EVENT = "driver-active-trip-changed";
@@ -12,8 +14,25 @@ export type ActiveTrip = {
   waitSnoozeUntil?: number; // don't ask about waiting before this time
   forgotSnoozeUntil?: number; // don't ask "forgot to end?" before this time
   pausedAt?: number; // epoch ms the end form opened; GPS is paused until it closes
-  /** "between": measuring the drive between work trips; missing means a work trip. */
-  kind?: "work" | "between";
+  /**
+   * "between": measuring the drive between work trips; "private": the driver's own
+   * drive (km and fuel only); missing means a work trip.
+   */
+  kind?: "work" | "between" | "private";
+  /** Seconds stood with the engine on, and when standing time was last counted. */
+  idleSeconds?: number;
+  standCountedAt?: number;
+  /** The driver said the engine is on or off (at = when); moving again clears it. */
+  engine?: { on: boolean; at: number };
+  /**
+   * Started by itself when driving was detected: true until the driver says it is a
+   * work trip, then false (still known as detected).
+   */
+  auto?: boolean;
+  /** The stop running now (km = the trip's km when it started). */
+  stop?: { reason: StopReason; at: number; km: number };
+  /** Finished stops, seconds per reason (waiting goes to waitSeconds). */
+  stops?: StopSeconds;
   last?: { lat: number; lon: number; t: number; acc?: number }; // acc = accuracy in meters
   /** The route so far, for the trips map (see trip-path.ts). */
   path?: [number, number][];
@@ -43,7 +62,7 @@ export function writeActive(t: ActiveTrip | null) {
  */
 export function isDrivingNow(trip: ActiveTrip | null, now = Date.now()) {
   if (!trip) return false;
-  if (trip.kind !== "between") return true;
+  if (trip.kind !== "between" && trip.kind !== "private") return true;
   return now - (trip.lastMoveAt ?? trip.startedAt) < 60_000;
 }
 

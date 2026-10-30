@@ -19,7 +19,7 @@ import { AccountBadge } from "@/components/AccountBadge";
 import { WorkStatus } from "@/components/WorkStatus";
 import { useEffect, useState } from "react";
 import { ACTIVE_EVENT, readActive } from "@/lib/active-trip";
-import { isBetween } from "@/lib/between-trip";
+import { isSideDrive } from "@/lib/between-trip";
 
 // recharts is heavy: load the chart cards only when the dashboard renders them.
 const charts = () => import("@/components/DashboardCharts");
@@ -60,7 +60,7 @@ function Dashboard() {
   const [tripActive, setTripActive] = useState(false);
   useEffect(() => {
     // Only a work trip counts: a between-trips measurement still lets the button start one.
-    const check = () => setTripActive(Boolean(readActive() && !isBetween(readActive())));
+    const check = () => setTripActive(Boolean(readActive() && !isSideDrive(readActive())));
     check();
     window.addEventListener("storage", check);
     window.addEventListener(ACTIVE_EVENT, check);
