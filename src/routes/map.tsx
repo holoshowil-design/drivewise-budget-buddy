@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   useAppData,
   filterByRange,
@@ -53,6 +53,12 @@ function TripsMapPage() {
   const [range, setRange] = useState<Range>("week");
   const [back, setBack] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+  // Back to where the map was opened from; a direct link falls back to the reports page.
+  const goBack = () => {
+    if (window.history.length > 1) router.history.back();
+    else void router.navigate({ to: "/reports" });
+  };
   useEffect(() => setMounted(true), []);
 
   const { from, to } = useMemo(() => {
@@ -84,7 +90,16 @@ function TripsMapPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <PageHeader title="מפת הנסיעות" subtitle="לאן נסעת, מצויר על המפה" />
+      <PageHeader
+        title="מפת הנסיעות"
+        subtitle="לאן נסעת, מצויר על המפה"
+        action={
+          <Button size="sm" variant="outline" onClick={goBack}>
+            <ArrowRight className="ml-1 h-4 w-4" />
+            חזרה
+          </Button>
+        }
+      />
 
       <div className="space-y-4 px-4">
         <Tabs
