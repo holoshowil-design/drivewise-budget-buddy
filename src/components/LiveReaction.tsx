@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { MascotMood, MascotProp } from "@/components/DriverMascot";
 import { CaptainArt } from "@/components/CharacterArt";
+import { REWARD_FILMS } from "@/lib/anim/reward-films";
 import { ComicBubble } from "@/components/InkWorld";
 import { playSound } from "@/lib/sound";
 import { MOOD_MUMBLE } from "@/lib/sound/cues";
@@ -87,7 +88,12 @@ export function LiveReaction({ kind, amount }: { kind: Kind; amount: number }) {
       className={`live-reaction stage-bg stage-${BACKDROP[kind]} live-reaction-${state.tone}`}
       aria-hidden="true"
     >
-      <CaptainArt mood={state.mood} prop={state.prop} className="live-reaction-mascot" />
+      <CaptainArt
+        mood={state.mood}
+        prop={state.prop}
+        films={REWARD_FILMS[kind]}
+        className="live-reaction-mascot"
+      />
       <ComicBubble key={pop} side="start" tone={state.tone} className="live-reaction-bubble">
         {state.line}
       </ComicBubble>

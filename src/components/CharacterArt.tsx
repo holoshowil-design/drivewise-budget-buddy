@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import type { MascotMood, MascotProp } from "@/components/DriverMascot";
 import type { TaxiMood } from "@/components/CaricatureTaxi";
 import { FrameStrip } from "@/components/anim/FrameStrip";
-import { HEIST, PARADE, SPLASH, clipMs, clipReady, type Clip } from "@/lib/anim/clips";
+import { clipMs, clipReady, type Clip } from "@/lib/anim/clips";
 import { motionAllowed } from "@/lib/anim/motion";
+import { filmsToWarm, type RewardFilms } from "@/lib/anim/reward-films";
 import { warmClips } from "@/lib/anim/warm";
-import type { RewardDetail, RewardKind } from "@/lib/rewards";
+import type { RewardDetail } from "@/lib/rewards";
 
 /** Higgsfield-painted poses, one image per mood. Same props as the SVG characters so callers swap freely. */
 const CAPTAIN: Record<MascotMood, string> = {
@@ -29,16 +30,6 @@ const TAXI: Record<TaxiMood, string> = {
 
 const src = (name: string) => `/characters/${name}.webp`;
 
-/** The drawn film the add form's Captain plays for each reward, once it has loaded. */
-const REWARD_FILM: Partial<Record<RewardKind, Clip>> = {
-  income: HEIST,
-  trip: HEIST,
-  "break-even": HEIST,
-  goal: PARADE,
-  streak: PARADE,
-  corrective: SPLASH,
-};
-
 // Warm the cache so pose swaps inside a scene never flash empty, once the first screen is
 // up (when the phone is idle), so the poses don't compete with the app's own loading.
 if (typeof window !== "undefined") {
@@ -54,11 +45,14 @@ export function CaptainArt({
   mood,
   className = "",
   reactive = true,
+  films = {},
 }: {
   mood: MascotMood;
   prop?: MascotProp;
   className?: string;
   reactive?: boolean;
+  /** The drawn film each reward plays, once it has loaded (none by default), see reward-films.ts. */
+  films?: RewardFilms;
 }) {
   const [pose, setPose] = useState<MascotMood>(mood);
   const [beat, setBeat] = useState(0);
@@ -87,21 +81,22 @@ export function CaptainArt({
     let timer: number | undefined;
     const onReward = (e: Event) => {
       const kind = (e as CustomEvent<RewardDetail>).detail?.kind;
-      const clip = kind && REWARD_FILM[kind];
+      const clip = kind && films[kind];
       if (!clip || !clipReady(clip) || !motionAllowed()) return;
       setFilm(clip);
       window.clearTimeout(timer);
       timer = window.setTimeout(() => setFilm(null), clipMs(clip) + (clip.jig ? 2200 : 300));
     };
     window.addEventListener("driver-reward", onReward);
-    // one after another, the likeliest first: the form opens on income
-    const warm = window.setTimeout(() => void warmClips([HEIST, SPLASH, PARADE]), 1500);
+    // one after another, the likeliest first, and only the films this form can play
+    const strips = filmsToWarm(films);
+    const warm = strips.length ? window.setTimeout(() => void warmClips(strips), 1500) : undefined;
     return () => {
       window.removeEventListener("driver-reward", onReward);
       window.clearTimeout(timer);
       window.clearTimeout(warm);
     };
-  }, [reactive]);
+  }, [reactive, films]);
 
   return (
     <span

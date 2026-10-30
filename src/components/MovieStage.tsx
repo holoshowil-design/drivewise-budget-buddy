@@ -7,6 +7,7 @@ import { clipReady } from "@/lib/anim/clips";
 import { FILMS, clipsOf, type Beat, type Film, type SceneName } from "@/lib/anim/films";
 import { idleDelay, shuffledRound } from "@/lib/anim/idle";
 import { filmsWanted, motionAllowed } from "@/lib/anim/motion";
+import { idlePool } from "@/lib/anim/stage-pool";
 import { warmClips } from "@/lib/anim/warm";
 import { claimAmbient, playCues, playSound, type CueHandle } from "@/lib/sound";
 import { MOOD_MUMBLE, TAXI_VOICE, sceneCues } from "@/lib/sound/cues";
@@ -110,9 +111,6 @@ const SCENES: Record<SceneName, { length: number; beats: Beat[] }> = {
     ],
   },
 };
-const IDLE: SceneName[] = ["wipe", "count", "phone", "snooze", "drive", "brake"];
-/** Turbo's own scenes, only on stages he stands on. */
-const TAXI_ONLY: SceneName[] = ["drive", "brake"];
 
 /** Reward films are fetched once the page settles, on stages where rewards fire; an idle film once its scene is among the next two. */
 const REWARDS: SceneName[] = ["heist", "parade"];
@@ -164,7 +162,7 @@ export function MovieStage({
     };
     const scheduleIdle = (first = false) => {
       window.clearTimeout(idleTimer);
-      const pool = taxiStage ? IDLE : IDLE.filter((n) => !TAXI_ONLY.includes(n));
+      const pool = idlePool(taxiStage);
       if (upcoming.length < 2)
         upcoming.push(...shuffledRound(pool, upcoming[upcoming.length - 1] ?? last));
       warmNext();
