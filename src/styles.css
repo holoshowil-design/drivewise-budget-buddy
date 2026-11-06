@@ -3616,6 +3616,11 @@ body {
   border-top: 4px solid var(--primary);
   outline: 1.5px solid var(--ink);
 }
+.map-key-gap {
+  border-top: 2px dotted var(--ink);
+  outline: 0;
+  opacity: 0.55;
+}
 .map-key-between {
   border-top: 2px dashed var(--ink);
   outline: 0;

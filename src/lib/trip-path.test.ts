@@ -8,6 +8,7 @@ import {
   MAX_PATH_POINTS,
   placeCounts,
   routeStops,
+  splitGaps,
   type PathPoint,
 } from "@/lib/trip-path";
 
@@ -89,5 +90,30 @@ describe("places", () => {
     ];
     expect(routeStops(trips)).toEqual(["ירושלים", "בני ברק", "אשדוד"]);
     expect(placeCounts(trips)[0]).toMatchObject({ name: "בני ברק", count: 2 });
+  });
+});
+
+describe("splitGaps", () => {
+  it("marks a stretch without GPS as a gap", () => {
+    const path: PathPoint[] = [
+      [31.77, 35.21],
+      [31.772, 35.212],
+      [31.85, 35.0], // ~22 km later: no GPS in between
+      [31.852, 34.998],
+    ];
+    expect(splitGaps(path)).toEqual([
+      { line: [path[0], path[1]], gap: false },
+      { line: [path[1], path[2]], gap: true },
+      { line: [path[2], path[3]], gap: false },
+    ]);
+  });
+
+  it("keeps a steady route in one piece", () => {
+    const path: PathPoint[] = [
+      [31.77, 35.21],
+      [31.772, 35.212],
+      [31.774, 35.214],
+    ];
+    expect(splitGaps(path)).toEqual([{ line: path, gap: false }]);
   });
 });
