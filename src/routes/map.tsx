@@ -9,7 +9,7 @@ import {
   isPrivateTrip,
   monthRange,
 } from "@/lib/store";
-import { placeCounts, routedTrips, routeStops } from "@/lib/trip-path";
+import { placeCounts, routedTrips, routeStops, splitGaps } from "@/lib/trip-path";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -74,6 +74,11 @@ function TripsMapPage() {
   );
   const drawn = useMemo(() => routedTrips(inRange), [inRange]);
   const work = useMemo(() => drawn.filter((t) => t.kind !== "between"), [drawn]);
+  // Work trips with a stretch where the phone sent no location.
+  const gapped = useMemo(
+    () => work.filter((t) => splitGaps(t.path).some((p) => p.gap)).length,
+    [work],
+  );
   const stops = useMemo(() => routeStops(work), [work]);
   const places = useMemo(() => placeCounts(work), [work]);
   const missing = inRange.filter((t) => !t.path || t.path.length < 2).length;
@@ -183,7 +188,19 @@ function TripsMapPage() {
               <span className="inline-flex items-center gap-1.5">
                 <i className="map-key map-key-between" /> בין נסיעות
               </span>
+              {gapped > 0 && (
+                <span className="inline-flex items-center gap-1.5">
+                  <i className="map-key map-key-gap" /> קטע בלי GPS
+                </span>
+              )}
             </div>
+            {gapped > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {gapped === 1 ? "בנסיעה אחת" : `ב-${gapped} נסיעות`} הטלפון לא שלח מיקום בחלק מהדרך,
+                ולכן הקטע הזה מצויר בקו ישר מנוקד. זה קורה כשהמסך כבוי והטלפון עוצר את האפליקציה:
+                כדאי לאשר לה מיקום &quot;כל הזמן&quot; ולבטל לה את חיסכון הסוללה.
+              </p>
+            )}
             {missing > 0 && (
               <p className="text-xs text-muted-foreground">
                 {missing === 1 ? "נסיעה אחת" : `${missing} נסיעות`} בתקופה בלי מסלול (מלפני שהמפה

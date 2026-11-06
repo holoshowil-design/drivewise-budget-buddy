@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { PathPoint } from "@/lib/trip-path";
+import { splitGaps, type PathPoint } from "@/lib/trip-path";
 import type { Trip } from "@/lib/store";
 
 export type MapTrip = { id: string; kind?: Trip["kind"]; path: PathPoint[] };
@@ -77,20 +77,34 @@ export default function TripMap({ trips, places }: { trips: MapTrip[]; places: M
         }).addTo(g);
         continue;
       }
-      L.polyline(line, {
-        color: ink,
-        weight: 7,
-        opacity: 0.9,
-        lineCap: "round",
-        lineJoin: "round",
-      }).addTo(g);
-      L.polyline(line, {
-        color: primary,
-        weight: 4,
-        opacity: 1,
-        lineCap: "round",
-        lineJoin: "round",
-      }).addTo(g);
+      for (const part of splitGaps(t.path)) {
+        const seg = part.line as L.LatLngTuple[];
+        if (part.gap) {
+          // No GPS here: a thin dotted guess, so it is not read as the road taken.
+          L.polyline(seg, {
+            color: ink,
+            weight: 2,
+            opacity: 0.55,
+            dashArray: "2 6",
+            lineCap: "round",
+          }).addTo(g);
+          continue;
+        }
+        L.polyline(seg, {
+          color: ink,
+          weight: 7,
+          opacity: 0.9,
+          lineCap: "round",
+          lineJoin: "round",
+        }).addTo(g);
+        L.polyline(seg, {
+          color: primary,
+          weight: 4,
+          opacity: 1,
+          lineCap: "round",
+          lineJoin: "round",
+        }).addTo(g);
+      }
       L.circleMarker(line[0], {
         radius: 4,
         color: ink,

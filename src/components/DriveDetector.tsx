@@ -14,6 +14,7 @@ import {
 } from "@/lib/active-trip";
 import { hasBackgroundTracking, watchLocation } from "@/lib/location";
 import { trackBetweenOn } from "@/lib/between-trip";
+import { addPathPoint } from "@/lib/trip-path";
 import { autoToSide, confirmAuto, isUnconfirmedAuto } from "@/lib/auto-trip";
 
 const MIN_SPEED_KMH = 15;
@@ -46,8 +47,10 @@ export function DriveDetector() {
   const [active, setActive] = useState<ActiveTrip | null>(null);
   const [synced, setSynced] = useState(false);
   const lastRef = useRef<{ lat: number; lon: number; t: number } | null>(null);
-  // The drive so far while it is not yet sustained: when it started and how far it went.
-  const runRef = useRef<{ since: number; km: number } | null>(null);
+  // The drive so far while it is not yet sustained: when and where it started, how far it went.
+  const runRef = useRef<{ since: number; km: number; from: { lat: number; lon: number } } | null>(
+    null,
+  );
 
   // Never ask for location on first load: run only after the user turned the
   // feature on, or (setting never touched) when location was already granted.
@@ -105,7 +108,7 @@ export function DriveDetector() {
           runRef.current = null;
           return;
         }
-        const run = runRef.current ?? { since: prev?.t ?? point.t, km: 0 };
+        const run = runRef.current ?? { since: prev?.t ?? point.t, km: 0, from: prev ?? point };
         run.km += step;
         runRef.current = run;
         if (point.t - run.since < SUSTAIN_MS) return;
@@ -119,6 +122,8 @@ export function DriveDetector() {
           km: run.km,
           lastMoveAt: now,
           last: { lat: fix.lat, lon: fix.lon, t: fix.time, acc: fix.accuracy },
+          // The route starts where the car started moving, not where the drive was noticed.
+          path: addPathPoint(addPathPoint(undefined, run.from), point, true),
         });
         requestNotifyPermission();
         notifyIfHidden("התחלתי למדוד נסיעה", "זוהתה נסיעה. בסוף אשאל אם זו הייתה נסיעת עבודה.");

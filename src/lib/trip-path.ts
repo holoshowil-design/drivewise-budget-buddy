@@ -50,6 +50,27 @@ export function finishPath(cur: {
   return path.length >= 2 ? path : undefined;
 }
 
+/**
+ * Two points further apart than this cannot come from steady GPS (a point is
+ * kept every PATH_STEP_KM), so the phone sent no location in between: the app
+ * was stopped or the location was off. That stretch is a straight guess.
+ */
+export const GAP_KM = 1.5;
+
+/** The route split into stretches that GPS followed and straight gaps where it did not. */
+export function splitGaps(path: PathPoint[]): { line: PathPoint[]; gap: boolean }[] {
+  const parts: { line: PathPoint[]; gap: boolean }[] = [];
+  for (let i = 1; i < path.length; i++) {
+    const a = path[i - 1];
+    const b = path[i];
+    const gap = haversine({ lat: a[0], lon: a[1] }, { lat: b[0], lon: b[1] }) > GAP_KM;
+    const cur = parts[parts.length - 1];
+    if (cur && cur.gap === gap) cur.line.push(b);
+    else parts.push({ line: [a, b], gap });
+  }
+  return parts;
+}
+
 type DrawnTrip = { date: string; time?: string; path?: PathPoint[] };
 
 /** The trips that have a route, oldest first. */
