@@ -1,1 +1,0 @@
-function u(a){const t=Math.max(0,Math.round(a));if(t<60)return`${t} שנ׳`;const o=Math.round(t/60),r=Math.floor(o/60),n=o%60;return r===0?`${n} דק׳`:n===0?`${r} ש׳`:`${r} ש׳ ${String(n).padStart(2,"0")} דק׳`}export{u as f};

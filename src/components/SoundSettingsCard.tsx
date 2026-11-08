@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Volume2 as Volume2Icon } from "lucide-react";
-import { SectionTitle } from "@/components/SectionTitle";
+import { FoldCard } from "@/components/FoldCard";
 import { Volume2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -37,63 +36,64 @@ export function SoundSettingsCard() {
   }, []);
 
   return (
-    <Card>
-      <CardContent className="p-4 space-y-4">
-        <SectionTitle icon={Volume2Icon}>צלילים</SectionTitle>
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <Label htmlFor="sound-on">הקפטן וטורבו משמיעים קולות</Label>
-            <p className="text-xs text-muted-foreground">
-              מלמולים, נעימות, מנוע, בלימה וצופר. במצב נהיגה תמיד שקט.
-            </p>
-          </div>
-          <Switch
-            id="sound-on"
-            checked={on}
-            onCheckedChange={(v) => {
-              setOn(v);
-              setSoundEnabled(v);
-              if (v) playSound("beep");
-            }}
-          />
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <Label htmlFor="haptics-on">רטט קל במגע</Label>
-            <p className="text-xs text-muted-foreground">
-              בהחלקה, בהתחלה ובסיום נסיעה ובמעבר בין מסכים.
-            </p>
-          </div>
-          <Switch
-            id="haptics-on"
-            checked={buzz}
-            onCheckedChange={(v) => {
-              setBuzz(v);
-              setHapticsEnabled(v);
-              if (v) haptic("tap");
-            }}
-          />
-        </div>
-        <Button
-          variant="outline"
-          className="w-full"
-          disabled={!on}
-          onClick={() => {
-            const sample = SAMPLES[next.current % SAMPLES.length];
-            next.current += 1;
-            playSound(sample.sound);
-            setHeard(sample.label);
-          }}
-        >
-          <Volume2 className="h-4 w-4 ml-1" />
-          השמע דוגמה
-        </Button>
-        {heard && (
-          <p className="text-xs text-muted-foreground text-center" aria-live="polite">
-            {heard}
+    <FoldCard
+      title="צלילים"
+      icon={Volume2Icon}
+      hint={`${on ? "צלילים פועלים" : "שקט"} · ${buzz ? "רטט פועל" : "בלי רטט"}`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <Label htmlFor="sound-on">הקפטן וטורבו משמיעים קולות</Label>
+          <p className="text-xs text-muted-foreground">
+            מלמולים, נעימות, מנוע, בלימה וצופר. במצב נהיגה תמיד שקט.
           </p>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+        <Switch
+          id="sound-on"
+          checked={on}
+          onCheckedChange={(v) => {
+            setOn(v);
+            setSoundEnabled(v);
+            if (v) playSound("beep");
+          }}
+        />
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <Label htmlFor="haptics-on">רטט קל במגע</Label>
+          <p className="text-xs text-muted-foreground">
+            בהחלקה, בהתחלה ובסיום נסיעה ובמעבר בין מסכים.
+          </p>
+        </div>
+        <Switch
+          id="haptics-on"
+          checked={buzz}
+          onCheckedChange={(v) => {
+            setBuzz(v);
+            setHapticsEnabled(v);
+            if (v) haptic("tap");
+          }}
+        />
+      </div>
+      <Button
+        variant="outline"
+        className="w-full"
+        disabled={!on}
+        onClick={() => {
+          const sample = SAMPLES[next.current % SAMPLES.length];
+          next.current += 1;
+          playSound(sample.sound);
+          setHeard(sample.label);
+        }}
+      >
+        <Volume2 className="h-4 w-4 ml-1" />
+        השמע דוגמה
+      </Button>
+      {heard && (
+        <p className="text-xs text-muted-foreground text-center" aria-live="polite">
+          {heard}
+        </p>
+      )}
+    </FoldCard>
   );
 }
