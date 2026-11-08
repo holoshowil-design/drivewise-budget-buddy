@@ -90,9 +90,10 @@ export function SwipeToConfirm({
     }
   };
 
-  // First paint and after a resize: put the fill behind the resting thumb.
+  // First paint and after a resize: put the fill behind the resting thumb. The observer's first
+  // call comes right after the browser's own layout, before that frame is drawn; measuring
+  // straight in the effect would force an extra layout of the whole new page on every tab switch.
   useEffect(() => {
-    paint(0, null);
     const ro = new ResizeObserver(() => !drag.current && !done && paint(0, null));
     if (track.current) ro.observe(track.current);
     return () => ro.disconnect();

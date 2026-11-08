@@ -1,7 +1,8 @@
+import { useChartIntro } from "@/lib/anim/chart-motion";
+import { ChartBox } from "@/components/ChartBox";
 import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  ResponsiveContainer,
   AreaChart,
   Area,
   ComposedChart,
@@ -56,6 +57,7 @@ function SectionTitle({
 
 /** מצטבר חודשי מול קצב היעד */
 export function MonthPaceCard({ data }: { data: AppData }) {
+  const intro = useChartIntro("month-pace");
   const c = data.settings.currency;
   const now = new Date();
   const { from, to } = monthRange(now.getFullYear(), now.getMonth());
@@ -114,7 +116,7 @@ export function MonthPaceCard({ data }: { data: AppData }) {
           </div>
         </div>
         <div className="h-44">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartBox id="month-pace">
             <AreaChart data={series} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
               {inkPatterns()}
               <CartesianGrid {...INK_GRID} vertical={false} />
@@ -131,6 +133,7 @@ export function MonthPaceCard({ data }: { data: AppData }) {
                 formatter={(v: number, n) => [fmt(v || 0, c), n === "cum" ? "מצטבר" : "קצב יעד"]}
               />
               <Area
+                isAnimationActive={intro}
                 type="monotone"
                 dataKey="pace"
                 stroke="var(--ink)"
@@ -141,6 +144,7 @@ export function MonthPaceCard({ data }: { data: AppData }) {
                 activeDot={false}
               />
               <Area
+                isAnimationActive={intro}
                 type="monotone"
                 dataKey="cum"
                 stroke="var(--primary)"
@@ -166,7 +170,7 @@ export function MonthPaceCard({ data }: { data: AppData }) {
                 ifOverflow="extendDomain"
               />
             </AreaChart>
-          </ResponsiveContainer>
+          </ChartBox>
         </div>
       </CardContent>
     </Card>
@@ -175,6 +179,7 @@ export function MonthPaceCard({ data }: { data: AppData }) {
 
 /** הכנסות מול הוצאות + קו נטו – 14 ימים */
 export function IncomeVsExpenseCard({ data }: { data: AppData }) {
+  const intro = useChartIntro("income-vs-expense");
   const c = data.settings.currency;
   const series = useMemo(() => {
     const days = daysOf(data);
@@ -208,7 +213,7 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
         />
         {has ? (
           <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
+            <ChartBox id="income-vs-expense">
               <ComposedChart
                 data={series}
                 margin={{ top: 4, right: 4, left: 4, bottom: 0 }}
@@ -233,6 +238,7 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
                   ]}
                 />
                 <Bar
+                  isAnimationActive={intro}
                   dataKey="income"
                   stackId="a"
                   fill="var(--green-tint)"
@@ -240,6 +246,7 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
                   maxBarSize={16}
                 />
                 <Bar
+                  isAnimationActive={intro}
                   dataKey="expense"
                   stackId="a"
                   fill="var(--vermilion)"
@@ -247,6 +254,7 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
                   maxBarSize={16}
                 />
                 <Line
+                  isAnimationActive={intro}
                   type="monotone"
                   dataKey="net"
                   stroke="var(--ink)"
@@ -260,7 +268,7 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
                   }}
                 />
               </ComposedChart>
-            </ResponsiveContainer>
+            </ChartBox>
           </div>
         ) : (
           <Empty />
@@ -277,6 +285,7 @@ export function IncomeVsExpenseCard({ data }: { data: AppData }) {
 
 /** מד רווחיות – כמה מכל שקל נשאר בכיס */
 export function ProfitabilityGauge({ data }: { data: AppData }) {
+  const intro = useChartIntro("profitability");
   const c = data.settings.currency;
   const now = new Date();
   const { from, to } = monthRange(now.getFullYear(), now.getMonth());
@@ -304,7 +313,7 @@ export function ProfitabilityGauge({ data }: { data: AppData }) {
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
         <div className="relative h-28 w-28 shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartBox id="profitability">
             <RadialBarChart
               innerRadius="72%"
               outerRadius="100%"
@@ -314,6 +323,7 @@ export function ProfitabilityGauge({ data }: { data: AppData }) {
             >
               <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
               <RadialBar
+                isAnimationActive={intro}
                 dataKey="value"
                 cornerRadius={12}
                 fill={tone}
@@ -327,7 +337,7 @@ export function ProfitabilityGauge({ data }: { data: AppData }) {
                 }}
               />
             </RadialBarChart>
-          </ResponsiveContainer>
+          </ChartBox>
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <span className="num font-display text-xl font-extrabold" style={{ color: tone }}>
               {pct}%

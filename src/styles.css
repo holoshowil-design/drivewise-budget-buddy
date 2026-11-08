@@ -3750,3 +3750,17 @@ textarea::placeholder {
   color: color-mix(in oklab, var(--color-muted-foreground) 50%, transparent);
   font-weight: 500;
 }
+
+/* Back on a tab already seen in this visit: the cards, bars and gauge are just there, with no
+   entrance (the characters still play).
+   (html[data-tab-return] is set by the bottom bar; see src/lib/tab-return.ts.) */
+html[data-tab-return] .stagger > *,
+html[data-tab-return] .animate-fade-in-up,
+html[data-tab-return] .animate-scale-in,
+html[data-tab-return] .weekly-bar,
+html[data-tab-return] .gauge-needle {
+  animation: none !important;
+}
+html[data-tab-return] .goal-sparkles {
+  display: none;
+}
