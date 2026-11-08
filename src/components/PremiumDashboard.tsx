@@ -12,6 +12,13 @@ import {
   TrendingUp,
   Zap,
   ArrowLeft,
+  Compass,
+  Flame,
+  Fuel,
+  Hand,
+  Rocket,
+  Trophy,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/CountUp";
@@ -182,11 +189,11 @@ export function MomentumCoach({ data }: { data: AppData }) {
   const streak = calculateWorkStreak(data.incomes);
   const { net, goal, breakEven, remaining } = momentum;
   const progress = goal > 0 ? Math.max(0, Math.round((net / goal) * 100)) : 0;
-  const state: { tone: CoachTone; emoji: string; title: string; message: string; cta: string } =
+  const state: { tone: CoachTone; icon: LucideIcon; title: string; message: string; cta: string } =
     !streak.activeToday
       ? {
           tone: "start",
-          emoji: "👋",
+          icon: Hand,
           title: streak.current > 0 ? `שומרים על רצף של ${streak.current} ימים` : "מתחילים רצף חדש",
           message: "רישום ההכנסה הראשונה היום ישמור את יום העבודה ברצף.",
           cta: "רשום הכנסה",
@@ -194,7 +201,7 @@ export function MomentumCoach({ data }: { data: AppData }) {
       : net < 0
         ? {
             tone: "warning",
-            emoji: "🧭",
+            icon: Compass,
             title: "מכוונים מחדש",
             message: `הרצף נשמר. חסרים ${fmt(Math.max(0, breakEven - net), data.settings.currency)} כדי לחזור לאיזון.`,
             cta: "המשך לצבור",
@@ -202,7 +209,7 @@ export function MomentumCoach({ data }: { data: AppData }) {
         : net < breakEven
           ? {
               tone: "warning",
-              emoji: "⛽",
+              icon: Fuel,
               title: "היום בתנועה",
               message: `הרצף נשמר. עוד ${fmt(Math.max(0, breakEven - net), data.settings.currency)} והיום עובר לרווח.`,
               cta: "המשך לצבור",
@@ -210,7 +217,7 @@ export function MomentumCoach({ data }: { data: AppData }) {
           : progress < 70
             ? {
                 tone: "progress",
-                emoji: "💪",
+                icon: TrendingUp,
                 title: "עברת לרווח",
                 message: `${progress}% מהיעד הושלמו. התחנה הבאה היא ניצחון יומי.`,
                 cta: "שמור על הקצב",
@@ -218,14 +225,14 @@ export function MomentumCoach({ data }: { data: AppData }) {
             : progress < 100
               ? {
                   tone: "progress",
-                  emoji: "🚀",
+                  icon: Rocket,
                   title: "היעד ממש קרוב",
                   message: `נשארו ${fmt(remaining, data.settings.currency)} בלבד כדי להשלים את היום.`,
                   cta: "סוגרים את היעד",
                 }
               : {
                   tone: "success",
-                  emoji: "🏆",
+                  icon: Trophy,
                   title: "היום הושלם",
                   message: `רצף של ${streak.current} ימים נשמר · כל מה שמכאן מגדיל את הרווח.`,
                   cta: "ממשיכים חזק",
@@ -255,14 +262,18 @@ export function MomentumCoach({ data }: { data: AppData }) {
           mascotClass="coach-mascot"
           taxiClass="coach-taxi"
         />
-        <span className="coach-streak num">🔥 {streak.current}</span>
+        <span className="coach-streak num">
+          <Flame aria-hidden="true" />
+          {streak.current}
+        </span>
       </div>
       <ComicBubble
         tone={state.tone === "warning" ? "warn" : state.tone === "start" ? "default" : "win"}
         className="coach-bubble"
       >
-        <span className="coach-bubble-emoji" aria-hidden="true">
-          {state.emoji}
+        {/* A drawn badge instead of a phone emoji, so the bubble stays in the 1961 ink look. */}
+        <span className="coach-bubble-icon" aria-hidden="true">
+          <state.icon />
         </span>
         <span className="min-w-0 flex-1">
           <h2 className="font-display text-base font-extrabold">{state.title}</h2>
@@ -347,7 +358,7 @@ export function PremiumStats({
   const hourly = hours > 0 ? (income - expense) / hours : 0;
   const kmRatio = km > 0 ? (income - expense) / km : 0;
   const badges = [
-    hourly > 70 ? "🔥 תעריף שעה חזק" : "קצב היום",
+    hourly > 70 ? "תעריף שעה חזק" : "קצב היום",
     kmRatio > 4 ? "⚡ יחס ק״מ מיטבי" : "עלות מבוקרת",
   ];
   const stats = [

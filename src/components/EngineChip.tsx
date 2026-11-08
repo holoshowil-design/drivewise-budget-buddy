@@ -1,6 +1,6 @@
+import { fmtDurationWords } from "@/lib/duration";
 import { readActive, writeActive, type ActiveTrip } from "@/lib/active-trip";
 import { STAND_AFTER_MS, chargingNow, engineOn } from "@/lib/engine";
-import { fmtDuration } from "@/lib/store";
 
 /**
  * While the car stands: is the engine on? Shows what the app thinks (the charger,
@@ -31,7 +31,7 @@ export function EngineChip({ active, byCharger }: { active: ActiveTrip; byCharge
     <div className="num mt-2 flex items-center justify-between gap-2 rounded-xl bg-muted/40 px-3 py-2 text-xs">
       <span className="text-muted-foreground">
         {standing ? `עומד · מנוע ${state}` : "מנוע"}
-        {idle >= 60 && ` · בעמידה עם מנוע דלוק ${fmtDuration(idle)}`}
+        {idle >= 60 && ` · בעמידה עם מנוע דלוק ${fmtDurationWords(idle)}`}
       </span>
       {standing && (
         <button

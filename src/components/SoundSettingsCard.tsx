@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { Volume2 as Volume2Icon } from "lucide-react";
+import { SectionTitle } from "@/components/SectionTitle";
 import { Volume2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -37,7 +39,7 @@ export function SoundSettingsCard() {
   return (
     <Card>
       <CardContent className="p-4 space-y-4">
-        <h3 className="font-semibold">צלילים</h3>
+        <SectionTitle icon={Volume2Icon}>צלילים</SectionTitle>
         <div className="flex items-center justify-between gap-3">
           <div>
             <Label htmlFor="sound-on">הקפטן וטורבו משמיעים קולות</Label>

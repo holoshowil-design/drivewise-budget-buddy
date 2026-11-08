@@ -1,3 +1,4 @@
+import { fmtDurationWords } from "@/lib/duration";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
@@ -5,7 +6,6 @@ import {
   useAppData,
   filterByRange,
   fmtDateShort,
-  fmtDuration,
   isPrivateTrip,
   monthRange,
 } from "@/lib/store";
@@ -161,7 +161,7 @@ function TripsMapPage() {
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-semibold">
               <span>{work.length} נסיעות עבודה</span>
               <span>{Math.round(km).toLocaleString("he-IL")} ק״מ</span>
-              {seconds > 0 && <span>{fmtDuration(seconds)}</span>}
+              {seconds > 0 && <span>{fmtDurationWords(seconds)}</span>}
             </div>
             {shown.length > 0 && (
               <p className="text-sm leading-relaxed">

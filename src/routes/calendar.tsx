@@ -1,6 +1,7 @@
+import { fmtDurationWords } from "@/lib/duration";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { useAppData, fmt, fmtDuration, monthRange } from "@/lib/store";
+import { useAppData, fmt, monthRange } from "@/lib/store";
 import { dayOf, sumDays, useDays } from "@/lib/calc";
 import { RecordsList } from "@/components/RecordsList";
 import { PageHeader } from "@/components/PageHeader";
@@ -93,7 +94,7 @@ function CalendarPage() {
         scene={{
           mood: monthNet >= 0 ? "smirk" : "grumble",
           prop: "stamp",
-          line: monthNet >= 0 ? "כל יום יעד מקבל חותמת! 🟢" : "החודש עוד ניתן להציל 💪",
+          line: monthNet >= 0 ? "כל יום יעד מקבל חותמת!" : "החודש עוד ניתן להציל",
           backdrop: "promenade",
         }}
       />
@@ -134,6 +135,8 @@ function CalendarPage() {
                 }
                 const isSelected = selected === cell.iso;
                 const isToday = cell.iso === todayIso;
+                // Days still ahead are not "days off": keep them faint so the month reads at a glance.
+                const isFuture = !hasData && cell.iso > todayIso;
                 return (
                   <button
                     key={cell.iso}
@@ -147,6 +150,7 @@ function CalendarPage() {
                     className={cn(
                       "cal-cell relative aspect-square rounded-xl flex flex-col items-center justify-center text-[11px] font-medium transition-all",
                       tone,
+                      isFuture && "opacity-45",
                       isToday && !isSelected && "ring-1 ring-primary/50",
                       isSelected && "ring-2 ring-primary ring-offset-1 ring-offset-card",
                     )}
@@ -224,7 +228,7 @@ function CalendarPage() {
                           {t.kind === "between" ? "בין נסיעות" : "נסיעת GPS"}
                         </div>
                         <div className="num text-xs text-muted-foreground">
-                          {t.time ?? ""} · {t.km.toFixed(1)} ק״מ · {fmtDuration(t.seconds)}
+                          {t.time ?? ""} · {t.km.toFixed(1)} ק״מ · {fmtDurationWords(t.seconds)}
                         </div>
                       </div>
                     </div>

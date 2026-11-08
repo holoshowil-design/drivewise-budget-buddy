@@ -37,8 +37,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Sora", "Manrope", ui-sans-serif, system-ui, sans-serif;
+  /* Rubik has real Hebrew glyphs and weights, so Hebrew and digits share one rounded,
+     friendly face (Manrope/Sora had no Hebrew: every line mixed two fonts). */
+  --font-sans: "Rubik", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Rubik", ui-sans-serif, system-ui, sans-serif;
   --color-hud-background: var(--hud-background);
   --color-hud-surface: var(--hud-surface);
   --color-hud-foreground: var(--hud-foreground);
@@ -107,13 +109,12 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family:
-      "Manrope",
+      "Rubik",
       ui-sans-serif,
       system-ui,
       -apple-system,
       "Segoe UI",
       sans-serif;
-    font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overscroll-behavior-y: none;
@@ -395,7 +396,7 @@
   --taxi: var(--mustard);
   --ink-shadow: var(--slip) var(--slip) 0 color-mix(in oklab, var(--ink) 18%, transparent);
   --ink-shadow-sm: 2px 2px 0 color-mix(in oklab, var(--ink) 18%, transparent);
-  --font-comic: "Karantina", "Secular One", "Sora", sans-serif;
+  --font-comic: "Karantina", "Secular One", "Rubik", sans-serif;
 }
 
 body {
@@ -1490,9 +1491,35 @@ h3 {
   font-weight: 700;
   color: var(--muted-foreground);
 }
-.coach-bubble-emoji {
-  display: inline-block;
-  font-size: 1.8rem;
+.coach-bubble-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--mustard);
+  box-shadow: 2px 2px 0 var(--ink);
+  color: var(--ink);
+}
+.coach-bubble-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke-width: 2.25;
+}
+.coach-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.coach-streak svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: var(--vermilion);
+  fill: var(--mustard);
+  stroke-width: 2.25;
 }
 
 /* live reaction on /add */
@@ -3687,6 +3714,41 @@ body {
   .swipe-arrows {
     animation: none;
   }
+}
+
+/* Card headings with an inked badge (SectionTitle) */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.section-title-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--mustard-tint);
+  box-shadow: 1.5px 1.5px 0 var(--ink);
+  color: var(--ink);
+}
+.section-title-icon[data-tone="danger"] {
+  background: var(--vermilion-tint);
+}
+.section-title-icon svg {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 2.25;
+}
+
+/* A placeholder must not look like a typed value ("0" in a bold amount field). */
+input::placeholder,
+textarea::placeholder {
+  color: color-mix(in oklab, var(--color-muted-foreground) 50%, transparent);
+  font-weight: 500;
 }
 
 /* Back on a tab already seen in this visit: the cards, bars and gauge are just there, with no
