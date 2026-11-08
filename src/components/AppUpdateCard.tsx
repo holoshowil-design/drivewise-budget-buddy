@@ -4,23 +4,7 @@ import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { isNativeApp } from "@/lib/location";
-
-type Bridge = {
-  Plugins?: Record<string, unknown>;
-  nativePromise?: (plugin: string, method: string, options?: unknown) => Promise<unknown>;
-};
-
-type CheckResult = {
-  versionCode: number;
-  versionName: string;
-  available: boolean;
-  latestName?: string;
-};
-
-function bridge(): Bridge | null {
-  const cap = (window as unknown as { Capacitor?: Bridge }).Capacitor;
-  return cap?.nativePromise && cap.Plugins?.AppUpdate ? cap : null;
-}
+import { canSelfUpdate, checkForUpdate, installUpdate, installedVersion } from "@/lib/app-update";
 
 /**
  * Updates the Android app from inside it (AppUpdate plugin in drivewise-native).
@@ -37,55 +21,35 @@ export function AppUpdateCard() {
   useEffect(() => {
     if (!isNativeApp()) return;
     setNative(true);
-    const cap = bridge();
-    if (!cap) return;
+    if (!canSelfUpdate()) return;
     setSupported(true);
-    cap.nativePromise!("AppUpdate", "info")
-      .then((r) => setVersion((r as CheckResult).versionName))
-      .catch(() => {});
+    void installedVersion().then((v) => v && setVersion(v));
   }, []);
 
   if (!native) return null;
 
   const check = async () => {
-    const cap = bridge();
-    if (!cap) return;
     setBusy("check");
-    try {
-      const r = (await cap.nativePromise!("AppUpdate", "check")) as CheckResult;
-      setVersion(r.versionName);
-      if (r.available) {
-        setLatest(r.latestName || "חדשה");
-      } else {
-        setLatest(null);
-        toast.success("יש לך את הגרסה האחרונה 👍");
-      }
-    } catch {
+    const r = await checkForUpdate();
+    setBusy(null);
+    if (!r) {
       toast.error("לא הצלחתי לבדוק עדכון. בדקו שיש אינטרנט ונסו שוב.");
-    } finally {
-      setBusy(null);
+      return;
+    }
+    setVersion(r.versionName);
+    if (r.available) {
+      setLatest(r.latestName || "חדשה");
+    } else {
+      setLatest(null);
+      toast.success("יש לך את הגרסה האחרונה 👍");
     }
   };
 
   const install = async () => {
-    const cap = bridge();
-    if (!cap) return;
     setBusy("install");
-    try {
-      const r = (await cap.nativePromise!("AppUpdate", "install")) as { status: string };
-      if (r.status === "needs-permission") {
-        toast.message("אשרו ל״דרייבר״ להתקין אפליקציות וחזרו. ההתקנה תמשיך לבד.");
-      } else if (r.status === "up-to-date") {
-        setLatest(null);
-        toast.success("יש לך את הגרסה האחרונה 👍");
-      } else {
-        toast.message("לחצו ״עדכן״ במסך שנפתח. הנתונים נשמרים.");
-      }
-    } catch {
-      toast.error("ההורדה נכשלה. נסו שוב בעוד רגע.");
-    } finally {
-      setBusy(null);
-    }
+    const started = await installUpdate();
+    setBusy(null);
+    if (!started) setLatest(null);
   };
 
   return (

@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/BottomNav";
 import { DriveDetector } from "@/components/DriveDetector";
+import { UpdateBanner } from "@/components/UpdateBanner";
 import { TripWatcher } from "@/components/TripWatcher";
 import { RewardEffects } from "@/components/RewardEffects";
 import { SoundDirector } from "@/components/SoundDirector";
@@ -172,6 +173,7 @@ function RootComponent() {
       </div>
       <TripWatcher />
       <DriveDetector />
+      <UpdateBanner />
       <InkWorld />
       <SkyClock />
       <RewardEffects />
