@@ -162,24 +162,57 @@ function Reports() {
           </div>
         )}
 
+        {/* The bottom line first and big; the rest as a quiet list, so the eye lands on profit. */}
         <div className="grid grid-cols-2 gap-3">
-          <Stat label="הכנסות (נטו)" value={fmt(incomeTotal, c)} tone="success" />
-          <Stat label="הוצאות" value={fmt(expenseTotal, c)} tone="destructive" />
-          <Stat label="רווח נקי" value={fmt(net, c)} accent />
-          <Stat label="רווחיות" value={`${profitabilityPct}%`} />
-          <Stat label="ימי עבודה" value={String(daysWorked)} />
-          <Stat label="ממוצע יומי" value={fmt(daysWorked ? Math.round(net / daysWorked) : 0, c)} />
-          <Stat label="ממוצע לשעה" value={fmt(totalHours ? Math.round(net / totalHours) : 0, c)} />
-          <Stat label="ממוצע לק״מ" value={netPerKm === null ? "—" : fmtPrecise(netPerKm, c)} />
-          <Stat label="ברוטו לפני עמלה" value={fmt(grossTotal, c)} />
-          <Stat label="עמלות חברה" value={fmt(commissionTotal, c)} tone="destructive" />
-          <Stat label="ק״מ" value={Math.round(totals.km).toLocaleString("he-IL")} />
-          <Stat
-            label="דלק משוער (לפי ק״מ)"
-            value={fmt(totals.fuelEstimated, c)}
-            tone="destructive"
-          />
+          <div className="premium-stat col-span-2" style={{ minHeight: 0 }} data-fill="green">
+            <div className="text-xs font-semibold text-muted-foreground">רווח נקי</div>
+            <div
+              className={`num font-display mt-1 text-4xl font-bold tracking-tight ${net < 0 ? "text-destructive" : "text-primary"}`}
+            >
+              {fmt(net, c)}
+            </div>
+            <div className="num mt-1.5 text-xs font-medium text-muted-foreground">
+              רווחיות {profitabilityPct}% · {daysWorked} ימי עבודה ·{" "}
+              {fmt(daysWorked ? Math.round(net / daysWorked) : 0, c)} ליום
+            </div>
+          </div>
+          <div
+            className="premium-stat"
+            style={{ minHeight: 0, padding: "0.875rem" }}
+            data-fill="slate"
+          >
+            <div className="text-[11px] text-muted-foreground">הכנסות (נטו)</div>
+            <div className="num mt-0.5 text-xl font-bold tracking-tight text-success">
+              {fmt(incomeTotal, c)}
+            </div>
+          </div>
+          <div
+            className="premium-stat"
+            style={{ minHeight: 0, padding: "0.875rem" }}
+            data-fill="vermilion"
+          >
+            <div className="text-[11px] text-muted-foreground">הוצאות</div>
+            <div className="num mt-0.5 text-xl font-bold tracking-tight text-destructive">
+              {fmt(expenseTotal, c)}
+            </div>
+          </div>
         </div>
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="mb-2 text-sm font-semibold">פירוט</h3>
+            <dl className="num divide-y divide-border text-sm">
+              <Line
+                label="ממוצע לשעה"
+                value={fmt(totalHours ? Math.round(net / totalHours) : 0, c)}
+              />
+              <Line label="ממוצע לק״מ" value={netPerKm === null ? "—" : fmtPrecise(netPerKm, c)} />
+              <Line label="ק״מ" value={Math.round(totals.km).toLocaleString("he-IL")} />
+              <Line label="ברוטו לפני עמלה" value={fmt(grossTotal, c)} />
+              <Line label="עמלות חברה" value={fmt(commissionTotal, c)} bad />
+              <Line label="דלק משוער (לפי ק״מ)" value={fmt(totals.fuelEstimated, c)} bad />
+            </dl>
+          </CardContent>
+        </Card>
 
         {pieData.length > 0 && (
           <Card>
@@ -222,30 +255,11 @@ function Reports() {
   );
 }
 
-function Stat({
-  label,
-  value,
-  tone,
-  accent,
-}: {
-  label: string;
-  value: string;
-  tone?: "success" | "destructive";
-  accent?: boolean;
-}) {
-  const color = accent
-    ? "text-primary"
-    : tone === "success"
-      ? "text-success"
-      : tone === "destructive"
-        ? "text-destructive"
-        : "text-foreground";
+function Line({ label, value, bad }: { label: string; value: string; bad?: boolean }) {
   return (
-    <Card>
-      <CardContent className="p-3.5">
-        <div className="text-[11px] text-muted-foreground">{label}</div>
-        <div className={`num mt-0.5 text-lg font-bold tracking-tight ${color}`}>{value}</div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center justify-between gap-3 py-2">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className={`font-bold ${bad ? "text-destructive" : "text-foreground"}`}>{value}</dd>
+    </div>
   );
 }

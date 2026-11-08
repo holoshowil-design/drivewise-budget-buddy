@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Route as GaugeIcon, Fuel } from "lucide-react";
+import { Route as GaugeIcon, Fuel, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import {
   monthRange,
@@ -84,75 +84,83 @@ export function KmCostCard({ data }: { data: AppData }) {
           />
         </div>
 
-        <div className="mt-3 rounded-xl border bg-muted/40 p-3">
-          <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold">
-            <Fuel className="h-3.5 w-3.5 text-warning" /> נטו אחרי דלק
+        {/* The two numbers a driver checks stay in sight; the breakdown opens on a tap. */}
+        <details className="group mt-3">
+          <summary className="flex cursor-pointer list-none items-center justify-center gap-1 rounded-lg py-1.5 text-xs font-semibold text-primary [&::-webkit-details-marker]:hidden">
+            <span className="group-open:hidden">פירוט: נטו אחרי דלק ותדלוקים</span>
+            <span className="hidden group-open:inline">הסתר פירוט</span>
+            <ChevronDown className="h-3.5 w-3.5 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="mt-3 rounded-xl border bg-muted/40 p-3">
+            <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold">
+              <Fuel className="h-3.5 w-3.5 text-warning" /> נטו אחרי דלק
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <NetBlock
+                label="היום"
+                net={day.incomeNet - day.fuelEstimated}
+                fuel={day.fuelEstimated}
+                currency={c}
+              />
+              <NetBlock
+                label="החודש"
+                net={month.incomeNet - month.fuelEstimated}
+                fuel={month.fuelEstimated}
+                currency={c}
+              />
+            </div>
+            <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+              הדלק יורד מהנטו לפי הק״מ שנסעת (GPS וידני), גם בימים שלא תדלקת. התדלוקים עצמם משמשים
+              להשוואה.
+            </p>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <NetBlock
-              label="היום"
-              net={day.incomeNet - day.fuelEstimated}
-              fuel={day.fuelEstimated}
-              currency={c}
-            />
-            <NetBlock
-              label="החודש"
-              net={month.incomeNet - month.fuelEstimated}
-              fuel={month.fuelEstimated}
-              currency={c}
-            />
-          </div>
-          <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-            הדלק יורד מהנטו לפי הק״מ שנסעת (GPS וידני), גם בימים שלא תדלקת. התדלוקים עצמם משמשים
-            להשוואה.
-          </p>
-        </div>
 
-        <div className="mt-3 space-y-1 border-t pt-3 text-xs text-muted-foreground">
-          <div className="flex justify-between">
-            <span>עלות אנרגיה משוערת לק״מ</span>
-            <span className="num font-semibold text-foreground">{fmtPrecise(costPerKm, c)}</span>
-          </div>
-          {month.betweenKm > 0 && (
+          <div className="mt-3 space-y-1 border-t pt-3 text-xs text-muted-foreground">
             <div className="flex justify-between">
-              <span>מתוכם בין נסיעות (ללא נוסע)</span>
-              <span className="num font-semibold text-foreground">
-                {Math.round(month.betweenKm).toLocaleString("he-IL")} ק״מ ·{" "}
-                {fmt(month.fuelEstimated * (month.betweenKm / month.km), c)}
-              </span>
+              <span>עלות אנרגיה משוערת לק״מ</span>
+              <span className="num font-semibold text-foreground">{fmtPrecise(costPerKm, c)}</span>
             </div>
-          )}
-          <div className="flex justify-between">
-            <span>תדלוקים בפועל החודש</span>
-            <span className="num font-semibold text-foreground">{fmt(cmp.actual, c)}</span>
-          </div>
-          {cmp.actual > 0 && month.km > 0 && (
+            {month.betweenKm > 0 && (
+              <div className="flex justify-between">
+                <span>מתוכם בין נסיעות (ללא נוסע)</span>
+                <span className="num font-semibold text-foreground">
+                  {Math.round(month.betweenKm).toLocaleString("he-IL")} ק״מ ·{" "}
+                  {fmt(month.fuelEstimated * (month.betweenKm / month.km), c)}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
-              <span>{cmp.diff >= 0 ? "תדלקת יותר מהמשוער" : "תדלקת פחות מהמשוער"}</span>
-              <span
-                className={`num font-semibold ${cmp.diff >= 0 ? "text-destructive" : "text-success"}`}
-              >
-                {fmt(Math.abs(Math.round(cmp.diff)), c)}
-              </span>
+              <span>תדלוקים בפועל החודש</span>
+              <span className="num font-semibold text-foreground">{fmt(cmp.actual, c)}</span>
             </div>
-          )}
-          {cmp.suggestedConsumption !== null && (
-            <div className="mt-2 rounded-lg bg-warning/10 p-2.5 text-foreground">
-              <p className="text-[11px] leading-relaxed">
-                לפי התדלוקים החודש הרכב עושה בערך {cmp.suggestedConsumption} ק״מ ל{unit} (מוגדר{" "}
-                {data.vehicle.consumption}). אם רשמת את כל הק״מ, כדאי לעדכן.
-              </p>
-              <Button
-                size="sm"
-                variant="outline"
-                className="mt-2 h-8 w-full"
-                onClick={() => applyConsumption(cmp.suggestedConsumption!)}
-              >
-                עדכן צריכה ל-{cmp.suggestedConsumption}
-              </Button>
-            </div>
-          )}
-        </div>
+            {cmp.actual > 0 && month.km > 0 && (
+              <div className="flex justify-between">
+                <span>{cmp.diff >= 0 ? "תדלקת יותר מהמשוער" : "תדלקת פחות מהמשוער"}</span>
+                <span
+                  className={`num font-semibold ${cmp.diff >= 0 ? "text-destructive" : "text-success"}`}
+                >
+                  {fmt(Math.abs(Math.round(cmp.diff)), c)}
+                </span>
+              </div>
+            )}
+          </div>
+        </details>
+        {cmp.suggestedConsumption !== null && (
+          <div className="mt-2 rounded-lg bg-warning/10 p-2.5 text-foreground">
+            <p className="text-[11px] leading-relaxed">
+              לפי התדלוקים החודש הרכב עושה בערך {cmp.suggestedConsumption} ק״מ ל{unit} (מוגדר{" "}
+              {data.vehicle.consumption}). אם רשמת את כל הק״מ, כדאי לעדכן.
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-2 h-8 w-full"
+              onClick={() => applyConsumption(cmp.suggestedConsumption!)}
+            >
+              עדכן צריכה ל-{cmp.suggestedConsumption}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

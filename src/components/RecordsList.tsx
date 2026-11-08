@@ -29,7 +29,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Pencil, Trash2, TrendingUp, TrendingDown } from "lucide-react";
+import { Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { SwipeRow } from "@/components/SwipeRow";
 import { toast } from "sonner";
 import { NumberField } from "@/components/NumberField";
@@ -115,11 +115,14 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
               {manyDays && (
                 <div className="num flex items-center justify-between bg-muted/40 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
                   <span>{dayLabel(day.date, today)}</span>
-                  <span>
-                    {fmt(
-                      day.rows.reduce((sum, r) => sum + rowNet(r), 0),
-                      c,
-                    )}
+                  <span title="הכנסות פחות הוצאות שנרשמו ביום הזה. תדלוק נספר ביום ששילמת עליו, ולכן המספר יכול להיות שונה מהרווח בדשבורד">
+                    בקופה{" "}
+                    <span dir="ltr">
+                      {fmt(
+                        day.rows.reduce((sum, r) => sum + rowNet(r), 0),
+                        c,
+                      )}
+                    </span>
                   </span>
                 </div>
               )}
@@ -209,26 +212,17 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
                           {fmt(amount, c)}
                         </div>
                       </button>
-                      <div className="flex shrink-0 gap-1 pe-3">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8"
-                          onClick={() => setEditing(r)}
-                          aria-label="עריכה"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-destructive"
-                          onClick={() => del(r)}
-                          aria-label="מחיקה"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {/* A tap on the row opens it for editing, and a swipe edits or deletes, so one quiet
+                          delete button is enough; it turns red only under the finger. */}
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="me-1 h-10 w-10 shrink-0 text-muted-foreground/70 hover:text-destructive active:text-destructive"
+                        onClick={() => del(r)}
+                        aria-label="מחיקה"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </SwipeRow>
                 );
