@@ -20,6 +20,8 @@ import { SoundDirector } from "@/components/SoundDirector";
 import { InkWorld } from "@/components/InkWorld";
 import { SkyClock } from "@/components/SkyClock";
 import { useCloudSync } from "@/hooks/use-auth";
+import { isNativeApp } from "@/lib/location";
+import { TAB_NONCE_KEY } from "@/lib/app-login";
 
 function NotFoundComponent() {
   return (
@@ -129,6 +131,22 @@ export const Route = createRootRouteWithContext()({
   errorComponent: ErrorComponent,
 });
 
+/**
+ * Google sign-in for the installed app runs in a Chrome tab (src/lib/app-login.ts).
+ * If Google's redirect lands anywhere but /app-login, send that tab on to it.
+ */
+function useAppLoginReturn() {
+  useEffect(() => {
+    if (isNativeApp() || window.location.pathname === "/app-login") return;
+    try {
+      if (!sessionStorage.getItem(TAB_NONCE_KEY)) return;
+    } catch {
+      return;
+    }
+    window.location.replace(`/app-login${window.location.hash}`);
+  }, []);
+}
+
 function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="he" dir="rtl">
@@ -145,6 +163,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   useCloudSync();
+  useAppLoginReturn();
 
   return (
     <>
