@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { SwipeToConfirm } from "@/components/SwipeToConfirm";
 import { MovieStage } from "@/components/MovieStage";
 import { ComicBubble } from "@/components/InkWorld";
 import {
@@ -132,6 +133,18 @@ export function DailyProfitGauge({
 }
 
 export function DriveModeAction({ active }: { active: boolean }) {
+  const navigate = useNavigate();
+  // No trip yet: one swipe starts it, so a stray tap never does.
+  if (!active)
+    return (
+      <SwipeToConfirm
+        label="החליקו להתחלת נסיעה"
+        icon={<Navigation className="h-6 w-6" />}
+        onConfirm={() =>
+          void navigate({ to: "/trip", search: { action: "start_trip", mode: "drive" } as never })
+        }
+      />
+    );
   return (
     <Button asChild className="drive-mode-button h-14 w-full justify-between rounded-2xl px-4">
       <Link

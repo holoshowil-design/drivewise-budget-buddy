@@ -30,6 +30,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Pencil, Trash2, TrendingUp, TrendingDown } from "lucide-react";
+import { SwipeRow } from "@/components/SwipeRow";
 import { toast } from "sonner";
 import { NumberField } from "@/components/NumberField";
 import { numberOr, parseNumber } from "@/lib/number";
@@ -153,81 +154,83 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
                     : categoryLabel((r.item as Expense).category);
 
                 return (
-                  <div key={r.item.id} className="flex items-center">
-                    <button
-                      type="button"
-                      onClick={() => setEditing(r)}
-                      aria-label={`פרטי ${title}`}
-                      className="flex min-w-0 flex-1 items-center gap-3 p-3 text-start active:bg-muted/40"
-                    >
-                      <span
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isIncome ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}
-                      >
-                        {isIncome ? (
-                          <TrendingUp className="h-4 w-4" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4" />
-                        )}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-medium">{title}</span>
-                          {km > 0 && (
-                            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                              {km.toLocaleString("he-IL", { maximumFractionDigits: 1 })} ק״מ
-                            </span>
-                          )}
-                          {trip && trip.seconds > 0 && (
-                            <span className="num rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                              {Math.max(1, Math.round(trip.seconds / 60))} דק׳
-                            </span>
-                          )}
-                        </div>
-                        <div className="truncate text-xs text-muted-foreground">
-                          {[
-                            manyDays
-                              ? ""
-                              : new Date(r.item.date).toLocaleDateString("he-IL", {
-                                  day: "numeric",
-                                  month: "short",
-                                }),
-                            trip?.time ?? r.item.time,
-                            km > 0 ? `דלק משוער ${fmt(energy, c)}` : "",
-                            r.item.note && r.item.note !== "נסיעת GPS" ? r.item.note : "",
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </div>
-                      </div>
-
-                      <div
-                        className={`text-sm font-bold ${isIncome ? "text-success" : "text-destructive"}`}
-                      >
-                        {isIncome ? "+" : "−"}
-                        {fmt(amount, c)}
-                      </div>
-                    </button>
-                    <div className="flex shrink-0 gap-1 pe-3">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8"
+                  <SwipeRow key={r.item.id} onDelete={() => del(r)} onEdit={() => setEditing(r)}>
+                    <div className="flex items-center">
+                      <button
+                        type="button"
                         onClick={() => setEditing(r)}
-                        aria-label="עריכה"
+                        aria-label={`פרטי ${title}`}
+                        className="flex min-w-0 flex-1 items-center gap-3 p-3 text-start active:bg-muted/40"
                       >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-destructive"
-                        onClick={() => del(r)}
-                        aria-label="מחיקה"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        <span
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isIncome ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}
+                        >
+                          {isIncome ? (
+                            <TrendingUp className="h-4 w-4" />
+                          ) : (
+                            <TrendingDown className="h-4 w-4" />
+                          )}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-medium">{title}</span>
+                            {km > 0 && (
+                              <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                                {km.toLocaleString("he-IL", { maximumFractionDigits: 1 })} ק״מ
+                              </span>
+                            )}
+                            {trip && trip.seconds > 0 && (
+                              <span className="num rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                                {Math.max(1, Math.round(trip.seconds / 60))} דק׳
+                              </span>
+                            )}
+                          </div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            {[
+                              manyDays
+                                ? ""
+                                : new Date(r.item.date).toLocaleDateString("he-IL", {
+                                    day: "numeric",
+                                    month: "short",
+                                  }),
+                              trip?.time ?? r.item.time,
+                              km > 0 ? `דלק משוער ${fmt(energy, c)}` : "",
+                              r.item.note && r.item.note !== "נסיעת GPS" ? r.item.note : "",
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </div>
+                        </div>
+
+                        <div
+                          className={`text-sm font-bold ${isIncome ? "text-success" : "text-destructive"}`}
+                        >
+                          {isIncome ? "+" : "−"}
+                          {fmt(amount, c)}
+                        </div>
+                      </button>
+                      <div className="flex shrink-0 gap-1 pe-3">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8"
+                          onClick={() => setEditing(r)}
+                          aria-label="עריכה"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-destructive"
+                          onClick={() => del(r)}
+                          aria-label="מחיקה"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  </SwipeRow>
                 );
               })}
             </Fragment>
