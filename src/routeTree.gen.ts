@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AddRouteImport } from './routes/add'
+import { Route as AppLoginRouteImport } from './routes/app-login'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as MapRouteImport } from './routes/map'
@@ -26,6 +27,11 @@ const IndexRoute = IndexRouteImport.update({
 const AddRoute = AddRouteImport.update({
   id: '/add',
   path: '/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppLoginRoute = AppLoginRouteImport.update({
+  id: '/app-login',
+  path: '/app-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -62,6 +68,7 @@ const TripRoute = TripRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
+  '/app-login': typeof AppLoginRoute
   '/auth': typeof AuthRoute
   '/calendar': typeof CalendarRoute
   '/map': typeof MapRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
+  '/app-login': typeof AppLoginRoute
   '/auth': typeof AuthRoute
   '/calendar': typeof CalendarRoute
   '/map': typeof MapRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/add': typeof AddRoute
+  '/app-login': typeof AppLoginRoute
   '/auth': typeof AuthRoute
   '/calendar': typeof CalendarRoute
   '/map': typeof MapRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/add'
+    | '/app-login'
     | '/auth'
     | '/calendar'
     | '/map'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/add'
+    | '/app-login'
     | '/auth'
     | '/calendar'
     | '/map'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/add'
+    | '/app-login'
     | '/auth'
     | '/calendar'
     | '/map'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AddRoute: typeof AddRoute
+  AppLoginRoute: typeof AppLoginRoute
   AuthRoute: typeof AuthRoute
   CalendarRoute: typeof CalendarRoute
   MapRoute: typeof MapRoute
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/add'
       fullPath: '/add'
       preLoaderRoute: typeof AddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app-login': {
+      id: '/app-login'
+      path: '/app-login'
+      fullPath: '/app-login'
+      preLoaderRoute: typeof AppLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AddRoute: AddRoute,
+  AppLoginRoute: AppLoginRoute,
   AuthRoute: AuthRoute,
   CalendarRoute: CalendarRoute,
   MapRoute: MapRoute,

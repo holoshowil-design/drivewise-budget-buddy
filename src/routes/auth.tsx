@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { CloudCheck } from "lucide-react";
 import { loadLastAccount, type LastAccount } from "@/lib/last-account";
 import { authErrorMessage } from "@/lib/auth-messages";
+import { isNativeApp } from "@/lib/location";
+import { appCanReceiveLogin, startAppGoogleLogin } from "@/lib/app-login";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -121,6 +123,19 @@ function AuthPage() {
   };
 
   const google = async () => {
+    if (isNativeApp()) {
+      // Google blocks sign-in inside the app, so it runs in a Chrome tab and comes back.
+      const hint = last?.provider === "google" ? last.email : undefined;
+      if (!appCanReceiveLogin() || !(await startAppGoogleLogin(hint))) {
+        toast.error(
+          "כדי להתחבר עם Google צריך להתקין את הגרסה החדשה של האפליקציה. בינתיים: אימייל וסיסמה.",
+          {
+            duration: 10000,
+          },
+        );
+      }
+      return;
+    }
     const { lovable } = await import("@/integrations/lovable/index");
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
