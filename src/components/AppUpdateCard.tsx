@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Download as DownloadIcon } from "lucide-react";
+import { SectionTitle } from "@/components/SectionTitle";
 import { RefreshCw, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,7 +43,7 @@ export function AppUpdateCard() {
       setLatest(r.latestName || "חדשה");
     } else {
       setLatest(null);
-      toast.success("יש לך את הגרסה האחרונה 👍");
+      toast.success("יש לך את הגרסה האחרונה");
     }
   };
 
@@ -55,7 +57,7 @@ export function AppUpdateCard() {
   return (
     <Card>
       <CardContent className="p-4 space-y-3">
-        <h3 className="font-semibold">עדכון האפליקציה</h3>
+        <SectionTitle icon={DownloadIcon}>עדכון האפליקציה</SectionTitle>
         {supported ? (
           <>
             <p className="text-xs text-muted-foreground">

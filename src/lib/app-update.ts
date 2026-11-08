@@ -63,7 +63,7 @@ export async function installUpdate(): Promise<boolean> {
     if (r.status === "needs-permission") {
       toast.message("אשרו ל״דרייבר״ להתקין אפליקציות וחזרו. ההתקנה תמשיך לבד.");
     } else if (r.status === "up-to-date") {
-      toast.success("יש לך את הגרסה האחרונה 👍");
+      toast.success("יש לך את הגרסה האחרונה");
       return false;
     } else {
       toast.message("לחצו ״עדכן״ במסך שנפתח. הנתונים נשמרים.");

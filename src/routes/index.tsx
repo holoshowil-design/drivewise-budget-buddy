@@ -3,6 +3,7 @@ import { useAppData, todayISO } from "@/lib/store";
 import { dayOf, monthForecast, useDays } from "@/lib/calc";
 import { InsightsCard } from "@/components/InsightsCard";
 import { KmCostCard } from "@/components/KmCostCard";
+import { FirstSteps } from "@/components/FirstSteps";
 import { lazy, Suspense } from "react";
 import {
   DailyProfitGauge,
@@ -87,6 +88,9 @@ function Dashboard() {
   );
 
   const now = new Date();
+  // Nothing recorded yet: show the first steps instead of empty charts.
+  const isNewDriver =
+    data.incomes.length === 0 && data.expenses.length === 0 && data.trips.length === 0;
   const forecast = Math.round(monthForecast(days, data, today).forecast);
 
   const hour = now.getHours();
@@ -133,30 +137,36 @@ function Dashboard() {
           hourly={hoursToday > 0 ? netToday / hoursToday : 0}
         />
         <MomentumCoach data={data} />
-        <PremiumStats
-          data={data}
-          income={incomeToday}
-          expense={expenseToday}
-          breakEven={breakeven}
-          forecast={forecast}
-        />
-        <InteractiveWeeklyEarnings data={data} />
+        {isNewDriver ? (
+          <FirstSteps />
+        ) : (
+          <>
+            <PremiumStats
+              data={data}
+              income={incomeToday}
+              expense={expenseToday}
+              breakEven={breakeven}
+              forecast={forecast}
+            />
+            <InteractiveWeeklyEarnings data={data} />
 
-        <ChartSlot>
-          <ProfitabilityGauge data={data} />
-        </ChartSlot>
+            <ChartSlot>
+              <ProfitabilityGauge data={data} />
+            </ChartSlot>
 
-        <ChartSlot>
-          <MonthPaceCard data={data} />
-        </ChartSlot>
+            <ChartSlot>
+              <MonthPaceCard data={data} />
+            </ChartSlot>
 
-        <ChartSlot>
-          <IncomeVsExpenseCard data={data} />
-        </ChartSlot>
+            <ChartSlot>
+              <IncomeVsExpenseCard data={data} />
+            </ChartSlot>
 
-        <KmCostCard data={data} />
+            <KmCostCard data={data} />
 
-        <InsightsCard data={data} />
+            <InsightsCard data={data} />
+          </>
+        )}
         {/* Adding a record is the + in the bottom bar; the month totals live in the
             profitability and month-pace cards above, and in full on the reports page. */}
       </div>

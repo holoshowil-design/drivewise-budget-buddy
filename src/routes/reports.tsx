@@ -121,7 +121,7 @@ function Reports() {
             />
           </div>
         }
-        scene={{ mood: "smirk", prop: "chart", line: "בוא נראה לאן הלך כל שקל 🧐" }}
+        scene={{ mood: "smirk", prop: "chart", line: "בוא נראה לאן הלך כל שקל" }}
       />
 
       <div className="px-4 space-y-4">
