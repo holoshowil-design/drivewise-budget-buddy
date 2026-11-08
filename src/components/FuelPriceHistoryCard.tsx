@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { History as HistoryIcon } from "lucide-react";
-import { SectionTitle } from "@/components/SectionTitle";
+import { FoldCard } from "@/components/FoldCard";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { nowHHMM, todayISO, useAppData, type FuelPriceEntry } from "@/lib/store";
@@ -84,84 +83,83 @@ export function FuelPriceHistoryCard() {
   };
 
   return (
-    <Card>
-      <CardContent className="p-4 space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <SectionTitle icon={HistoryIcon}>היסטוריית מחירי דלק</SectionTitle>
-          <Button variant="outline" size="sm" onClick={addRow}>
-            <Plus className="h-4 w-4 ml-1" />
-            שורה
+    <FoldCard
+      title="היסטוריית מחירי דלק"
+      icon={HistoryIcon}
+      hint={rows.length ? `${rows.length} שינויי מחיר` : "עדיין לא נרשם שינוי"}
+    >
+      <Button variant="outline" size="sm" onClick={addRow}>
+        <Plus className="h-4 w-4 ml-1" />
+        שורה
+      </Button>
+      <p className="text-xs text-muted-foreground">
+        כל רשומה מחושבת לפי המחיר והצריכה שהיו בתוקף בזמן שלה. אפשר לתקן כאן מחיר שנרשם לא נכון.
+      </p>
+      {rows.length === 0 ? (
+        <p className="text-xs text-muted-foreground">עדיין לא נרשם שינוי מחיר.</p>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((r) => (
+            <div key={r.key} className="grid grid-cols-[1fr_auto] gap-2 rounded-lg border p-2">
+              <div className="grid grid-cols-2 gap-2">
+                {r.date === BASELINE_DATE ? (
+                  <div className="col-span-2 text-xs font-medium text-muted-foreground">
+                    לפני השינוי הראשון
+                  </div>
+                ) : (
+                  <>
+                    <Input
+                      type="date"
+                      aria-label="מתאריך"
+                      value={r.date}
+                      onChange={(e) => edit(r.key, { date: e.target.value })}
+                    />
+                    <Input
+                      type="time"
+                      aria-label="משעה"
+                      value={r.time}
+                      onChange={(e) => edit(r.key, { time: e.target.value })}
+                    />
+                  </>
+                )}
+                <Input
+                  inputMode="decimal"
+                  aria-label="מחיר לליטר (₪)"
+                  placeholder="מחיר ₪"
+                  value={r.price}
+                  onChange={(e) => edit(r.key, { price: e.target.value })}
+                />
+                <Input
+                  inputMode="decimal"
+                  aria-label="צריכה (ק״מ לליטר)"
+                  placeholder="ק״מ לליטר"
+                  value={r.consumption}
+                  onChange={(e) => edit(r.key, { consumption: e.target.value })}
+                />
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="מחק שורה"
+                onClick={() => {
+                  setDirty(true);
+                  setRows((rs) => rs.filter((x) => x.key !== r.key));
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+      {dirty && (
+        <div className="grid grid-cols-2 gap-2">
+          <Button onClick={save}>שמור היסטוריה</Button>
+          <Button variant="outline" onClick={() => setDirty(false)}>
+            בטל שינויים
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          כל רשומה מחושבת לפי המחיר והצריכה שהיו בתוקף בזמן שלה. אפשר לתקן כאן מחיר שנרשם לא נכון.
-        </p>
-        {rows.length === 0 ? (
-          <p className="text-xs text-muted-foreground">עדיין לא נרשם שינוי מחיר.</p>
-        ) : (
-          <div className="space-y-2">
-            {rows.map((r) => (
-              <div key={r.key} className="grid grid-cols-[1fr_auto] gap-2 rounded-lg border p-2">
-                <div className="grid grid-cols-2 gap-2">
-                  {r.date === BASELINE_DATE ? (
-                    <div className="col-span-2 text-xs font-medium text-muted-foreground">
-                      לפני השינוי הראשון
-                    </div>
-                  ) : (
-                    <>
-                      <Input
-                        type="date"
-                        aria-label="מתאריך"
-                        value={r.date}
-                        onChange={(e) => edit(r.key, { date: e.target.value })}
-                      />
-                      <Input
-                        type="time"
-                        aria-label="משעה"
-                        value={r.time}
-                        onChange={(e) => edit(r.key, { time: e.target.value })}
-                      />
-                    </>
-                  )}
-                  <Input
-                    inputMode="decimal"
-                    aria-label="מחיר לליטר (₪)"
-                    placeholder="מחיר ₪"
-                    value={r.price}
-                    onChange={(e) => edit(r.key, { price: e.target.value })}
-                  />
-                  <Input
-                    inputMode="decimal"
-                    aria-label="צריכה (ק״מ לליטר)"
-                    placeholder="ק״מ לליטר"
-                    value={r.consumption}
-                    onChange={(e) => edit(r.key, { consumption: e.target.value })}
-                  />
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="מחק שורה"
-                  onClick={() => {
-                    setDirty(true);
-                    setRows((rs) => rs.filter((x) => x.key !== r.key));
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-        {dirty && (
-          <div className="grid grid-cols-2 gap-2">
-            <Button onClick={save}>שמור היסטוריה</Button>
-            <Button variant="outline" onClick={() => setDirty(false)}>
-              בטל שינויים
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </FoldCard>
   );
 }

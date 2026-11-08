@@ -7,11 +7,10 @@ import {
   HardDrive as HardDriveIcon,
   AlertTriangle as AlertTriangleIcon,
 } from "lucide-react";
-import { SectionTitle } from "@/components/SectionTitle";
+import { FoldCard } from "@/components/FoldCard";
 import { useState, useEffect } from "react";
 import { useAppData, type VehicleType } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -188,212 +187,216 @@ function SettingsPage() {
       <div className="px-4 space-y-4">
         <AccountCard />
 
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            <SectionTitle icon={TargetIcon}>יעדים ותקציב</SectionTitle>
-            <Field label="יעד רווח יומי (₪)">
-              <NumberField
-                value={t.dailyGoal}
-                onValueChange={(dailyGoal) => setNum({ dailyGoal })}
-                error={gErr("dailyGoal")}
-              />
-            </Field>
-            <Field label="הוצאות קבועות חודשיות (ביטוח, רישוי, ליסינג וכו׳)">
-              <NumberField
-                value={t.fixedMonthlyExpenses}
-                onValueChange={(fixedMonthlyExpenses) => setNum({ fixedMonthlyExpenses })}
-                error={gErr("fixedMonthlyExpenses")}
-              />
-            </Field>
-            <Field label="ימי עבודה בחודש (ממוצע)">
-              <NumberField
-                value={t.workDaysPerMonth}
-                onValueChange={(workDaysPerMonth) => setNum({ workDaysPerMonth })}
-                error={gErr("workDaysPerMonth")}
-              />
-            </Field>
-            <Field label="עמלת חברה ברירת מחדל (%)">
-              <NumberField
-                value={t.defaultCommissionPct}
-                onValueChange={(defaultCommissionPct) => setNum({ defaultCommissionPct })}
-                error={gErr("defaultCommissionPct")}
-              />
-            </Field>
-            <Button onClick={saveSettings} className="w-full">
-              שמור
-            </Button>
-          </CardContent>
-        </Card>
+        <FoldCard
+          title="יעדים ותקציב"
+          icon={TargetIcon}
+          hint={`יעד ${s.dailyGoal} ₪ ליום · הוצאות קבועות ${s.fixedMonthlyExpenses} ₪`}
+        >
+          <Field label="יעד רווח יומי (₪)">
+            <NumberField
+              value={t.dailyGoal}
+              onValueChange={(dailyGoal) => setNum({ dailyGoal })}
+              error={gErr("dailyGoal")}
+            />
+          </Field>
+          <Field label="הוצאות קבועות חודשיות (ביטוח, רישוי, ליסינג וכו׳)">
+            <NumberField
+              value={t.fixedMonthlyExpenses}
+              onValueChange={(fixedMonthlyExpenses) => setNum({ fixedMonthlyExpenses })}
+              error={gErr("fixedMonthlyExpenses")}
+            />
+          </Field>
+          <Field label="ימי עבודה בחודש (ממוצע)">
+            <NumberField
+              value={t.workDaysPerMonth}
+              onValueChange={(workDaysPerMonth) => setNum({ workDaysPerMonth })}
+              error={gErr("workDaysPerMonth")}
+            />
+          </Field>
+          <Field label="עמלת חברה ברירת מחדל (%)">
+            <NumberField
+              value={t.defaultCommissionPct}
+              onValueChange={(defaultCommissionPct) => setNum({ defaultCommissionPct })}
+              error={gErr("defaultCommissionPct")}
+            />
+          </Field>
+          <Button onClick={saveSettings} className="w-full">
+            שמור
+          </Button>
+        </FoldCard>
 
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            <SectionTitle icon={CarIcon}>הרכב שלי</SectionTitle>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="יצרן">
-                <Input value={v.make} onChange={(e) => setV({ ...v, make: e.target.value })} />
-              </Field>
-              <Field label="דגם">
-                <Input value={v.model} onChange={(e) => setV({ ...v, model: e.target.value })} />
-              </Field>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="שנה">
-                <Input value={v.year} onChange={(e) => setV({ ...v, year: e.target.value })} />
-              </Field>
-              <Field label="מספר רישוי">
-                <Input value={v.plate} onChange={(e) => setV({ ...v, plate: e.target.value })} />
-              </Field>
-            </div>
-            <Field label="סוג רכב">
-              <Select
-                dir="rtl"
-                value={v.type}
-                onValueChange={(val) => setV({ ...v, type: val as VehicleType })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="petrol">בנזין / סולר</SelectItem>
-                  <SelectItem value="hybrid">היברידי</SelectItem>
-                  <SelectItem value="electric">חשמלי</SelectItem>
-                </SelectContent>
-              </Select>
+        <FoldCard
+          title="הרכב שלי"
+          icon={CarIcon}
+          hint={[
+            [data.vehicle.make, data.vehicle.model].filter(Boolean).join(" "),
+            `${data.vehicle.consumption} ק״מ ל${data.vehicle.type === "electric" ? "-kWh" : "ליטר"}`,
+            `${s.fuelPrice} ₪`,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        >
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="יצרן">
+              <Input value={v.make} onChange={(e) => setV({ ...v, make: e.target.value })} />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label={v.type === "electric" ? "צריכה (ק״מ ל-kWh)" : "צריכה (ק״מ לליטר)"}>
-                <NumberField
-                  value={t.consumption}
-                  onValueChange={(consumption) => setNum({ consumption })}
-                  error={vErr("consumption")}
-                />
-              </Field>
-              <Field label={v.type === "electric" ? "מחיר kWh (₪)" : "מחיר ליטר (₪)"}>
-                <NumberField
-                  value={t.fuelPrice}
-                  onValueChange={(fuelPrice) => setNum({ fuelPrice })}
-                  error={vErr("fuelPrice")}
-                />
-              </Field>
-            </div>
-            {v.type !== "electric" && (
-              <Button
-                variant="outline"
-                className="w-full"
-                disabled={loadingPrice}
-                onClick={syncFuelPrice}
-              >
-                <RefreshCw className={`h-4 w-4 ml-1 ${loadingPrice ? "animate-spin" : ""}`} />
-                {loadingPrice ? "מעדכן..." : "עדכן מחיר דלק אונליין (95)"}
-              </Button>
-            )}
-            <p className="text-xs text-muted-foreground">
-              שינוי מחיר או צריכה נרשם עם התאריך והשעה המדויקת ויחול רק מאותו רגע והלאה — רשומות
-              שהוזנו קודם ישמרו את המחיר והצריכה שהיו תקפים אז. המחיר האונליין הוא המחיר המרבי לצרכן
-              בשירות עצמי.
-              {s.fuelPriceUpdatedAt &&
-                ` עודכן לאחרונה: ${new Date(s.fuelPriceUpdatedAt).toLocaleString("he-IL", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" })}.`}
-            </p>
-
-            <Button onClick={saveVehicle} className="w-full">
-              שמור רכב
+            <Field label="דגם">
+              <Input value={v.model} onChange={(e) => setV({ ...v, model: e.target.value })} />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="שנה">
+              <Input value={v.year} onChange={(e) => setV({ ...v, year: e.target.value })} />
+            </Field>
+            <Field label="מספר רישוי">
+              <Input value={v.plate} onChange={(e) => setV({ ...v, plate: e.target.value })} />
+            </Field>
+          </div>
+          <Field label="סוג רכב">
+            <Select
+              dir="rtl"
+              value={v.type}
+              onValueChange={(val) => setV({ ...v, type: val as VehicleType })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="petrol">בנזין / סולר</SelectItem>
+                <SelectItem value="hybrid">היברידי</SelectItem>
+                <SelectItem value="electric">חשמלי</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={v.type === "electric" ? "צריכה (ק״מ ל-kWh)" : "צריכה (ק״מ לליטר)"}>
+              <NumberField
+                value={t.consumption}
+                onValueChange={(consumption) => setNum({ consumption })}
+                error={vErr("consumption")}
+              />
+            </Field>
+            <Field label={v.type === "electric" ? "מחיר kWh (₪)" : "מחיר ליטר (₪)"}>
+              <NumberField
+                value={t.fuelPrice}
+                onValueChange={(fuelPrice) => setNum({ fuelPrice })}
+                error={vErr("fuelPrice")}
+              />
+            </Field>
+          </div>
+          {v.type !== "electric" && (
+            <Button
+              variant="outline"
+              className="w-full"
+              disabled={loadingPrice}
+              onClick={syncFuelPrice}
+            >
+              <RefreshCw className={`h-4 w-4 ml-1 ${loadingPrice ? "animate-spin" : ""}`} />
+              {loadingPrice ? "מעדכן..." : "עדכן מחיר דלק אונליין (95)"}
             </Button>
-          </CardContent>
-        </Card>
+          )}
+          <p className="text-xs text-muted-foreground">
+            שינוי מחיר או צריכה נרשם עם התאריך והשעה המדויקת ויחול רק מאותו רגע והלאה — רשומות
+            שהוזנו קודם ישמרו את המחיר והצריכה שהיו תקפים אז. המחיר האונליין הוא המחיר המרבי לצרכן
+            בשירות עצמי.
+            {s.fuelPriceUpdatedAt &&
+              ` עודכן לאחרונה: ${new Date(s.fuelPriceUpdatedAt).toLocaleString("he-IL", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" })}.`}
+          </p>
+
+          <Button onClick={saveVehicle} className="w-full">
+            שמור רכב
+          </Button>
+        </FoldCard>
 
         <FuelPriceHistoryCard />
 
         <BackupCard />
 
-        <Card>
-          <CardContent className="p-4 space-y-4">
-            <SectionTitle icon={RadarIcon}>זיהוי נסיעות, עצירות ומנוע</SectionTitle>
+        <FoldCard
+          title="זיהוי נסיעות, עצירות ומנוע"
+          icon={RadarIcon}
+          hint={data.settings.autoDetectTrip ? "מזהה נסיעות לבד" : "מדידה ידנית"}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <Label htmlFor="auto-detect">התחל למדוד לבד כשמזוהה נסיעה</Label>
+              <p className="text-xs text-muted-foreground">
+                אם שכחת ללחוץ, המדידה מתחילה מרגע שהרכב זז, ובסוף נשאל אם זו הייתה נסיעת עבודה
+              </p>
+            </div>
+            <Switch
+              id="auto-detect"
+              checked={data.settings.autoDetectTrip === true}
+              onCheckedChange={(v) => {
+                updateSettings({ autoDetectTrip: v });
+                // Turning it on is the explicit moment to ask for location.
+                if (v)
+                  navigator.geolocation?.getCurrentPosition(
+                    () => {},
+                    () => {},
+                  );
+              }}
+            />
+          </div>
+          {hasBackgroundTracking() && data.settings.autoDetectTrip === true && (
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label htmlFor="auto-detect">התחל למדוד לבד כשמזוהה נסיעה</Label>
+                <Label htmlFor="detect-background">זהה גם כשהאפליקציה סגורה</Label>
                 <p className="text-xs text-muted-foreground">
-                  אם שכחת ללחוץ, המדידה מתחילה מרגע שהרכב זז, ובסוף נשאל אם זו הייתה נסיעת עבודה
+                  מציג התראה קבועה למעלה ומשתמש קצת יותר בסוללה
                 </p>
               </div>
               <Switch
-                id="auto-detect"
-                checked={data.settings.autoDetectTrip === true}
-                onCheckedChange={(v) => {
-                  updateSettings({ autoDetectTrip: v });
-                  // Turning it on is the explicit moment to ask for location.
-                  if (v)
-                    navigator.geolocation?.getCurrentPosition(
-                      () => {},
-                      () => {},
-                    );
-                }}
+                id="detect-background"
+                checked={data.settings.detectInBackground === true}
+                onCheckedChange={(v) => updateSettings({ detectInBackground: v })}
               />
             </div>
-            {hasBackgroundTracking() && data.settings.autoDetectTrip === true && (
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <Label htmlFor="detect-background">זהה גם כשהאפליקציה סגורה</Label>
-                  <p className="text-xs text-muted-foreground">
-                    מציג התראה קבועה למעלה ומשתמש קצת יותר בסוללה
-                  </p>
-                </div>
-                <Switch
-                  id="detect-background"
-                  checked={data.settings.detectInBackground === true}
-                  onCheckedChange={(v) => updateSettings({ detectInBackground: v })}
-                />
-              </div>
-            )}
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <Label htmlFor="track-between">מדוד גם בין נסיעות</Label>
-                <p className="text-xs text-muted-foreground">
-                  אחרי סיום נסיעה הזמן והק״מ ממשיכים להימדד עד הנסיעה הבאה או עד "סיימתי לעבוד" (לא
-                  נחשב נסיעת עבודה)
-                </p>
-              </div>
-              <Switch
-                id="track-between"
-                checked={data.settings.trackBetween !== false}
-                onCheckedChange={(v) => updateSettings({ trackBetween: v })}
-              />
+          )}
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <Label htmlFor="track-between">מדוד גם בין נסיעות</Label>
+              <p className="text-xs text-muted-foreground">
+                אחרי סיום נסיעה הזמן והק״מ ממשיכים להימדד עד הנסיעה הבאה או עד "סיימתי לעבוד" (לא
+                נחשב נסיעת עבודה)
+              </p>
             </div>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <Label htmlFor="ask-wait">שאל על המתנה</Label>
-                <p className="text-xs text-muted-foreground">אחרי 4 דקות עמידה במקום בזמן נסיעה</p>
-              </div>
-              <Switch
-                id="ask-wait"
-                checked={data.settings.askWaiting !== false}
-                onCheckedChange={(v) => updateSettings({ askWaiting: v })}
-              />
+            <Switch
+              id="track-between"
+              checked={data.settings.trackBetween !== false}
+              onCheckedChange={(v) => updateSettings({ trackBetween: v })}
+            />
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <Label htmlFor="ask-wait">שאל על המתנה</Label>
+              <p className="text-xs text-muted-foreground">אחרי 4 דקות עמידה במקום בזמן נסיעה</p>
             </div>
-            <EngineSettings />
-          </CardContent>
-        </Card>
+            <Switch
+              id="ask-wait"
+              checked={data.settings.askWaiting !== false}
+              onCheckedChange={(v) => updateSettings({ askWaiting: v })}
+            />
+          </div>
+          <EngineSettings />
+        </FoldCard>
 
         <SoundSettingsCard />
 
         <AppUpdateCard />
 
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            <SectionTitle icon={AlertTriangleIcon} tone="danger">
-              אזור מסוכן
-            </SectionTitle>
-            <p className="text-xs text-muted-foreground">
-              מחיקה של כל ההכנסות וההוצאות. הגדרות ופרטי רכב יישמרו.
-            </p>
-            <Button variant="destructive" onClick={resetAll} className="w-full">
-              <Trash2 className="h-4 w-4 ml-1" />
-              מחק את כל הנתונים
-            </Button>
-            <div className="text-xs text-muted-foreground text-center pt-2">
-              {data.incomes.length} הכנסות · {data.expenses.length} הוצאות
-            </div>
-          </CardContent>
-        </Card>
+        <FoldCard title="אזור מסוכן" icon={AlertTriangleIcon} tone="danger" hint="מחיקת כל הנתונים">
+          <p className="text-xs text-muted-foreground">
+            מחיקה של כל ההכנסות וההוצאות. הגדרות ופרטי רכב יישמרו.
+          </p>
+          <Button variant="destructive" onClick={resetAll} className="w-full">
+            <Trash2 className="h-4 w-4 ml-1" />
+            מחק את כל הנתונים
+          </Button>
+          <div className="text-xs text-muted-foreground text-center pt-2">
+            {data.incomes.length} הכנסות · {data.expenses.length} הוצאות
+          </div>
+        </FoldCard>
       </div>
     </div>
   );
@@ -410,64 +413,66 @@ function AccountCard() {
   const providerLabel = provider === "google" ? "חשבון Google" : "אימייל וסיסמה";
 
   return (
-    <Card className="card-lift animate-fade-in-up">
-      <CardContent className="p-4 space-y-3">
-        <SectionTitle icon={CloudIcon}>חשבון וגיבוי בענן</SectionTitle>
-        {user ? (
-          <>
-            <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
-              {avatar ? (
-                <img
-                  src={avatar}
-                  alt={name || "תמונת פרופיל"}
-                  className="h-11 w-11 rounded-full object-cover"
-                />
-              ) : (
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-base font-bold text-primary">
-                  {(name || user.email || "?").slice(0, 1).toUpperCase()}
-                </span>
-              )}
-              <div className="min-w-0 flex-1">
-                {name && <div className="truncate text-sm font-semibold">{name}</div>}
-                <div dir="ltr" className="truncate text-right text-xs text-muted-foreground">
-                  {user.email}
-                </div>
-                <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                  <CloudCheck className="h-3 w-3" /> מחובר · {providerLabel}
-                </div>
+    <FoldCard
+      title="חשבון וגיבוי בענן"
+      icon={CloudIcon}
+      defaultOpen={!user}
+      hint={user ? (user.email ?? "מחובר") : "לא מחובר: הנתונים רק בטלפון הזה"}
+    >
+      {user ? (
+        <>
+          <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
+            {avatar ? (
+              <img
+                src={avatar}
+                alt={name || "תמונת פרופיל"}
+                className="h-11 w-11 rounded-full object-cover"
+              />
+            ) : (
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-base font-bold text-primary">
+                {(name || user.email || "?").slice(0, 1).toUpperCase()}
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              {name && <div className="truncate text-sm font-semibold">{name}</div>}
+              <div dir="ltr" className="truncate text-right text-xs text-muted-foreground">
+                {user.email}
+              </div>
+              <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                <CloudCheck className="h-3 w-3" /> מחובר · {providerLabel}
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              כל שינוי נשמר אוטומטית בענן בדיוק כפי שהוא מוצג באפליקציה, וזמין בכל מכשיר שתתחבר בו
-              לאותו חשבון.
-            </p>
-            {user.email && <AppPasswordCard email={user.email} />}
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={async () => {
-                const { supabase } = await import("@/integrations/supabase/client");
-                await supabase.auth.signOut();
-                toast.success("התנתקת");
-              }}
-            >
-              <LogOut className="h-4 w-4 ml-1" />
-              התנתק
-            </Button>
-          </>
-        ) : (
-          <>
-            <p className="text-xs text-muted-foreground">
-              כרגע הנתונים שמורים רק בטלפון הזה. התחבר כדי לגבות אותם בענן ולראות אותם בכל מכשיר.
-            </p>
-            <Button className="w-full" onClick={() => navigateToAuth()}>
-              <LogIn className="h-4 w-4 ml-1" />
-              התחבר / הרשמה
-            </Button>
-          </>
-        )}
-      </CardContent>
-    </Card>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            כל שינוי נשמר אוטומטית בענן בדיוק כפי שהוא מוצג באפליקציה, וזמין בכל מכשיר שתתחבר בו
+            לאותו חשבון.
+          </p>
+          {user.email && <AppPasswordCard email={user.email} />}
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={async () => {
+              const { supabase } = await import("@/integrations/supabase/client");
+              await supabase.auth.signOut();
+              toast.success("התנתקת");
+            }}
+          >
+            <LogOut className="h-4 w-4 ml-1" />
+            התנתק
+          </Button>
+        </>
+      ) : (
+        <>
+          <p className="text-xs text-muted-foreground">
+            כרגע הנתונים שמורים רק בטלפון הזה. התחבר כדי לגבות אותם בענן ולראות אותם בכל מכשיר.
+          </p>
+          <Button className="w-full" onClick={() => navigateToAuth()}>
+            <LogIn className="h-4 w-4 ml-1" />
+            התחבר / הרשמה
+          </Button>
+        </>
+      )}
+    </FoldCard>
   );
 }
 
@@ -534,35 +539,32 @@ function BackupCard() {
   };
 
   return (
-    <Card>
-      <CardContent className="p-4 space-y-3">
-        <SectionTitle icon={HardDriveIcon}>גיבוי מקומי</SectionTitle>
-        <p className="text-xs text-muted-foreground">
-          שמור עותק של כל הנתונים כקובץ, ושחזר אותו בכל זמן. השחזור מוסיף רשומות חסרות (הכנסות,
-          הוצאות ונסיעות) ולא מוחק או משנה רשומות קיימות.
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" onClick={exportJson}>
-            <Download className="h-4 w-4 ml-1" />
-            ייצוא גיבוי
-          </Button>
-          <Button variant="outline" onClick={() => document.getElementById(inputId)?.click()}>
-            <Upload className="h-4 w-4 ml-1" />
-            שחזור מקובץ
-          </Button>
-        </div>
-        <input
-          id={inputId}
-          type="file"
-          accept="application/json"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void importJson(f);
-            e.target.value = "";
-          }}
-        />
-      </CardContent>
-    </Card>
+    <FoldCard title="גיבוי מקומי" icon={HardDriveIcon} hint="ייצוא ושחזור מקובץ">
+      <p className="text-xs text-muted-foreground">
+        שמור עותק של כל הנתונים כקובץ, ושחזר אותו בכל זמן. השחזור מוסיף רשומות חסרות (הכנסות, הוצאות
+        ונסיעות) ולא מוחק או משנה רשומות קיימות.
+      </p>
+      <div className="grid grid-cols-2 gap-3">
+        <Button variant="outline" onClick={exportJson}>
+          <Download className="h-4 w-4 ml-1" />
+          ייצוא גיבוי
+        </Button>
+        <Button variant="outline" onClick={() => document.getElementById(inputId)?.click()}>
+          <Upload className="h-4 w-4 ml-1" />
+          שחזור מקובץ
+        </Button>
+      </div>
+      <input
+        id={inputId}
+        type="file"
+        accept="application/json"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void importJson(f);
+          e.target.value = "";
+        }}
+      />
+    </FoldCard>
   );
 }

@@ -1,1 +1,0 @@
-const n="driver-last-account";function r(t){try{localStorage.setItem(n,JSON.stringify(t))}catch{}}function c(){try{const t=localStorage.getItem(n);if(!t)return null;const a=JSON.parse(t);return a&&typeof a.email=="string"?a:null}catch{return null}}export{c as l,r as s};
