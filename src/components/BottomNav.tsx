@@ -1,7 +1,10 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { Home, Plus, Calendar, BarChart3, Settings, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptics";
+import { preloadTabs } from "@/lib/preload-tabs";
+import { useTabReturn } from "@/lib/tab-return";
 
 type NavItem = { to: string; label: string; icon: typeof Home; highlight?: boolean };
 const items: NavItem[] = [
@@ -15,6 +18,16 @@ const items: NavItem[] = [
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const router = useRouter();
+  useTabReturn(pathname);
+  useEffect(
+    () =>
+      preloadTabs(
+        router,
+        items.map((it) => it.to),
+      ),
+    [router],
+  );
 
   return (
     <nav className="ink-nav fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom,0px)]">

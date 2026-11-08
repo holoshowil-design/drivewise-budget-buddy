@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { normalizeMeta, stampChanges, type SyncMeta } from "./sync-meta";
 import type { StopSeconds } from "./trip-stops";
@@ -144,6 +144,13 @@ const defaultData: AppData = {
  */
 let parsedCache: { raw: string; data: AppData } | null = null;
 
+/**
+ * What the screen shows, kept in memory between changes. `save` is the only writer of the
+ * stored blob and it updates this copy before telling the screen; a write from another tab
+ * drops it. Null means: read the stored data on the next look (parsed once, see `load`).
+ */
+let snapshot: AppData | null = null;
+
 export function load(): AppData {
   if (typeof window === "undefined") return defaultData;
   try {
@@ -201,31 +208,50 @@ export function save(data: AppData, opts: { fromCloud?: boolean } = {}) {
       });
     }
   }
+  // A local change is shown as is, even if writing it to the phone failed (storage full).
+  // Data from the cloud is read back through `load`, which fills in missing defaults.
+  snapshot = opts.fromCloud ? null : data;
   window.dispatchEvent(new Event("driver-data-changed"));
   if (!opts.fromCloud) window.dispatchEvent(new CustomEvent("driver-data-local-change"));
 }
 
-export function useAppData() {
-  const [data, setData] = useState<AppData>(defaultData);
-  const [ready, setReady] = useState(false);
+const readSnapshot = () => (snapshot ??= load());
+const serverSnapshot = () => defaultData;
 
-  useEffect(() => {
-    setData(load());
-    setReady(true);
-    const handler = () => setData(load());
-    window.addEventListener("driver-data-changed", handler);
-    window.addEventListener("storage", handler);
-    return () => {
-      window.removeEventListener("driver-data-changed", handler);
-      window.removeEventListener("storage", handler);
-    };
-  }, []);
+function subscribe(onChange: () => void) {
+  // Another tab wrote: drop the copy and read the stored data again.
+  const fromOtherTab = () => {
+    snapshot = null;
+    onChange();
+  };
+  window.addEventListener("driver-data-changed", onChange);
+  window.addEventListener("storage", fromOtherTab);
+  return () => {
+    window.removeEventListener("driver-data-changed", onChange);
+    window.removeEventListener("storage", fromOtherTab);
+  };
+}
+
+const noSubscribe = () => () => {};
+
+/**
+ * The app data for a screen part. While the page hydrates it is the empty default, as on the
+ * server (no localStorage there), and `ready` is false. A part mounted after that (a tab
+ * switch) gets the stored data in its very first render, instead of drawing an empty page
+ * first and the real one a frame later.
+ */
+export function useAppData() {
+  const data = useSyncExternalStore(subscribe, readSnapshot, serverSnapshot);
+  const ready = useSyncExternalStore(
+    noSubscribe,
+    () => true,
+    () => false,
+  );
 
   const update = useCallback((updater: (d: AppData) => AppData) => {
     const prev = load();
     const next = stampChanges(prev, updater(prev));
     save(next);
-    setData(next);
   }, []);
 
   const addIncome = useCallback(

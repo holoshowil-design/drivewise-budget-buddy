@@ -1,4 +1,6 @@
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import { useChartIntro } from "@/lib/anim/chart-motion";
+import { ChartBox } from "@/components/ChartBox";
+import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import { fmt } from "@/lib/store";
 import { INK_TOOLTIP } from "@/components/chart-ink";
 
@@ -22,10 +24,12 @@ export default function ExpensePie({
   data: { name: string; value: number }[];
   currency: string;
 }) {
+  const intro = useChartIntro("expense-pie");
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ChartBox id="expense-pie">
       <PieChart>
         <Pie
+          isAnimationActive={intro}
           data={data}
           dataKey="value"
           nameKey="name"
@@ -47,6 +51,6 @@ export default function ExpensePie({
           )}
         />
       </PieChart>
-    </ResponsiveContainer>
+    </ChartBox>
   );
 }
