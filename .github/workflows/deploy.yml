@@ -1,0 +1,59 @@
+name: Deploy site
+
+# Publishes the site to Cloudflare Workers after every merge to main,
+# so no manual Publish step is needed. Uses the same Supabase backend
+# (same users and data) as the Lovable site, which keeps working too.
+#
+# Needs two repository secrets: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
+# Until they exist the job is skipped (it does not fail).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+    steps:
+      - name: Skip until Cloudflare secrets are set
+        if: env.HAS_TOKEN != 'true'
+        run: echo "::notice::CLOUDFLARE_API_TOKEN is not set yet, skipping deploy."
+      - uses: actions/checkout@v4
+        if: env.HAS_TOKEN == 'true'
+      - uses: actions/setup-node@v4
+        if: env.HAS_TOKEN == 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - if: env.HAS_TOKEN == 'true'
+        run: npm ci
+      - name: Tests
+        if: env.HAS_TOKEN == 'true'
+        run: npm test
+      - name: Build
+        if: env.HAS_TOKEN == 'true'
+        run: npm run build
+      - name: Deploy to Cloudflare
+        if: env.HAS_TOKEN == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        # The build writes .wrangler/deploy/config.json, which points wrangler
+        # at .output/server/wrangler.json (Worker + static assets).
+        # SUPABASE_* are the same public values as in .env (for server code).
+        run: |
+          set -a; . ./.env; set +a
+          npx --yes wrangler@4.155.0 deploy --name driver \
+            --var "SUPABASE_URL:$SUPABASE_URL" \
+            --var "SUPABASE_PUBLISHABLE_KEY:$SUPABASE_PUBLISHABLE_KEY"

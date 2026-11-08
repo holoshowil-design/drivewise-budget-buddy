@@ -18,7 +18,7 @@ npm test            # vitest run
 npm run build       # vite build
 ```
 
-ה-CI (`.github/workflows/ci.yml`) מריץ את ארבעתן על כל PR. אין בו פריסה.
+ה-CI (`.github/workflows/ci.yml`) מריץ את ארבעתן על כל PR. הפריסה ל-Cloudflare (`deploy.yml`) רצה אחרי כל מיזוג ל-main, כשסודות Cloudflare קיימים.
 
 ## מול Lovable
 
