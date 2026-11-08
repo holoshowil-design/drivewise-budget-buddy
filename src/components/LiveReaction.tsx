@@ -20,21 +20,21 @@ function read(
 } {
   if (kind === "income") {
     if (amount <= 0)
-      return { mood: "sleepy", prop: "coffee", line: "נו, כמה עשינו? ☕", tone: "default" };
+      return { mood: "sleepy", prop: "coffee", line: "נו, כמה עשינו?", tone: "default" };
     if (amount < 60)
-      return { mood: "smirk", prop: "cash", line: "כל שקל נספר 😏", tone: "default" };
+      return { mood: "smirk", prop: "cash", line: "כל שקל נספר", tone: "default" };
     if (amount < 180)
       return {
         mood: "excited",
         prop: "cash",
-        line: "יפה! זה כבר משהו 💸",
+        line: "יפה! זה כבר משהו",
         tone: "win",
         word: "צ׳ינג!",
       };
     return {
       mood: "victory",
       prop: "cash",
-      line: "וואו! נסיעת זהב 🤑",
+      line: "וואו! נסיעת זהב",
       tone: "win",
       word: "בּוּם!",
     };
@@ -45,7 +45,7 @@ function read(
     return {
       mood: "grumble",
       prop: "pump",
-      line: amount > 250 ? "אוּף... הדלק שותה הכל ⛽" : "נרשם. נחזיר את זה בנסיעה הבאה",
+      line: amount > 250 ? "אוּף... הדלק שותה הכל" : "נרשם. נחזיר את זה בנסיעה הבאה",
       tone: "warn",
       word: amount > 250 ? "גְּלוּק!" : undefined,
     };
@@ -55,7 +55,7 @@ function read(
   return {
     mood: "grumble",
     prop: "none",
-    line: amount > 200 ? "כבד! שומרים על הכיס 😤" : "קטן, נעבור את זה",
+    line: amount > 200 ? "כבד! שומרים על הכיס" : "קטן, נעבור את זה",
     tone: "warn",
   };
 }

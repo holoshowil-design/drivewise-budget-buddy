@@ -20,7 +20,7 @@ const SCENES: Record<SceneName, { length: number; beats: Beat[] }> = {
     length: 9000,
     beats: [
       { at: 0, mood: "sleepy", prop: "coffee", taxi: "zoom", driving: true },
-      { at: 2200, mood: "sleepy", prop: "coffee", taxi: "tired", quip: "אהההה... ☕" },
+      { at: 2200, mood: "sleepy", prop: "coffee", taxi: "tired", quip: "אהההה..." },
       { at: 4600, mood: "shock", prop: "coffee", taxi: "shock", quip: "הקפה!!" },
       { at: 5600, mood: "grumble", prop: "none", taxi: "happy", quip: "#@!" },
       { at: 7200, mood: "smirk", prop: "none", taxi: "honk", quip: "יאללה, לעבודה" },
@@ -32,7 +32,7 @@ const SCENES: Record<SceneName, { length: number; beats: Beat[] }> = {
       { at: 0, mood: "smirk", prop: "none", taxi: "happy", quip: "ששש..." },
       { at: 1800, mood: "shock", prop: "cash", taxi: "shock", quip: "!?" },
       { at: 2600, mood: "excited", prop: "cash", taxi: "zoom", quip: "שלי!" },
-      { at: 3600, mood: "victory", prop: "cash", taxi: "honk", quip: "בּוּם! 💰" },
+      { at: 3600, mood: "victory", prop: "cash", taxi: "honk", quip: "בּוּם!" },
       { at: 6800, mood: "smirk", prop: "cash", taxi: "happy" },
     ],
   },
@@ -56,7 +56,7 @@ const SCENES: Record<SceneName, { length: number; beats: Beat[] }> = {
         prop: "cash",
         taxi: "honk",
         driving: true,
-        quip: "מצעד ניצחון 🏆",
+        quip: "מצעד ניצחון",
       },
       { at: 8200, mood: "victory", prop: "none", taxi: "happy", driving: false },
     ],
@@ -65,7 +65,7 @@ const SCENES: Record<SceneName, { length: number; beats: Beat[] }> = {
     length: 7000,
     beats: [
       { at: 0, mood: "smirk", prop: "rag", taxi: "happy" },
-      { at: 1600, mood: "smirk", prop: "rag", taxi: "zoom", quip: "מבריקה כמו חדשה ✨" },
+      { at: 1600, mood: "smirk", prop: "rag", taxi: "zoom", quip: "מבריקה כמו חדשה" },
       { at: 5400, mood: "excited", prop: "none", taxi: "honk" },
     ],
   },
@@ -74,7 +74,7 @@ const SCENES: Record<SceneName, { length: number; beats: Beat[] }> = {
     beats: [
       { at: 0, mood: "smirk", prop: "cash", quip: "אחד..." },
       { at: 1500, mood: "smirk", prop: "cash", quip: "שניים..." },
-      { at: 3000, mood: "excited", prop: "cash", quip: "שלוש! 🤑" },
+      { at: 3000, mood: "excited", prop: "cash", quip: "שלוש!" },
     ],
   },
   phone: {
@@ -97,8 +97,8 @@ const SCENES: Record<SceneName, { length: number; beats: Beat[] }> = {
   drive: {
     length: 6000,
     beats: [
-      { at: 0, mood: "smirk", prop: "none", taxi: "zoom", driving: true, quip: "סיבוב חימום 🏁" },
-      { at: 4200, mood: "excited", prop: "none", taxi: "honk", quip: "איזו מכונה! 😍" },
+      { at: 0, mood: "smirk", prop: "none", taxi: "zoom", driving: true, quip: "סיבוב חימום" },
+      { at: 4200, mood: "excited", prop: "none", taxi: "honk", quip: "איזו מכונה!" },
     ],
   },
   brake: {
@@ -107,7 +107,7 @@ const SCENES: Record<SceneName, { length: number; beats: Beat[] }> = {
       { at: 0, mood: "smirk", prop: "none", taxi: "zoom", driving: true, quip: "סיבוב קטן..." },
       { at: 2300, mood: "smirk", prop: "none", taxi: "shock" },
       { at: 3300, mood: "shock", prop: "none", taxi: "cough", quip: "אוי!" },
-      { at: 5600, mood: "smirk", prop: "none", taxi: "tired", quip: "זקנה, אבל שלי 🧡" },
+      { at: 5600, mood: "smirk", prop: "none", taxi: "tired", quip: "זקנה, אבל שלי" },
     ],
   },
 };

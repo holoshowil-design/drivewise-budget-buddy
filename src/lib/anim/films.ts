@@ -57,8 +57,8 @@ export const FILMS: Partial<Record<SceneName, Film>> = {
     clip: MORNING,
     length: 9000,
     beats: [
-      { at: 0, mood: "sleepy", taxi: "zoom", driving: true, film: true, taxiFilm: TAXI_DRIVE, quip: "אהההה... ☕" },
-      { at: 1100, mood: "sleepy", taxi: "shock", film: true, taxiFilm: TAXI_BRAKE, quip: "אהההה... ☕" },
+      { at: 0, mood: "sleepy", taxi: "zoom", driving: true, film: true, taxiFilm: TAXI_DRIVE, quip: "אהההה..." },
+      { at: 1100, mood: "sleepy", taxi: "shock", film: true, taxiFilm: TAXI_BRAKE, quip: "אהההה..." },
       { at: 2580, mood: "shock", taxi: "cough", film: true, taxiFilm: TAXI_BRAKE, quip: "הקפה!!" },
       { at: 4000, mood: "grumble", taxi: "cough", film: true, taxiFilm: TAXI_BRAKE, quip: "#@!" },
       { at: 4600, mood: "grumble", prop: "none", taxi: "tired", taxiFilm: TAXI_BRAKE, quip: "#@!" },
@@ -72,7 +72,7 @@ export const FILMS: Partial<Record<SceneName, Film>> = {
       { at: 0, mood: "smirk", taxi: "happy", film: true, quip: "ששש..." },
       { at: 2000, mood: "shock", taxi: "shock", film: true, quip: "!?" },
       { at: 2670, mood: "excited", taxi: "zoom", film: true, quip: "שלי!" },
-      { at: 3420, mood: "victory", taxi: "honk", film: true, quip: "בּוּם! 💰" },
+      { at: 3420, mood: "victory", taxi: "honk", film: true, quip: "בּוּם!" },
       { at: 6800, mood: "smirk", prop: "cash", taxi: "happy" },
     ],
   },
@@ -94,7 +94,7 @@ export const FILMS: Partial<Record<SceneName, Film>> = {
     travel: true,
     beats: [
       { at: 0, mood: "excited", taxi: "zoom", film: true, quip: "יעד!!" },
-      { at: 1400, mood: "victory", taxi: "honk", driving: true, film: true, taxiFilm: TAXI_DRIVE, quip: "מצעד ניצחון 🏆" },
+      { at: 1400, mood: "victory", taxi: "honk", driving: true, film: true, taxiFilm: TAXI_DRIVE, quip: "מצעד ניצחון" },
       { at: 8200, mood: "victory", prop: "none", taxi: "happy", driving: false },
     ],
   },
@@ -103,7 +103,7 @@ export const FILMS: Partial<Record<SceneName, Film>> = {
     length: 7000,
     beats: [
       { at: 0, mood: "smirk", taxi: "happy", film: true },
-      { at: 1600, mood: "smirk", taxi: "happy", film: true, quip: "מבריקה כמו חדשה ✨" },
+      { at: 1600, mood: "smirk", taxi: "happy", film: true, quip: "מבריקה כמו חדשה" },
       { at: 4500, mood: "smirk", taxi: "honk" },
     ],
   },
@@ -114,7 +114,7 @@ export const FILMS: Partial<Record<SceneName, Film>> = {
       { at: 0, mood: "excited", film: true },
       { at: 500, mood: "excited", film: true, quip: "אחד..." },
       { at: 1670, mood: "excited", film: true, quip: "שניים..." },
-      { at: 2500, mood: "excited", film: true, quip: "שלוש! 🤑" },
+      { at: 2500, mood: "excited", film: true, quip: "שלוש!" },
       { at: 5000, mood: "excited" },
     ],
   },
@@ -140,8 +140,8 @@ export const FILMS: Partial<Record<SceneName, Film>> = {
   drive: {
     length: 6000,
     beats: [
-      { at: 0, mood: "smirk", taxi: "zoom", driving: true, taxiFilm: TAXI_DRIVE, quip: "סיבוב חימום 🏁" },
-      { at: 4200, mood: "excited", taxi: "honk", quip: "איזו מכונה! 😍" },
+      { at: 0, mood: "smirk", taxi: "zoom", driving: true, taxiFilm: TAXI_DRIVE, quip: "סיבוב חימום" },
+      { at: 4200, mood: "excited", taxi: "honk", quip: "איזו מכונה!" },
     ],
   },
   brake: {
@@ -150,7 +150,7 @@ export const FILMS: Partial<Record<SceneName, Film>> = {
       { at: 0, mood: "smirk", taxi: "zoom", driving: true, taxiFilm: TAXI_DRIVE, quip: "סיבוב קטן..." },
       { at: 2300, mood: "smirk", taxi: "shock", taxiFilm: TAXI_BRAKE },
       { at: 3300, mood: "shock", taxi: "cough", taxiFilm: TAXI_BRAKE, quip: "אוי!" },
-      { at: 5600, mood: "smirk", taxi: "tired", taxiFilm: TAXI_BRAKE, quip: "זקנה, אבל שלי 🧡" },
+      { at: 5600, mood: "smirk", taxi: "tired", taxiFilm: TAXI_BRAKE, quip: "זקנה, אבל שלי" },
     ],
   },
 };

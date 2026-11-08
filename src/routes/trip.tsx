@@ -54,7 +54,7 @@ function TripPage() {
               scene={{
                 mood: "excited",
                 prop: "wheel",
-                line: "חגורות! טורבו מתניע 🏁",
+                line: "חגורות! טורבו מתניע",
                 taxi: "zoom",
                 driving: true,
                 backdrop: "road",

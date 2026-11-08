@@ -1,4 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  Target as TargetIcon,
+  Car as CarIcon,
+  Radar as RadarIcon,
+  Cloud as CloudIcon,
+  HardDrive as HardDriveIcon,
+  AlertTriangle as AlertTriangleIcon,
+} from "lucide-react";
+import { SectionTitle } from "@/components/SectionTitle";
 import { useState, useEffect } from "react";
 import { useAppData, type VehicleType } from "@/lib/store";
 import { PageHeader } from "@/components/PageHeader";
@@ -170,7 +179,7 @@ function SettingsPage() {
         scene={{
           mood: "smirk",
           prop: "wrench",
-          line: "המוסך פתוח. מכוונים את המכונה 🔧",
+          line: "המוסך פתוח. מכוונים את המכונה",
           taxi: "tired",
           backdrop: "garage",
         }}
@@ -181,7 +190,7 @@ function SettingsPage() {
 
         <Card>
           <CardContent className="p-4 space-y-3">
-            <h3 className="font-semibold">יעדים ותקציב</h3>
+            <SectionTitle icon={TargetIcon}>יעדים ותקציב</SectionTitle>
             <Field label="יעד רווח יומי (₪)">
               <NumberField
                 value={t.dailyGoal}
@@ -218,7 +227,7 @@ function SettingsPage() {
 
         <Card>
           <CardContent className="p-4 space-y-3">
-            <h3 className="font-semibold">הרכב שלי</h3>
+            <SectionTitle icon={CarIcon}>הרכב שלי</SectionTitle>
             <div className="grid grid-cols-2 gap-3">
               <Field label="יצרן">
                 <Input value={v.make} onChange={(e) => setV({ ...v, make: e.target.value })} />
@@ -298,7 +307,7 @@ function SettingsPage() {
 
         <Card>
           <CardContent className="p-4 space-y-4">
-            <h3 className="font-semibold">זיהוי נסיעות, עצירות ומנוע</h3>
+            <SectionTitle icon={RadarIcon}>זיהוי נסיעות, עצירות ומנוע</SectionTitle>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <Label htmlFor="auto-detect">התחל למדוד לבד כשמזוהה נסיעה</Label>
@@ -370,7 +379,9 @@ function SettingsPage() {
 
         <Card>
           <CardContent className="p-4 space-y-3">
-            <h3 className="font-semibold text-destructive">אזור מסוכן</h3>
+            <SectionTitle icon={AlertTriangleIcon} tone="danger">
+              אזור מסוכן
+            </SectionTitle>
             <p className="text-xs text-muted-foreground">
               מחיקה של כל ההכנסות וההוצאות. הגדרות ופרטי רכב יישמרו.
             </p>
@@ -401,7 +412,7 @@ function AccountCard() {
   return (
     <Card className="card-lift animate-fade-in-up">
       <CardContent className="p-4 space-y-3">
-        <h3 className="font-semibold">חשבון וגיבוי בענן</h3>
+        <SectionTitle icon={CloudIcon}>חשבון וגיבוי בענן</SectionTitle>
         {user ? (
           <>
             <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
@@ -525,7 +536,7 @@ function BackupCard() {
   return (
     <Card>
       <CardContent className="p-4 space-y-3">
-        <h3 className="font-semibold">גיבוי מקומי</h3>
+        <SectionTitle icon={HardDriveIcon}>גיבוי מקומי</SectionTitle>
         <p className="text-xs text-muted-foreground">
           שמור עותק של כל הנתונים כקובץ, ושחזר אותו בכל זמן. השחזור מוסיף רשומות חסרות (הכנסות,
           הוצאות ונסיעות) ולא מוחק או משנה רשומות קיימות.

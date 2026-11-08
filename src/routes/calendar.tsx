@@ -94,7 +94,7 @@ function CalendarPage() {
         scene={{
           mood: monthNet >= 0 ? "smirk" : "grumble",
           prop: "stamp",
-          line: monthNet >= 0 ? "כל יום יעד מקבל חותמת! 🟢" : "החודש עוד ניתן להציל 💪",
+          line: monthNet >= 0 ? "כל יום יעד מקבל חותמת!" : "החודש עוד ניתן להציל",
           backdrop: "promenade",
         }}
       />

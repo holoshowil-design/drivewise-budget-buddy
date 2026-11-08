@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { History as HistoryIcon } from "lucide-react";
+import { SectionTitle } from "@/components/SectionTitle";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -85,7 +87,7 @@ export function FuelPriceHistoryCard() {
     <Card>
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="font-semibold">היסטוריית מחירי דלק</h3>
+          <SectionTitle icon={HistoryIcon}>היסטוריית מחירי דלק</SectionTitle>
           <Button variant="outline" size="sm" onClick={addRow}>
             <Plus className="h-4 w-4 ml-1" />
             שורה
