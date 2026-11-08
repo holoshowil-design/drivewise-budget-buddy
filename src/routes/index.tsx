@@ -128,8 +128,10 @@ function Dashboard() {
         <AccountBadge />
       </header>
 
-      <div className="px-4 pb-3">
+      <div className="space-y-3 px-4 pb-4">
         <WorkStatus />
+        {/* First thing on the screen: starting a trip needs no scrolling. */}
+        <DriveModeAction active={tripActive} />
       </div>
 
       <div className="stagger space-y-4 px-4">
@@ -142,7 +144,6 @@ function Dashboard() {
           hourly={hoursToday > 0 ? netToday / hoursToday : 0}
         />
         <MomentumCoach data={data} />
-        <DriveModeAction active={tripActive} />
         <PremiumStats
           data={data}
           income={incomeToday}
