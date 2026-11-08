@@ -1,7 +1,8 @@
+import { fmtDurationWords } from "@/lib/duration";
 import { memo, useMemo } from "react";
 import { Pause } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { fmt, fmtDuration, todayISO, tripEnergy, type AppData } from "@/lib/store";
+import { fmt, todayISO, tripEnergy, type AppData } from "@/lib/store";
 import { isBetween, isPrivate, workTrips } from "@/lib/between-trip";
 import { STOP_REASONS, sumStops } from "@/lib/trip-stops";
 
@@ -54,7 +55,7 @@ export const StopsSummary = memo(function StopsSummary({ data }: { data: AppData
           <Pause className="h-4 w-4 text-primary" /> המתנות ועצירות ב-{DAYS} הימים האחרונים
           {total > 0 && (
             <span className="num ms-auto text-xs font-normal text-muted-foreground">
-              סה״כ {fmtDuration(total)}
+              סה״כ {fmtDurationWords(total)}
             </span>
           )}
         </h3>
@@ -63,7 +64,7 @@ export const StopsSummary = memo(function StopsSummary({ data }: { data: AppData
             <li key={r.id} className="num text-xs">
               <div className="flex justify-between">
                 <span>{r.label}</span>
-                <span className="font-semibold">{fmtDuration(r.seconds)}</span>
+                <span className="font-semibold">{fmtDurationWords(r.seconds)}</span>
               </div>
               <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted">
                 <div
@@ -76,7 +77,7 @@ export const StopsSummary = memo(function StopsSummary({ data }: { data: AppData
         </ul>
         {s.idleSeconds >= 60 && (
           <p className="num mt-3 text-xs text-muted-foreground">
-            מנוע דלוק בעמידה {fmtDuration(s.idleSeconds)} · ≈ {fmt(s.idleCost, c)} דלק
+            מנוע דלוק בעמידה {fmtDurationWords(s.idleSeconds)} · ≈ {fmt(s.idleCost, c)} דלק
           </p>
         )}
         {s.privCount > 0 && (

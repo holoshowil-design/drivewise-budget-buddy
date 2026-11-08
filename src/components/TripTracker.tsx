@@ -1,3 +1,4 @@
+import { fmtDurationWords } from "@/lib/duration";
 import {
   useCallback,
   useEffect,
@@ -175,7 +176,7 @@ export function TripTracker({
     toast(
       isPrivate(cur)
         ? `נסיעה פרטית נשמרה · ${cur.km.toFixed(1)} ק״מ`
-        : `יום העבודה נסגר · ${fmtDuration(seconds)} בין נסיעות · ${cur.km.toFixed(1)} ק״מ`,
+        : `יום העבודה נסגר · ${fmtDurationWords(seconds)} בין נסיעות · ${cur.km.toFixed(1)} ק״מ`,
     );
   };
 

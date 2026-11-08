@@ -1,12 +1,12 @@
+import { fmtDurationWords } from "@/lib/duration";
 import { Fragment, memo, useMemo, useState } from "react";
-import { Fuel, Pencil, Trash2 } from "lucide-react";
+import { Fuel, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   effectiveFuelParams,
   energyUnitLabel,
   fmt,
-  fmtDuration,
   todayISO,
   tripEnergy,
   type AppData,
@@ -82,7 +82,7 @@ export const TripHistory = memo(function TripHistory({
                               פרטית
                             </span>
                           )}
-                          {t.km.toFixed(1)} ק״מ · {fmtDuration(t.seconds)}
+                          {t.km.toFixed(1)} ק״מ · {fmtDurationWords(t.seconds)}
                           {inc && <span className="text-success"> · {fmt(inc.amount, c)}</span>}
                         </div>
                         <div className="num text-[11px] text-muted-foreground">
@@ -96,21 +96,15 @@ export const TripHistory = memo(function TripHistory({
                           {t.auto && " · זוהתה לבד"}
                         </div>
                       </button>
+                      {/* The row itself opens the trip for editing; delete stays quiet until touched. */}
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label="ערוך נסיעה"
-                        onClick={() => onEdit(t)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
+                        className="h-10 w-10 shrink-0 text-muted-foreground/70 hover:text-destructive active:text-destructive"
                         aria-label="מחק נסיעה"
                         onClick={() => onDelete(t)}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </li>
                   );

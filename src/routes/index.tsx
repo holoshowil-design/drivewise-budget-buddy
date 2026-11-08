@@ -1,7 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useAppData, todayISO, fmt, monthRange } from "@/lib/store";
-import { dayOf, monthForecast, sumDays, useDays } from "@/lib/calc";
-import { Card, CardContent } from "@/components/ui/card";
+import { createFileRoute } from "@tanstack/react-router";
+import { useAppData, todayISO } from "@/lib/store";
+import { dayOf, monthForecast, useDays } from "@/lib/calc";
 import { InsightsCard } from "@/components/InsightsCard";
 import { KmCostCard } from "@/components/KmCostCard";
 import { lazy, Suspense } from "react";
@@ -13,8 +12,6 @@ import {
   PremiumStats,
 } from "@/components/PremiumDashboard";
 
-import { Zap, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { AccountBadge } from "@/components/AccountBadge";
 import { WorkStatus } from "@/components/WorkStatus";
 import { useEffect, useState } from "react";
@@ -89,15 +86,7 @@ function Dashboard() {
     settings.fixedMonthlyExpenses / Math.max(1, settings.workDaysPerMonth) + expenseToday,
   );
 
-  // month
   const now = new Date();
-  const { from, to } = monthRange(now.getFullYear(), now.getMonth());
-  const month = sumDays(days, from, to);
-  const monthIncome = month.incomeNet;
-  const monthExpense = month.costs;
-  const monthNet = month.net;
-  const daysWorked = month.daysWorked;
-  const dayOfMonth = now.getDate();
   const forecast = Math.round(monthForecast(days, data, today).forecast);
 
   const hour = now.getHours();
@@ -168,69 +157,9 @@ function Dashboard() {
         <KmCostCard data={data} />
 
         <InsightsCard data={data} />
-
-        {/* Quick actions */}
-        <div className="grid grid-cols-3 gap-2">
-          <Button
-            asChild
-            variant="secondary"
-            className="w-full h-auto py-3 flex-col gap-1 rounded-xl"
-          >
-            <Link to="/add" search={{ tab: "income" }}>
-              <Plus className="h-4 w-4 text-success" />
-              <span className="text-xs font-medium">הכנסה</span>
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="secondary"
-            className="w-full h-auto py-3 flex-col gap-1 rounded-xl"
-          >
-            <Link to="/add" search={{ tab: "expense" }}>
-              <Plus className="h-4 w-4 text-destructive" />
-              <span className="text-xs font-medium">הוצאה</span>
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="secondary"
-            className="w-full h-auto py-3 flex-col gap-1 rounded-xl"
-          >
-            <Link to="/add" search={{ tab: "fuel" }}>
-              <Zap className="h-4 w-4 text-warning" />
-              <span className="text-xs font-medium">תדלוק</span>
-            </Link>
-          </Button>
-        </div>
-
-        {/* Month summary */}
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold">סיכום חודשי</h3>
-              <span className="text-xs text-muted-foreground">יום {dayOfMonth} בחודש</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <MiniStat label="הכנסות" value={fmt(monthIncome, c)} />
-              <MiniStat label="הוצאות" value={fmt(monthExpense, c)} />
-              <MiniStat label="נטו" value={fmt(monthNet, c)} accent />
-            </div>
-            <div className="text-xs text-muted-foreground text-center">
-              {daysWorked} ימי עבודה · ממוצע יומי{" "}
-              {fmt(daysWorked ? Math.round(monthNet / daysWorked) : 0, c)}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Adding a record is the + in the bottom bar; the month totals live in the
+            profitability and month-pace cards above, and in full on the reports page. */}
       </div>
-    </div>
-  );
-}
-
-function MiniStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div>
-      <div className="text-[11px] text-muted-foreground">{label}</div>
-      <div className={`num text-base font-semibold ${accent ? "text-primary" : ""}`}>{value}</div>
     </div>
   );
 }
