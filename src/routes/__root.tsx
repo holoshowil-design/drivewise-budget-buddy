@@ -179,7 +179,8 @@ function RootComponent() {
       <RewardEffects />
       <SoundDirector />
       <BottomNav />
-      <Toaster position="top-center" richColors />
+      {/* Short by default; toasts with an undo button keep a few seconds more. */}
+      <Toaster position="top-center" richColors duration={2500} />
     </>
   );
 }

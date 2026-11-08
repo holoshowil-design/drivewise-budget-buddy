@@ -254,6 +254,7 @@ function IncomeForm({ initialDate }: { initialDate?: string }) {
         streak: nextStreak.current,
       });
     toast.success(`נוספה הכנסה · נטו ${fmt(previewNet, c)}`, {
+      duration: 4000,
       action: { label: "ביטול", onClick: () => removeIncome(id) },
     });
     setForm((f) => ({ ...f, amount: "", tip: "", hours: "", km: "", note: "" }));
@@ -436,6 +437,7 @@ function ExpenseForm({ initialDate }: { initialDate?: string }) {
         message: feedback.message,
       });
     toast.success(`נוספה הוצאה · ${fmt(amount, c)}`, {
+      duration: 4000,
       action: { label: "ביטול", onClick: () => removeExpense(id) },
     });
     setForm((f) => ({ ...f, amount: "", note: "" }));
@@ -549,6 +551,7 @@ function FuelForm({ initialDate }: { initialDate?: string }) {
         message: feedback.message,
       });
     toast.success(`${isElectric ? "טעינה נרשמה" : "תדלוק נרשם"} · ${fmt(amount, c)}`, {
+      duration: 4000,
       action: { label: "ביטול", onClick: () => removeExpense(id) },
     });
     setForm((f) => ({ ...f, amount: "", note: "" }));
