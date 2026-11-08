@@ -79,7 +79,7 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
     const back =
       r.type === "income" ? { incomes: [r.item as Income] } : { expenses: [r.item as Expense] };
     toast("הרשומה נמחקה", {
-      duration: 8000,
+      duration: 5000,
       action: { label: "ביטול", onClick: () => restoreRecords(back) },
     });
   };

@@ -148,6 +148,7 @@ export function TripTracker({
     haptic("success");
     playSound("turbo-start");
     toast.success("נסיעת עבודה התחילה", {
+      duration: 4000,
       action: {
         label: "ביטול",
         onClick: () => {
@@ -395,7 +396,7 @@ export function TripTracker({
     const linked = data.incomes.filter((i) => i.tripId === t.id);
     removeTrip(t.id);
     toast("הנסיעה נמחקה", {
-      duration: 8000,
+      duration: 5000,
       action: { label: "ביטול", onClick: () => restoreRecords({ trips: [t], incomes: linked }) },
     });
   };
@@ -712,7 +713,7 @@ export function TripTracker({
             const cancelled = activeRef.current;
             finishEnding();
             toast("הנסיעה בוטלה ולא נשמרה", {
-              duration: 8000,
+              duration: 5000,
               action: cancelled
                 ? {
                     label: "ביטול",

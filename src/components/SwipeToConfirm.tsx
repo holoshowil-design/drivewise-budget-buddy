@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const DONE_AT = 0.8;
 /** A quick flick (px per ms) past the middle also counts. */
 const FLICK = 0.9;
-const PAD = 4;
+const PAD = 6;
 const SPRING = "transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1)";
 const GLIDE = "transform 160ms cubic-bezier(0.22, 1, 0.36, 1)";
 
@@ -156,32 +156,26 @@ export function SwipeToConfirm({
   };
 
   return (
-    <div
-      ref={track}
-      className={cn(
-        "relative h-16 w-full select-none overflow-hidden rounded-2xl bg-primary text-primary-foreground shadow-sm",
-        className,
-      )}
-    >
+    <div ref={track} className={cn("swipe-track relative h-16 w-full select-none", className)}>
       {/* Filled part behind the thumb */}
       <div
         ref={fill}
-        className="absolute inset-y-0 start-0 w-full rounded-2xl bg-primary-foreground/20 will-change-transform"
+        className="swipe-fill absolute inset-y-0 start-0 w-full will-change-transform"
         aria-hidden="true"
       />
       <span
         ref={text}
-        className="pointer-events-none absolute inset-0 flex items-center justify-center ps-16 text-[15px] font-bold"
+        className="swipe-label pointer-events-none absolute inset-0 flex items-center justify-center ps-16"
         aria-hidden="true"
       >
-        <span className="swipe-shine">{showHint ? hint : label}</span>
-        <ChevronsLeft className="ms-1 h-4 w-4 opacity-70 ltr:rotate-180" />
+        <span>{showHint ? hint : label}</span>
+        <ChevronsLeft className="swipe-arrows ms-1 h-5 w-5 ltr:rotate-180" />
       </span>
       <button
         ref={thumb}
         type="button"
         aria-label={label}
-        className="absolute start-1 top-1 z-10 flex h-14 w-14 touch-none items-center justify-center rounded-xl bg-primary-foreground text-primary shadow-md will-change-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:shadow-lg"
+        className="swipe-thumb absolute start-1.5 top-1.5 z-10 flex h-12 w-12 touch-none items-center justify-center will-change-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}

@@ -151,7 +151,7 @@ export function DriveDetector() {
   const no = () => {
     writeActive(autoToSide(cur, "private"));
     toast("נסיעה פרטית · נמדדים ק״מ ודלק, לא נכנס לחישובי העבודה. נשמר לבד כשהרכב חונה.", {
-      duration: 8000,
+      duration: 5000,
       action: { label: "ביטול", onClick: () => writeActive(cur) },
     });
   };

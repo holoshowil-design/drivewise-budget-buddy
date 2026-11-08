@@ -3627,30 +3627,64 @@ body {
   opacity: 0.7;
 }
 
-/* "Slide to start" label: a soft light passes over the words (home screen only). */
-.swipe-shine {
-  background: linear-gradient(
-    100deg,
-    currentColor 40%,
-    color-mix(in oklab, currentColor 35%, transparent) 50%,
-    currentColor 60%
-  );
-  background-size: 250% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: swipe-shine 2.6s linear infinite;
+/* "Slide to start": an inked cel like the other cards, with a paper knob */
+.swipe-track {
+  --fill: var(--primary);
+  overflow: hidden;
+  border: var(--line) solid var(--ink);
+  border-radius: var(--wobble);
+  color: var(--primary-foreground);
+  background: linear-gradient(var(--fill), var(--fill)) var(--slip) var(--slip) / 100% 100%
+    no-repeat border-box;
+  box-shadow: var(--slip) var(--slip) 0 var(--fill);
 }
-@keyframes swipe-shine {
-  from {
-    background-position: 100% 0;
+.swipe-fill {
+  /* hatch lines, like the shading in the drawings */
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in oklab, var(--mustard) 55%, transparent) 0 2px,
+    transparent 2px 7px
+  );
+  border-radius: var(--wobble);
+}
+.swipe-label {
+  font-family: "Secular One", var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0;
+  text-shadow: 1.5px 1.5px 0 var(--ink);
+}
+.swipe-arrows {
+  color: var(--mustard);
+  filter: drop-shadow(1px 1px 0 var(--ink));
+  animation: swipe-nudge 1.6s ease-in-out infinite;
+}
+.swipe-thumb {
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  color: var(--ink);
+  background: radial-gradient(
+    circle 1.5rem at calc(50% + 3px) calc(50% + 3px),
+    var(--mustard) 98%,
+    transparent 100%
+  );
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.swipe-thumb:active {
+  background: var(--mustard);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+@keyframes swipe-nudge {
+  0%,
+  60%,
+  100% {
+    transform: translateX(0);
   }
-  to {
-    background-position: -150% 0;
+  30% {
+    transform: translateX(-4px);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .swipe-shine {
+  .swipe-arrows {
     animation: none;
   }
 }
