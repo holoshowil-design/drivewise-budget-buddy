@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { haptic, hapticsEnabled, setHapticsEnabled } from "@/lib/haptics";
 import { playSound, setSoundEnabled, soundEnabled, type SoundName } from "@/lib/sound";
 
 /** The samples button walks through these, so it is easy to say which one to change. */
@@ -25,9 +26,13 @@ const SAMPLES: readonly { sound: SoundName; label: string }[] = [
 
 export function SoundSettingsCard() {
   const [on, setOn] = useState(true);
+  const [buzz, setBuzz] = useState(true);
   const [heard, setHeard] = useState<string | null>(null);
   const next = useRef(0);
-  useEffect(() => setOn(soundEnabled()), []);
+  useEffect(() => {
+    setOn(soundEnabled());
+    setBuzz(hapticsEnabled());
+  }, []);
 
   return (
     <Card>
@@ -47,6 +52,23 @@ export function SoundSettingsCard() {
               setOn(v);
               setSoundEnabled(v);
               if (v) playSound("beep");
+            }}
+          />
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <Label htmlFor="haptics-on">רטט קל במגע</Label>
+            <p className="text-xs text-muted-foreground">
+              בהחלקה, בהתחלה ובסיום נסיעה ובמעבר בין מסכים.
+            </p>
+          </div>
+          <Switch
+            id="haptics-on"
+            checked={buzz}
+            onCheckedChange={(v) => {
+              setBuzz(v);
+              setHapticsEnabled(v);
+              if (v) haptic("tap");
             }}
           />
         </div>

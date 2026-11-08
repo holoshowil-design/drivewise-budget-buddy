@@ -6,6 +6,7 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
+import { haptic } from "@/lib/haptics";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -144,6 +145,7 @@ export function TripTracker({
     // TripWatcher (root layout) starts measuring as soon as the trip is stored.
     persist({ startedAt: now, date: todayISO(), time: nowHHMM(), km: 0, lastMoveAt: now });
     requestNotifyPermission();
+    haptic("success");
     playSound("turbo-start");
     toast.success("נסיעת עבודה התחילה", {
       action: {
@@ -190,6 +192,7 @@ export function TripTracker({
       const running = activeRef.current;
       if (!running) return;
       const until = Math.max(running.startedAt, Math.min(Date.now(), endAt ?? Date.now()));
+      haptic("tap");
       // A stop still running ends with the trip.
       const cur = closeStop(running, until);
       // GPS pauses while the end form is open; closing it resumes the trip.

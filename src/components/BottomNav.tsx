@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Plus, Calendar, BarChart3, Settings, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { haptic } from "@/lib/haptics";
 
 type NavItem = { to: string; label: string; icon: typeof Home; highlight?: boolean };
 const items: NavItem[] = [
@@ -27,6 +28,7 @@ export function BottomNav() {
                 to={it.to as never}
                 aria-label={it.label}
                 aria-current={active ? "page" : undefined}
+                onClick={() => haptic("light")}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground",
