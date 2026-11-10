@@ -29,7 +29,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Trash2, TrendingUp, TrendingDown } from "lucide-react";
+import { ChevronDown, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { SwipeRow } from "@/components/SwipeRow";
 import { toast } from "sonner";
 import { NumberField } from "@/components/NumberField";
@@ -62,6 +62,7 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
   const c = data.settings.currency;
   const [editing, setEditing] = useState<Row | null>(null);
   const [shown, setShown] = useState(PAGE_ROWS);
+  const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
 
   const rows: Row[] = [
     ...incomes.map((item) => ({ type: "income" as const, item })),
@@ -88,10 +89,12 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
   const manyDays = days.length > 1;
   const today = todayISO();
   // Whole days up to the row budget (always at least one day).
+  // With several days, each folds to its header line; the newest starts open.
+  const isOpen = (date: string, i: number) => !manyDays || (openDays[date] ?? i === 0);
   let budget = shown;
   const visibleDays = days.filter((d, i) => {
     if (i > 0 && budget <= 0) return false;
-    budget -= d.rows.length;
+    budget -= isOpen(d.date, i) ? d.rows.length : 1;
     return true;
   });
   const hidden = days.length - visibleDays.length;
@@ -110,11 +113,27 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
     <>
       <Card>
         <CardContent className="p-0 divide-y divide-border">
-          {visibleDays.map((day) => (
+          {visibleDays.map((day, dayIndex) => (
             <Fragment key={day.date}>
               {manyDays && (
-                <div className="num flex items-center justify-between bg-muted/40 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                  <span>{dayLabel(day.date, today)}</span>
+                <button
+                  type="button"
+                  aria-expanded={isOpen(day.date, dayIndex)}
+                  onClick={() =>
+                    setOpenDays((o) => ({ ...o, [day.date]: !isOpen(day.date, dayIndex) }))
+                  }
+                  className="num flex w-full items-center justify-between gap-2 bg-muted/40 px-3 py-2.5 text-xs font-semibold text-muted-foreground"
+                >
+                  <span className="flex items-center gap-1.5 text-foreground">
+                    <ChevronDown
+                      aria-hidden="true"
+                      className={`h-4 w-4 transition-transform ${isOpen(day.date, dayIndex) ? "rotate-180" : ""}`}
+                    />
+                    {dayLabel(day.date, today)}
+                    <span className="font-normal text-muted-foreground">
+                      · {day.rows.length} רשומות
+                    </span>
+                  </span>
                   <span title="הכנסות פחות הוצאות שנרשמו ביום הזה. תדלוק נספר ביום ששילמת עליו, ולכן המספר יכול להיות שונה מהרווח בדשבורד">
                     בקופה{" "}
                     <span dir="ltr">
@@ -124,9 +143,9 @@ export function RecordsList({ incomes, expenses }: { incomes: Income[]; expenses
                       )}
                     </span>
                   </span>
-                </div>
+                </button>
               )}
-              {day.rows.map((r) => {
+              {(isOpen(day.date, dayIndex) ? day.rows : []).map((r) => {
                 const isIncome = r.type === "income";
                 const amount = isIncome
                   ? netFromIncome(r.item as Income)
