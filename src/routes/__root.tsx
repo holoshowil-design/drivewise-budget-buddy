@@ -15,6 +15,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/BottomNav";
 import { DriveDetector } from "@/components/DriveDetector";
 import { UpdateBanner } from "@/components/UpdateBanner";
+import { OfflineChip } from "@/components/OfflineChip";
+import { registerOfflineWorker } from "@/lib/offline";
 import { TripWatcher } from "@/components/TripWatcher";
 import { RewardEffects } from "@/components/RewardEffects";
 import { SoundDirector } from "@/components/SoundDirector";
@@ -168,6 +170,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   useCloudSync();
   useAppLoginReturn();
+  useEffect(registerOfflineWorker, []);
 
   return (
     <>
@@ -177,6 +180,7 @@ function RootComponent() {
       <TripWatcher />
       <DriveDetector />
       <UpdateBanner />
+      <OfflineChip />
       <InkWorld />
       <SkyClock />
       <RewardEffects />
