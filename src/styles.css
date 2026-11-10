@@ -3750,3 +3750,328 @@ textarea::placeholder {
   color: color-mix(in oklab, var(--color-muted-foreground) 50%, transparent);
   font-weight: 500;
 }
+
+/* ---- the daily-profit dial: a 1961 dashboard instrument (MeterDial.tsx) ----
+   Flat cel colours and ink lines only. The needle keeps the stall-then-shoot entrance. */
+.meter-bezel {
+  fill: #cfc8b6;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.meter-bezel-shine {
+  fill: none;
+  stroke: #f4efe2;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 46 400;
+  stroke-dashoffset: -34;
+}
+.meter-face {
+  fill: #fff6dc;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.meter-band,
+.meter-band-value {
+  fill: none;
+  stroke-width: 6;
+}
+.meter-band {
+  stroke: var(--paper-shade);
+}
+.meter-ticks line {
+  stroke: var(--ink);
+  stroke-linecap: round;
+}
+.meter-numbers text {
+  fill: var(--ink);
+  font-family: "Secular One", var(--font-display);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+.meter-flag,
+.meter-needle {
+  transform-origin: 110px 112px;
+  transform-box: view-box;
+}
+.meter-flag line {
+  stroke: var(--ink);
+  stroke-width: 1.6;
+}
+.meter-flag path {
+  fill: var(--mustard);
+  stroke: var(--ink);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+.meter-flag-passed path {
+  fill: var(--hud-good);
+}
+.meter-needle path {
+  stroke-linejoin: round;
+}
+.meter-hub {
+  fill: var(--ink);
+}
+.meter-hub-shine {
+  fill: #fff6dc;
+  opacity: 0.85;
+}
+.meter-drums-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: "Secular One", var(--font-display);
+  font-size: 2.3rem;
+  line-height: 1;
+}
+.meter-drum {
+  display: block;
+  width: 0.78em;
+  height: 1.22em;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 7px 8px 6px 8px;
+  background: #fff6dc;
+  color: var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.meter-drum-lead {
+  color: color-mix(in oklab, var(--ink) 26%, #fff6dc);
+}
+.meter-reel {
+  display: block;
+  transition: transform 1.1s cubic-bezier(0.2, 1.25, 0.35, 1);
+  will-change: transform;
+}
+.meter-reel > span {
+  display: block;
+  height: 1.22em;
+  line-height: 1.22em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.meter-sign,
+.meter-currency {
+  color: var(--hud-foreground);
+  font-size: 0.62em;
+  padding-inline: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .meter-reel {
+    transition: none;
+  }
+}
+
+/* ---- life in the stage sky (StageSky.tsx): flat cel shapes between the painting and its frame */
+.stage-sky {
+  position: absolute;
+  inset: var(--frame-top, 0) 0 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: var(--wobble-sm);
+  pointer-events: none;
+}
+.stage-garage .stage-sky {
+  display: none;
+}
+.sky-cloud,
+.sky-star {
+  position: absolute;
+  display: none;
+}
+.sky-cloud path {
+  fill: #fff6dc;
+  stroke: var(--ink);
+  stroke-width: 1.3;
+  stroke-linejoin: round;
+}
+.sky-star path {
+  fill: #fff6dc;
+}
+html:not([data-sky="night"]) .sky-cloud {
+  display: block;
+  left: -4.5rem;
+  animation: sky-drift 80s linear infinite;
+}
+.sky-cloud-a {
+  top: 7%;
+  width: 3.4rem;
+  opacity: 0.92;
+}
+.sky-cloud-b {
+  top: 19%;
+  width: 2.3rem;
+  opacity: 0.8;
+  animation-duration: 115s !important;
+  animation-delay: -50s !important;
+}
+[data-sky="dusk"] .sky-cloud path {
+  fill: #ffd9c2;
+}
+[data-sky="dawn"] .sky-cloud path {
+  fill: #fff0dc;
+}
+@keyframes sky-drift {
+  to {
+    transform: translateX(calc(100vw + 6rem));
+  }
+}
+[data-sky="night"] .sky-star {
+  display: block;
+  width: 9px;
+  animation: sky-blink 4.2s steps(1) infinite;
+}
+.sky-star-0 {
+  top: 12%;
+  left: 40%;
+}
+.sky-star-1 {
+  top: 24%;
+  left: 12%;
+  width: 7px !important;
+  animation-delay: -1.3s !important;
+  animation-duration: 5.4s !important;
+}
+.sky-star-2 {
+  top: 7%;
+  left: 62%;
+  width: 6px !important;
+  animation-delay: -2.6s !important;
+}
+.sky-star-3 {
+  top: 31%;
+  left: 49%;
+  width: 6px !important;
+  animation-delay: -3.4s !important;
+  animation-duration: 6.1s !important;
+}
+@keyframes sky-blink {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  38% {
+    transform: scale(0.55) rotate(45deg);
+    opacity: 0.7;
+  }
+  46% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  58% {
+    transform: scale(0.6) rotate(45deg);
+    opacity: 0.8;
+  }
+  66% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+/* never while driving, never with reduced motion */
+body:has(.drive-hud) :is(.sky-cloud, .sky-star) {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sky-cloud,
+  .sky-star {
+    animation: none !important;
+  }
+  html:not([data-sky="night"]) .sky-cloud {
+    left: 18%;
+  }
+  html:not([data-sky="night"]) .sky-cloud-b {
+    left: 46%;
+  }
+}
+
+/* ---- opening title card (TitleCard.tsx): once per launch, then an iris opens onto the app.
+   Pure CSS so it covers the load itself; it never takes a tap. */
+.title-card {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  animation: title-gone 0s linear 1.5s forwards;
+}
+html[data-opened] .title-card {
+  display: none;
+}
+.title-iris {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow:
+    0 0 0 3px #231f1c,
+    0 0 0 200vmax #f3ead3;
+  animation: title-iris 0.55s cubic-bezier(0.6, 0, 0.9, 0.6) 0.95s forwards;
+}
+.title-content {
+  position: relative;
+  text-align: center;
+  color: #231f1c;
+  animation:
+    title-pop 0.4s cubic-bezier(0.2, 1.6, 0.4, 1) both,
+    title-out 0.16s linear 0.84s forwards;
+}
+.title-presents {
+  font-family: "Secular One", sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+}
+.title-name {
+  margin-top: 0.1rem;
+  font-family: "Karantina", "Secular One", sans-serif;
+  font-weight: 700;
+  font-size: 5.6rem;
+  line-height: 0.95;
+  color: #f2b630;
+  -webkit-text-stroke: 2px #231f1c;
+  paint-order: stroke fill;
+  text-shadow: 4px 4px 0 #231f1c;
+}
+.title-rule {
+  width: 9rem;
+  height: 0.55rem;
+  margin: 0.5rem auto 0;
+  border: 2px solid #231f1c;
+  border-radius: 3px;
+  background: repeating-linear-gradient(90deg, #231f1c 0 0.55rem, #f2b630 0.55rem 1.1rem);
+}
+@keyframes title-pop {
+  from {
+    transform: scale(0.7) rotate(-4deg);
+    opacity: 0;
+  }
+}
+@keyframes title-out {
+  to {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+@keyframes title-iris {
+  to {
+    width: 260vmax;
+    height: 260vmax;
+  }
+}
+@keyframes title-gone {
+  to {
+    visibility: hidden;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .title-card {
+    display: none;
+  }
+}

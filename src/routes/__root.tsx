@@ -19,6 +19,7 @@ import { TripWatcher } from "@/components/TripWatcher";
 import { RewardEffects } from "@/components/RewardEffects";
 import { SoundDirector } from "@/components/SoundDirector";
 import { InkWorld } from "@/components/InkWorld";
+import { TitleCard, TitleCardScript } from "@/components/TitleCard";
 import { SkyClock } from "@/components/SkyClock";
 import { useCloudSync } from "@/hooks/use-auth";
 import { isNativeApp } from "@/lib/location";
@@ -150,11 +151,13 @@ function useAppLoginReturn() {
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="he" dir="rtl">
+    <html lang="he" dir="rtl" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <TitleCardScript />
       </head>
       <body>
+        <TitleCard />
         {children}
         <Scripts />
       </body>

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { StageSky } from "@/components/StageSky";
 import type { MascotMood, MascotProp } from "@/components/DriverMascot";
 import type { TaxiMood } from "@/components/CaricatureTaxi";
 import { ComicBubble } from "@/components/InkWorld";
@@ -48,6 +49,7 @@ export function PageHeader({
 export function PageStage({ scene }: { scene: PageScene }) {
   return (
     <div className={`page-stage stage-bg stage-${scene.backdrop ?? "street"}`} aria-hidden="true">
+        <StageSky />
       <MovieStage
         base={{ mood: scene.mood, prop: scene.prop, taxi: scene.taxi, driving: scene.driving }}
         mascotClass="page-stage-mascot"
