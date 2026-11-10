@@ -154,7 +154,8 @@ async function saveTabs() {
         seen.add(f);
         try {
           const text = await (await cachedOrFetch(f)).text();
-          for (const m of text.matchAll(/assets\/([\w.-]+\.(?:js|css))/g)) files.add(`/assets/${m[1]}`);
+          for (const m of text.matchAll(/assets\/([\w.-]+\.(?:js|css))/g))
+            files.add(`/assets/${m[1]}`);
         } catch {
           // Missing file: skip it.
         }
