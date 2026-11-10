@@ -3750,3 +3750,708 @@ textarea::placeholder {
   color: color-mix(in oklab, var(--color-muted-foreground) 50%, transparent);
   font-weight: 500;
 }
+
+/* ---- the daily-profit dial: a 1961 dashboard instrument (MeterDial.tsx) ----
+   Flat cel colours and ink lines only. The needle keeps the stall-then-shoot entrance. */
+.meter-bezel {
+  fill: #cfc8b6;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.meter-bezel-shine {
+  fill: none;
+  stroke: #f4efe2;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 46 400;
+  stroke-dashoffset: -34;
+}
+.meter-face {
+  fill: #fff6dc;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.meter-band,
+.meter-band-value {
+  fill: none;
+  stroke-width: 6;
+}
+.meter-band {
+  stroke: var(--paper-shade);
+}
+.meter-ticks line {
+  stroke: var(--ink);
+  stroke-linecap: round;
+}
+.meter-numbers text {
+  fill: var(--ink);
+  font-family: "Secular One", var(--font-display);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+.meter-flag,
+.meter-needle {
+  transform-origin: 110px 112px;
+  transform-box: view-box;
+}
+.meter-flag line {
+  stroke: var(--ink);
+  stroke-width: 1.6;
+}
+.meter-flag path {
+  fill: var(--mustard);
+  stroke: var(--ink);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+.meter-flag-passed path {
+  fill: var(--hud-good);
+}
+.meter-needle path {
+  stroke-linejoin: round;
+}
+.meter-hub {
+  fill: var(--ink);
+}
+.meter-hub-shine {
+  fill: #fff6dc;
+  opacity: 0.85;
+}
+.meter-drums-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: "Secular One", var(--font-display);
+  font-size: 2.3rem;
+  line-height: 1;
+}
+.meter-drum {
+  display: block;
+  width: 0.78em;
+  height: 1.22em;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 7px 8px 6px 8px;
+  background: #fff6dc;
+  color: var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.meter-drum-lead {
+  color: color-mix(in oklab, var(--ink) 26%, #fff6dc);
+}
+.meter-reel {
+  display: block;
+  transition: transform 1.1s cubic-bezier(0.2, 1.25, 0.35, 1);
+  will-change: transform;
+}
+.meter-reel > span {
+  display: block;
+  height: 1.22em;
+  line-height: 1.22em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.meter-sign,
+.meter-currency {
+  color: var(--hud-foreground);
+  font-size: 0.62em;
+  padding-inline: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .meter-reel {
+    transition: none;
+  }
+}
+
+/* ---- life in the stage sky (StageSky.tsx): flat cel shapes between the painting and its frame */
+.stage-sky {
+  position: absolute;
+  inset: var(--frame-top, 0) 0 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: var(--wobble-sm);
+  pointer-events: none;
+}
+.stage-garage .stage-sky {
+  display: none;
+}
+.sky-cloud,
+.sky-star {
+  position: absolute;
+  display: none;
+}
+.sky-cloud path {
+  fill: #fff6dc;
+  stroke: var(--ink);
+  stroke-width: 1.3;
+  stroke-linejoin: round;
+}
+.sky-star path {
+  fill: #fff6dc;
+}
+html:not([data-sky="night"]) .sky-cloud {
+  display: block;
+  left: -4.5rem;
+  animation: sky-drift 80s linear infinite;
+}
+.sky-cloud-a {
+  top: 7%;
+  width: 3.4rem;
+  opacity: 0.92;
+}
+.sky-cloud-b {
+  top: 19%;
+  width: 2.3rem;
+  opacity: 0.8;
+  animation-duration: 115s !important;
+  animation-delay: -50s !important;
+}
+[data-sky="dusk"] .sky-cloud path {
+  fill: #ffd9c2;
+}
+[data-sky="dawn"] .sky-cloud path {
+  fill: #fff0dc;
+}
+@keyframes sky-drift {
+  to {
+    transform: translateX(calc(100vw + 6rem));
+  }
+}
+[data-sky="night"] .sky-star {
+  display: block;
+  width: 9px;
+  animation: sky-blink 4.2s steps(1) infinite;
+}
+.sky-star-0 {
+  top: 12%;
+  left: 40%;
+}
+.sky-star-1 {
+  top: 24%;
+  left: 12%;
+  width: 7px !important;
+  animation-delay: -1.3s !important;
+  animation-duration: 5.4s !important;
+}
+.sky-star-2 {
+  top: 7%;
+  left: 62%;
+  width: 6px !important;
+  animation-delay: -2.6s !important;
+}
+.sky-star-3 {
+  top: 31%;
+  left: 49%;
+  width: 6px !important;
+  animation-delay: -3.4s !important;
+  animation-duration: 6.1s !important;
+}
+@keyframes sky-blink {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  38% {
+    transform: scale(0.55) rotate(45deg);
+    opacity: 0.7;
+  }
+  46% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  58% {
+    transform: scale(0.6) rotate(45deg);
+    opacity: 0.8;
+  }
+  66% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+/* never while driving, never with reduced motion */
+body:has(.drive-hud) :is(.sky-cloud, .sky-star) {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sky-cloud,
+  .sky-star {
+    animation: none !important;
+  }
+  html:not([data-sky="night"]) .sky-cloud {
+    left: 18%;
+  }
+  html:not([data-sky="night"]) .sky-cloud-b {
+    left: 46%;
+  }
+}
+
+/* ---- opening title card (TitleCard.tsx): once per launch, then an iris opens onto the app.
+   Pure CSS so it covers the load itself; it never takes a tap. */
+.title-card {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  animation: title-gone 0s linear 1.5s forwards;
+}
+html[data-opened] .title-card {
+  display: none;
+}
+.title-iris {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow:
+    0 0 0 3px #231f1c,
+    0 0 0 200vmax #f3ead3;
+  animation: title-iris 0.55s cubic-bezier(0.6, 0, 0.9, 0.6) 0.95s forwards;
+}
+.title-content {
+  position: relative;
+  text-align: center;
+  color: #231f1c;
+  animation:
+    title-pop 0.4s cubic-bezier(0.2, 1.6, 0.4, 1) both,
+    title-out 0.16s linear 0.84s forwards;
+}
+.title-presents {
+  font-family: "Secular One", sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+}
+.title-name {
+  margin-top: 0.1rem;
+  font-family: "Karantina", "Secular One", sans-serif;
+  font-weight: 700;
+  font-size: 5.6rem;
+  line-height: 0.95;
+  color: #f2b630;
+  -webkit-text-stroke: 2px #231f1c;
+  paint-order: stroke fill;
+  text-shadow: 4px 4px 0 #231f1c;
+}
+.title-rule {
+  width: 9rem;
+  height: 0.55rem;
+  margin: 0.5rem auto 0;
+  border: 2px solid #231f1c;
+  border-radius: 3px;
+  background: repeating-linear-gradient(90deg, #231f1c 0 0.55rem, #f2b630 0.55rem 1.1rem);
+}
+@keyframes title-pop {
+  from {
+    transform: scale(0.7) rotate(-4deg);
+    opacity: 0;
+  }
+}
+@keyframes title-out {
+  to {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+@keyframes title-iris {
+  to {
+    width: 260vmax;
+    height: 260vmax;
+  }
+}
+@keyframes title-gone {
+  to {
+    visibility: hidden;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .title-card {
+    display: none;
+  }
+}
+
+/* ---- multiplane depth (lib/anim/tilt.ts): the sky and the cast lean opposite ways with
+   the phone. `translate` is its own property, so it never fights the scene transforms. */
+.stage-sky > * {
+  translate: calc(var(--tilt-x, 0) * -8px) calc(var(--tilt-y, 0) * -3px);
+}
+.stage-bg .ms-mascot {
+  translate: calc(var(--tilt-x, 0) * 6px) 0;
+}
+.stage-bg .ms-taxi {
+  translate: calc(var(--tilt-x, 0) * 3.5px) 0;
+}
+
+/* ---- the sun crosses the stage sky with the clock (--sun-x/--sun-y from SkyClock) */
+.sky-sun {
+  position: absolute;
+  display: none;
+  left: var(--sun-x, 30%);
+  top: var(--sun-y, 8%);
+  width: 2.3rem;
+  margin: -0.4rem 0 0 -1.15rem;
+}
+html:is([data-sky="day"], [data-sky="dawn"], [data-sky="dusk"]) .sky-sun {
+  display: block;
+}
+.sky-sun circle {
+  fill: var(--mustard);
+  stroke: var(--ink);
+  stroke-width: 1.4;
+}
+.sky-sun-rays {
+  transform-origin: 20px 20px;
+  animation: sky-sun-turn 24s steps(48) infinite;
+}
+.sky-sun-rays path {
+  fill: var(--mustard);
+  stroke: var(--ink);
+  stroke-width: 0.9;
+  stroke-linejoin: round;
+}
+:is([data-sky="dusk"], [data-sky="dawn"]) .sky-sun :is(circle, path) {
+  fill: #f08a4b;
+}
+@keyframes sky-sun-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- a shooting star now and then at night */
+.sky-shooting {
+  position: absolute;
+  display: none;
+  top: 6%;
+  left: 58%;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: #fff6dc;
+  rotate: 152deg;
+  opacity: 0;
+}
+[data-sky="night"] .sky-shooting {
+  display: block;
+  animation: sky-shoot 19s linear 6s infinite;
+}
+@keyframes sky-shoot {
+  0%,
+  95.5% {
+    transform: translateX(0) scaleX(0.2);
+    opacity: 0;
+  }
+  96% {
+    opacity: 1;
+  }
+  99% {
+    transform: translateX(120px) scaleX(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(150px) scaleX(0.3);
+    opacity: 0;
+  }
+}
+
+/* ---- the banner plane on the home stage: flies across, then waits out of sight */
+.sky-plane {
+  position: absolute;
+  top: 2%;
+  left: 0;
+  direction: ltr;
+  transform: translateX(-16rem);
+  animation: sky-fly 48s linear 3.5s infinite;
+}
+.sky-plane-bob {
+  display: flex;
+  align-items: center;
+  animation: sky-bob 2.6s ease-in-out infinite alternate;
+}
+.sky-banner {
+  direction: rtl;
+  white-space: nowrap;
+  padding: 1px 7px 2px;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px 2px 4px 2px;
+  background: #fff6dc;
+  color: var(--ink);
+  font-family: "Secular One", var(--font-display);
+  font-size: 10.5px;
+  line-height: 1.35;
+  transform-origin: right center;
+  animation: sky-flutter 0.9s steps(2) infinite;
+}
+.sky-rope {
+  width: 14px;
+  height: 10px;
+  flex: none;
+}
+.sky-rope path,
+.pl-strut {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+.sky-plane-art {
+  width: 46px;
+  flex: none;
+}
+.pl-body {
+  fill: var(--vermilion);
+  stroke: var(--ink);
+  stroke-width: 1.3;
+  stroke-linejoin: round;
+}
+.pl-wing {
+  fill: var(--mustard);
+  stroke: var(--ink);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+.pl-wheel {
+  fill: var(--ink);
+}
+.pl-glass {
+  fill: #cfe6ee;
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+.pl-prop {
+  fill: color-mix(in oklab, var(--ink) 55%, transparent);
+  transform-origin: 43.4px 14px;
+  animation: sky-prop 0.16s steps(2) infinite;
+}
+@keyframes sky-fly {
+  0% {
+    transform: translateX(-16rem);
+  }
+  40%,
+  100% {
+    transform: translateX(calc(100vw + 2rem));
+  }
+}
+@keyframes sky-bob {
+  from {
+    transform: translateY(-2px) rotate(-1.2deg);
+  }
+  to {
+    transform: translateY(3px) rotate(1deg);
+  }
+}
+@keyframes sky-flutter {
+  0% {
+    transform: skewY(-2.2deg);
+  }
+  50% {
+    transform: skewY(2.2deg) scaleX(0.985);
+  }
+}
+@keyframes sky-prop {
+  50% {
+    transform: scaleY(0.25);
+  }
+}
+body:has(.drive-hud) :is(.sky-plane, .sky-shooting) {
+  display: none;
+}
+body:has(.drive-hud) .sky-sun-rays {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sky-plane,
+  .sky-shooting {
+    display: none !important;
+  }
+  .sky-sun-rays {
+    animation: none;
+  }
+}
+
+/* ---- the dial: a tap revs the needle, and the goal gets an ink stamp */
+.meter-dial {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.meter-needle-rev-a {
+  animation: needle-rev-a 1.5s cubic-bezier(0.3, 1.2, 0.4, 1) 1;
+}
+.meter-needle-rev-b {
+  animation: needle-rev-b 1.5s cubic-bezier(0.3, 1.2, 0.4, 1) 1;
+}
+@keyframes needle-rev-a {
+  0% {
+    rotate: 0deg;
+  }
+  22% {
+    rotate: var(--rev-room);
+  }
+  30% {
+    rotate: calc(var(--rev-room) - 10deg);
+  }
+  38% {
+    rotate: var(--rev-room);
+  }
+  46% {
+    rotate: calc(var(--rev-room) - 6deg);
+  }
+  88% {
+    rotate: -5deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+@keyframes needle-rev-b {
+  0% {
+    rotate: 0deg;
+  }
+  22% {
+    rotate: var(--rev-room);
+  }
+  30% {
+    rotate: calc(var(--rev-room) - 10deg);
+  }
+  38% {
+    rotate: var(--rev-room);
+  }
+  46% {
+    rotate: calc(var(--rev-room) - 6deg);
+  }
+  88% {
+    rotate: -5deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+.meter-stamp {
+  position: absolute;
+  top: 56%;
+  left: 50%;
+  z-index: 2;
+  padding: 0 0.7rem 0.1rem;
+  border: 3px solid var(--vermilion);
+  border-radius: 9px 7px 10px 6px;
+  outline: 1.5px solid var(--vermilion);
+  outline-offset: 2px;
+  color: var(--vermilion);
+  font-family: "Karantina", "Secular One", sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1;
+  pointer-events: none;
+  transform: translateX(-50%) rotate(-13deg);
+  mix-blend-mode: multiply;
+  animation: stamp-slam 0.5s cubic-bezier(0.2, 1.5, 0.4, 1) 2.2s both;
+}
+@keyframes stamp-slam {
+  0% {
+    transform: translateX(-50%) rotate(-30deg) scale(3);
+    opacity: 0;
+  }
+  55% {
+    transform: translateX(-50%) rotate(-11deg) scale(0.9);
+    opacity: 1;
+  }
+  75% {
+    transform: translateX(-50%) rotate(-14deg) scale(1.06);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .meter-stamp,
+  .meter-needle-rev-a,
+  .meter-needle-rev-b {
+    animation: none;
+  }
+}
+
+/* ---- weekly profit as coin stacks: every bar is a pile of inked coins that lands one
+   coin at a time. A loss hangs below the line as a red pile. */
+.weekly-bar {
+  --coin: var(--mustard-tint);
+  --coin-h: 7px;
+  max-width: 1.9rem;
+  border: 1.4px solid var(--ink);
+  border-radius: 2px 2px 3px 3px;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(255 255 255 / 0.5) 0 18%,
+      transparent 18% 82%,
+      rgb(35 31 28 / 0.14) 82%
+    ),
+    repeating-linear-gradient(
+      to top,
+      var(--coin) 0 calc(var(--coin-h) - 1.3px),
+      var(--ink) calc(var(--coin-h) - 1.3px) var(--coin-h)
+    );
+  animation: coin-pile 0.9s steps(9, end) both;
+}
+.weekly-bar::before {
+  content: "";
+  position: absolute;
+  inset: -4.5px -1.4px auto;
+  height: 8px;
+  border: 1.4px solid var(--ink);
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--coin) 80%, #fff);
+}
+.weekly-bar-active {
+  --coin: var(--mustard);
+  box-shadow: 2.5px 2.5px 0 var(--primary);
+}
+.weekly-bar-negative {
+  --coin: var(--vermilion-tint);
+  animation-name: coin-pile-down;
+}
+.weekly-bar-negative::before {
+  inset: auto -1.4px -4.5px;
+}
+.weekly-bar-negative.weekly-bar-active {
+  --coin: var(--vermilion);
+  box-shadow: 2.5px 2.5px 0 var(--ink);
+}
+.weekly-bar-today:not(.weekly-bar-active) {
+  --coin: color-mix(in oklab, var(--mustard) 55%, var(--mustard-tint));
+  background-image:
+    linear-gradient(
+      90deg,
+      rgb(255 255 255 / 0.5) 0 18%,
+      transparent 18% 82%,
+      rgb(35 31 28 / 0.14) 82%
+    ),
+    repeating-linear-gradient(
+      to top,
+      var(--coin) 0 calc(var(--coin-h) - 1.3px),
+      var(--ink) calc(var(--coin-h) - 1.3px) var(--coin-h)
+    );
+}
+.weekly-bar-value {
+  translate: -50% -7px;
+}
+.weekly-bar-negative .weekly-bar-value {
+  translate: -50% 7px;
+}
+@keyframes coin-pile {
+  from {
+    clip-path: inset(100% -8px -8px -8px);
+  }
+  to {
+    clip-path: inset(-30px -8px -8px -8px);
+  }
+}
+@keyframes coin-pile-down {
+  from {
+    clip-path: inset(-8px -8px 100% -8px);
+  }
+  to {
+    clip-path: inset(-8px -8px -30px -8px);
+  }
+}

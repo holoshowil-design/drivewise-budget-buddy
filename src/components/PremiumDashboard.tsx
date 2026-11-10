@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { StageSky } from "@/components/StageSky";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { SwipeToConfirm } from "@/components/SwipeToConfirm";
 import { MovieStage } from "@/components/MovieStage";
@@ -22,6 +23,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/CountUp";
+import { MeterDial, MeterDrums } from "@/components/MeterDial";
+import { bannerLine } from "@/lib/sky-banner";
 import { calculateDailyMomentum, calculateWorkStreak } from "@/lib/motivation";
 import { drivenKm, filterByDate, fmt, fmtPrecise, sumHours, type AppData } from "@/lib/store";
 import { dayOf, useDays } from "@/lib/calc";
@@ -47,8 +50,6 @@ export function DailyProfitGauge({
 }) {
   const targetPct = goal > 0 ? Math.max(0, Math.min(100, (net / goal) * 100)) : 0;
   const passedBreakEven = net >= breakEven;
-  const pathLength = 251.2;
-  const dashOffset = pathLength * (1 - targetPct / 100);
   const goalReached = targetPct >= 100;
 
   return (
@@ -68,56 +69,22 @@ export function DailyProfitGauge({
         </span>
       </div>
 
-      <div className="relative z-10 mx-auto mt-2 h-36 w-full max-w-[21rem]">
-        <svg
-          viewBox="0 0 220 126"
-          className="h-full w-full overflow-visible"
-          role="img"
-          aria-label={`${Math.round(targetPct)} אחוז מהיעד`}
-        >
-          <path
-            d="M 30 108 A 80 80 0 0 1 190 108"
-            className="gauge-track"
-            pathLength={pathLength}
+      <div className="relative z-10 mx-auto mt-3 w-full max-w-[21rem]">
+        <div className="relative aspect-[220/124] w-full">
+          {goalReached && <span className="meter-stamp">יעד!</span>}
+          <MeterDial
+            pct={targetPct}
+            goal={goal}
+            breakEvenPct={
+              goal > 0 && breakEven > 0 && breakEven < goal ? (breakEven / goal) * 100 : null
+            }
+            passedBreakEven={passedBreakEven}
+            label={`${Math.round(targetPct)} אחוז מהיעד`}
           />
-          <path
-            d="M 30 108 A 80 80 0 0 1 190 108"
-            className="gauge-value"
-            pathLength={pathLength}
-            stroke={passedBreakEven ? "var(--hud-good)" : "var(--hud-accent)"}
-            strokeDasharray={pathLength}
-            strokeDashoffset={dashOffset}
-          />
-          <g className="gauge-ticks">
-            {Array.from({ length: 11 }, (_, i) => {
-              const ang = Math.PI - (i / 10) * Math.PI;
-              const r1 = i % 5 === 0 ? 62 : 67;
-              return (
-                <line
-                  key={i}
-                  x1={110 + Math.cos(ang) * r1}
-                  y1={108 - Math.sin(ang) * r1}
-                  x2={110 + Math.cos(ang) * 72}
-                  y2={108 - Math.sin(ang) * 72}
-                />
-              );
-            })}
-          </g>
-          {/* A pointer on the rim, so the big number below stays clear. */}
-          <g className="gauge-needle" style={{ transform: `rotate(${-90 + targetPct * 1.8}deg)` }}>
-            <path d="M110 50 L104 16 L116 16 Z" />
-            <circle cx="110" cy="16" r="3" />
-          </g>
-          <circle cx="30" cy="108" r="3" fill="var(--hud-accent)" />
-          <circle cx="190" cy="108" r="3" fill="var(--hud-good)" />
-        </svg>
-        <div className="absolute inset-x-0 bottom-0 text-center">
-          <CountUp
-            value={net}
-            format={(n) => fmt(n, currency)}
-            className="num font-display block text-[2.65rem] font-extrabold leading-none text-hud-foreground"
-          />
-          <span className="mt-1 block text-xs font-semibold text-hud-muted">
+        </div>
+        <div className="mt-3 text-center">
+          <MeterDrums value={net} text={fmt(net, currency)} currency={currency} />
+          <span className="mt-2 block text-xs font-semibold text-hud-muted">
             {Math.round(targetPct)}% מתוך יעד {fmt(goal, currency)}
           </span>
         </div>
@@ -188,6 +155,19 @@ export function MomentumCoach({ data }: { data: AppData }) {
   const momentum = calculateDailyMomentum(data);
   const streak = calculateWorkStreak(data.incomes);
   const { net, goal, breakEven, remaining } = momentum;
+  // The banner the little plane tows: one true fact from the last seven days.
+  const allDays = useDays(data);
+  const banner = useMemo(() => {
+    const now = new Date();
+    const week = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now);
+      d.setDate(d.getDate() - (6 - i));
+      const day = dayOf(allDays, iso(d), data);
+      return { date: day.date, net: day.net };
+    });
+    return bannerLine(week, streak, (n) => fmt(n, data.settings.currency), now.getDate());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allDays, data, streak.current, streak.best]);
   const progress = goal > 0 ? Math.max(0, Math.round((net / goal) * 100)) : 0;
   const state: { tone: CoachTone; icon: LucideIcon; title: string; message: string; cta: string } =
     !streak.activeToday
@@ -245,6 +225,7 @@ export function MomentumCoach({ data }: { data: AppData }) {
       aria-live="polite"
     >
       <div className="coach-stage stage-bg stage-street" aria-hidden="true">
+        <StageSky banner={banner} />
         <MovieStage
           morning
           base={{

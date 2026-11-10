@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { skyPhase, sunTimes } from "./sky";
+import { skyPhase, sunPosition, sunTimes } from "./sky";
 
 const at = (iso: string) => new Date(iso);
 
@@ -33,5 +33,22 @@ describe("skyPhase", () => {
     expect(skyPhase(at("2026-10-19T17:15:00"))).toBe("dusk");
     expect(skyPhase(at("2026-06-21T19:30:00"))).toBe("dusk");
     expect(skyPhase(at("2026-12-21T19:30:00"))).toBe("night");
+  });
+});
+
+describe("sunPosition", () => {
+  const at = (h: number, m = 0) => sunPosition(new Date(2026, 5, 21, h, m));
+  it("rises on one side, peaks at midday, sets on the other", () => {
+    const morning = at(6, 30);
+    const noon = at(12, 40);
+    const evening = at(19, 30);
+    expect(morning.x).toBeLessThan(noon.x);
+    expect(noon.x).toBeLessThan(evening.x);
+    expect(noon.y).toBeLessThan(morning.y);
+    expect(noon.y).toBeLessThan(evening.y);
+  });
+  it("stays inside the sky at night", () => {
+    expect(at(2)).toEqual({ x: 8, y: 24 });
+    expect(at(23)).toEqual({ x: 58, y: 24 });
   });
 });
