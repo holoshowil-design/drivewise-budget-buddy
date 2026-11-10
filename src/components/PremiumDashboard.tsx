@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CountUp } from "@/components/CountUp";
 import { MeterDial, MeterDrums } from "@/components/MeterDial";
+import { bannerLine } from "@/lib/sky-banner";
 import { calculateDailyMomentum, calculateWorkStreak } from "@/lib/motivation";
 import { drivenKm, filterByDate, fmt, fmtPrecise, sumHours, type AppData } from "@/lib/store";
 import { dayOf, useDays } from "@/lib/calc";
@@ -69,7 +70,8 @@ export function DailyProfitGauge({
       </div>
 
       <div className="relative z-10 mx-auto mt-3 w-full max-w-[21rem]">
-        <div className="aspect-[220/124] w-full">
+        <div className="relative aspect-[220/124] w-full">
+          {goalReached && <span className="meter-stamp">יעד!</span>}
           <MeterDial
             pct={targetPct}
             goal={goal}
@@ -153,6 +155,19 @@ export function MomentumCoach({ data }: { data: AppData }) {
   const momentum = calculateDailyMomentum(data);
   const streak = calculateWorkStreak(data.incomes);
   const { net, goal, breakEven, remaining } = momentum;
+  // The banner the little plane tows: one true fact from the last seven days.
+  const allDays = useDays(data);
+  const banner = useMemo(() => {
+    const now = new Date();
+    const week = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now);
+      d.setDate(d.getDate() - (6 - i));
+      const day = dayOf(allDays, iso(d), data);
+      return { date: day.date, net: day.net };
+    });
+    return bannerLine(week, streak, (n) => fmt(n, data.settings.currency), now.getDate());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allDays, data, streak.current, streak.best]);
   const progress = goal > 0 ? Math.max(0, Math.round((net / goal) * 100)) : 0;
   const state: { tone: CoachTone; icon: LucideIcon; title: string; message: string; cta: string } =
     !streak.activeToday
@@ -210,7 +225,7 @@ export function MomentumCoach({ data }: { data: AppData }) {
       aria-live="polite"
     >
       <div className="coach-stage stage-bg stage-street" aria-hidden="true">
-        <StageSky />
+        <StageSky banner={banner} />
         <MovieStage
           morning
           base={{

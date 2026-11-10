@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { haptic } from "@/lib/haptics";
+import { motionAllowed } from "@/lib/anim/motion";
+import { playSound } from "@/lib/sound";
 
 const CX = 110;
 const CY = 112;
@@ -44,8 +47,17 @@ export function MeterDial({
 }) {
   const t = Math.max(0, Math.min(1, pct / 100));
   const numbers = faceNumbers(goal);
+  // A tap on the dial revs the needle to the end and lets it fall back.
+  const [rev, setRev] = useState(0);
+  const onRev = () => {
+    if (!motionAllowed()) return;
+    haptic("tap");
+    playSound("rev", { volume: 0.7 });
+    setRev((n) => n + 1);
+  };
   return (
     <svg
+      onClick={onRev}
       viewBox="0 0 220 124"
       className="meter-dial h-full w-full overflow-visible"
       role="img"
@@ -94,7 +106,16 @@ export function MeterDial({
           <path d={`M ${CX} ${CY - R - 6} l 9 3.5 l -9 3.5 Z`} />
         </g>
       )}
-      <g className="gauge-needle meter-needle" style={{ transform: `rotate(${-90 + t * 180}deg)` }}>
+      <g
+        // Two twin animations take turns, so every tap starts the rev again.
+        className={`gauge-needle meter-needle ${rev ? (rev % 2 ? "meter-needle-rev-a" : "meter-needle-rev-b") : ""}`}
+        style={
+          {
+            transform: `rotate(${-90 + t * 180}deg)`,
+            "--rev-room": `${(1 - t) * 180}deg`,
+          } as React.CSSProperties
+        }
+      >
         <path d={`M ${CX} ${CY - R + 14} L ${CX - 3.6} ${CY + 9} L ${CX + 3.6} ${CY + 9} Z`} />
       </g>
       <circle cx={CX} cy={CY} r="9.5" className="meter-hub" />

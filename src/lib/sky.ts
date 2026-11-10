@@ -30,3 +30,18 @@ export function skyPhase(date: Date): SkyPhase {
   if (h >= sunset - 1.2) return "dusk";
   return "day";
 }
+
+/**
+ * Where the drawn sun stands in a stage sky, in percent of the sky's width and height:
+ * low on one side at sunrise, highest at noon, low on the other side at sunset. Before
+ * sunrise and after sunset it stays at the horizon ends (it is not drawn at night).
+ */
+export function sunPosition(date: Date): { x: number; y: number } {
+  const { sunrise, sunset } = sunTimes(date);
+  const h = date.getHours() + date.getMinutes() / 60;
+  const f = Math.max(0, Math.min(1, (h - sunrise) / (sunset - sunrise)));
+  return {
+    x: Math.round((8 + f * 50) * 10) / 10,
+    y: Math.round((24 - Math.sin(Math.PI * f) * 19) * 10) / 10,
+  };
+}
