@@ -4,7 +4,6 @@ import { dayOf, monthForecast, useDays } from "@/lib/calc";
 import { InsightsCard } from "@/components/InsightsCard";
 import { KmCostCard } from "@/components/KmCostCard";
 import { FirstSteps } from "@/components/FirstSteps";
-import { BrowserCard } from "@/components/BrowserCard";
 import { lazy, Suspense } from "react";
 import {
   DailyProfitGauge,
@@ -166,7 +165,6 @@ function Dashboard() {
             <KmCostCard data={data} />
 
             <InsightsCard data={data} />
-            <BrowserCard />
           </>
         )}
         {/* Adding a record is the + in the bottom bar; the month totals live in the
